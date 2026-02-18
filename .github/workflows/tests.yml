@@ -1,0 +1,28 @@
+name: Lint and Test
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    branches: 
+      - main 
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: |
+          pip install pylint
+          # --fail-on=E,F: ONLY fail the build if there are Errors (E) or Fatals (F).
+          PYTHONPATH=. python -m pylint src/backend/ --disable=import-error,missing-docstring --exit-zero
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Tests
+        run: |
+          pip install pytest -r requirements.txt
+          PYTHONPATH=. pytest tests/

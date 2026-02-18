@@ -1,11 +1,37 @@
+# Virtual environments
 .venv
-.VENV
+venv/
+env/
+ENV/
 
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
-*/.DS_Store
-.*/.DS_Store
-*/*/.DS_Store
-.*/*/.DS_Store
+Thumbs.db
 
-*/__pycache__
-*/*/__pycache__
+# Project specific
+dist/
+build/
+*.egg-info/
