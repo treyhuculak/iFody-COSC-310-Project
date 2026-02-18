@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./src/backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+  # Uncomment for frontend when ready
+  # frontend:
+  #   build:
+  #     context: ./src/frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
