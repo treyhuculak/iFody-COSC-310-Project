@@ -31,4 +31,5 @@ jobs:
 
     - name: Run tests with pytest
       run: |
+        export PYTHONPATH=.
         pytest tests/ -v --tb=short
