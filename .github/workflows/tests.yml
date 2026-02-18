@@ -27,7 +27,6 @@ jobs:
     - name: Lint with pylint
       run: |
         PYTHONPATH=. pylint src/backend/ --fail-under=8.0
-      continue-on-error: true
 
     - name: Run tests with pytest
       run: |
