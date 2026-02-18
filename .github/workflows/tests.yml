@@ -14,14 +14,13 @@ jobs:
       - name: Lint
         run: |
           pip install pylint
-          pip install pytest -r requirements.txt
-          PYTHONPATH=. pylint src/backend/ --fail-under=8.0
-        continue-on-error: true
-
+          # --fail-on=E,F: ONLY fail the build if there are Errors (E) or Fatals (F).
+          PYTHONPATH=. pylint src/backend/ --fail-on=E,F --fail-under=10.0
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Run Tests
         run: |
+          pip install pytest -r requirements.txt
           PYTHONPATH=. pytest tests/
