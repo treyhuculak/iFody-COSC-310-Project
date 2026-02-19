@@ -4,9 +4,11 @@ on:
   push:
     branches: 
       - main
+      - DraftForUser-Aaron
   pull_request:
     branches: 
-      - main 
+      - main
+      - DraftForUser-Aaron
 
 jobs:
   lint:
