@@ -25,7 +25,7 @@ class RestaurantController:
         # TODO: Call the repository method to save the restaurant and return the result
         pass
 
-    def update_restaurant(self, restaurant_id: int, name: str, status: str, delivery_fee: float):
+    def update_restaurant(self, restaurant_id: int, name: str, status: str, delivery_fee: float, location: str):
         pass
 
     def delete_restaurant(self, restaurant_id: int):
@@ -40,12 +40,8 @@ class RestaurantController:
         if not restaurant:
             raise HTTPException(status_code=404, detail="Restaurant not found")
         
-        # TODO: Validate menu item data (e.g., price > 0)
+        # Note: Basic field validation (e.g., price > 0) is handled by the MenuItemCreate Pydantic model.
         # TODO: Add the restaurant_id to the menu item data before saving
         # TODO: Call the repository method to save the menu item and return the result
         pass
-
-
-
-
 
