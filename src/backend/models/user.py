@@ -15,8 +15,8 @@ class User:
         # All the attributes should be private to prevent them from being modified outside the class.
         self.__username = username
 
-        emailpattern = re.match(
-            "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/",
+        emailpattern = re.fullmatch(
+            "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
             emailaddress
         )
         if (emailpattern is None):
