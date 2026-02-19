@@ -6,7 +6,8 @@ def test_user_with_valid_email() -> None:
     Tests the User class constructor with a valid email address.
     '''
     usr = user.User('TempUser', 'tempuser@tu.com', '1234', 'customer', False)
-    assert usr == "User('TempUser', 'tempuser@tu.com', '1234', 'customer', False)"
+    assert str(usr) == "User('TempUser', 'tempuser@tu.com', '1234', 'customer', False)"
+    assert repr(usr) == "User('TempUser', 'tempuser@tu.com', '1234', 'customer', False)"
 
 def test_user_with_invalid_email() -> None:
     '''
