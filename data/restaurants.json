@@ -1,0 +1,77 @@
+[
+    {
+        "id": 1,
+        "owner_id": 1,
+        "name": "The Gourmet Kitchen",
+        "cuisine": "Italian",
+        "location": "Kelowna, BC",
+        "delivery_fee": 5.99,
+        "menu_items": [
+            {
+                "id": 1,
+                "name": "Spaghetti Carbonara",
+                "description": "Classic Italian pasta with creamy sauce, pancetta, and Parmesan cheese.",
+                "price": 12.99
+            },
+            {
+                "id": 2,
+                "name": "Margherita Pizza",
+                "description": "Traditional pizza with fresh tomatoes, mozzarella, basil, and olive oil.",
+                "price": 10.99
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "owner_id": 2,
+        "name": "Sushi World",
+        "cuisine": "Japanese",
+        "location": "Vancouver, BC",
+        "delivery_fee": 3.99,
+        "menu_items": [
+            {
+                "id": 1,
+                "name": "California Roll",
+                "description": "Crab, avocado, cucumber, and sushi rice rolled in seaweed.",
+                "price": 8.99
+            },
+            {
+                "id": 2,
+                "name": "Spicy Tuna Roll",
+                "description": "Tuna mixed with spicy mayo, rolled with sushi rice and seaweed.",
+                "price": 9.99
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "owner_id": 3,
+        "name": "Taco Fiesta",
+        "cuisine": "Mexican",
+        "location": "Kelowna, BC",
+        "delivery_fee": 2.99,
+        "menu_items": [
+            {
+                "id": 1,
+                "name": "Chicken Tacos",
+                "description": "Grilled chicken with lettuce, cheese, and salsa in a soft tortilla.",
+                "price": 7.99
+            },
+            {
+                "id": 2,
+                "name": "Beef Burrito",
+                "description": "Seasoned beef, rice, beans, and cheese wrapped in a large tortilla.",
+                "price": 9.99
+            }
+        ]
+    },
+    {
+        "name": "Waffle House",
+        "cuisine": "Breakfast",
+        "location": "Edmonton, AB",
+        "delivery_fee": 4.99,
+        "owner_id": 1,
+        "id": 4,
+        "menu_items": []
+    }
+]

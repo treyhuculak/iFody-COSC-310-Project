@@ -6,8 +6,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./src/backend:/app
-      - ./data:/data
+      - ./src/backend:/app/src/backend
+      - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
