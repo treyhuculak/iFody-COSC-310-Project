@@ -15,12 +15,12 @@ class User:
         # All the attributes should be private to prevent them from being modified outside the class.
         self.__username = username
 
-        emailpattern = re.fullmatch(
-            "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
-            emailaddress
-        )
-        if (emailpattern is None):
-            raise ValueError("The email address is invalid.")
+        # emailpattern = re.fullmatch(
+        #     "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+        #     emailaddress
+        # )
+        # if (emailpattern is None):
+        #     raise ValueError("The email address is invalid.")
         self.__emailaddress = emailaddress
 
         self.__password = password
