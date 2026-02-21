@@ -73,6 +73,10 @@ class _User:
         self.__is_blocked = status
 
     def login(self) -> None:
+        '''
+        This function enables different types of accounts to log in.
+        This draft assumes that each account type maintains its own database, the details of which are not included here.
+        '''
         email_pattern = re.fullmatch(
             "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
             self.__emailaddress
@@ -88,8 +92,12 @@ class _User:
 
         if (password_pattern is None):
             raise ValueError("The password must contain at least one number, one uppercase letter, one lowercase letter, one special character, and be between 8 and 10 characters long.")
-
         
+    def logout(self) -> None:
+        '''
+        The logout function is also a prototype in the _User class intended to be overridden.
+        '''
+        pass
 
 class Customer(_User):
     def __init__(
