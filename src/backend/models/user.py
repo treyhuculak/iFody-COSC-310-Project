@@ -14,7 +14,7 @@ class _User:
             is_blocked: bool
     ) -> None:
         '''
-        Constructs a User instance with the given arguments.
+        Constructs a _User instance with the given arguments.
         '''
         # All the attributes should be private to prevent them from being modified outside the class.
         self.__username = username
@@ -27,7 +27,7 @@ class _User:
         '''
         Returns a demonstration string for debugging purposes.
         '''
-        return "User(%r, %r, %r, %r, %r)" % (
+        return "_User(%r, %r, %r, %r, %r)" % (
             self.__username,
             self.__emailaddress,
             self.__password,
@@ -107,8 +107,22 @@ class Customer(_User):
             password: str,
             is_blocked: bool
     ) -> None:
+        '''
+        Constructs a Customer instance with the given arguments.
+        '''
         super().__init__(
             username, emailaddress, password, "customer", False
         )
 
+    def __repr__(self) -> str:
+        '''
+        Returns a demonstration string for debugging purposes.
+        '''
+        return "Customer" + super().__repr__()[5:]
     
+    def review_order_history(self) -> str:
+        '''
+        Implements the functionality that enables Customer instances to view their orders.
+        This is also left as a prototype function at the moment.
+        '''
+        pass
