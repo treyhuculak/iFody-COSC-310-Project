@@ -104,8 +104,7 @@ class Customer(_User):
             self,
             username: str,
             emailaddress: str,
-            password: str,
-            is_blocked: bool
+            password: str
     ) -> None:
         '''
         Constructs a Customer instance with the given arguments.
