@@ -1,6 +1,10 @@
 import re
 
-class User:
+class _User:
+    '''
+    This is the base class for the Customer, RestaurantOwner, and Admin classes.
+    This class is not intended for direct instantiation of _User objects.
+    '''
     def __init__(
             self,
             username: str,
@@ -14,15 +18,7 @@ class User:
         '''
         # All the attributes should be private to prevent them from being modified outside the class.
         self.__username = username
-
-        # emailpattern = re.fullmatch(
-        #     "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
-        #     emailaddress
-        # )
-        # if (emailpattern is None):
-        #     raise ValueError("The email address is invalid.")
         self.__emailaddress = emailaddress
-
         self.__password = password
         self.__role = role
         self.__is_blocked = is_blocked
@@ -75,3 +71,36 @@ class User:
         The function is hidden as we assume only admin accounts can use it.
         '''
         self.__is_blocked = status
+
+    def login(self) -> None:
+        email_pattern = re.fullmatch(
+            "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+            self.__emailaddress
+        )
+
+        if (email_pattern is None):
+            raise ValueError("The email address is invalid.")
+        
+        password_pattern = re.fullmatch(
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$#%])[A-Za-z\\d@$#%]{8,10}$",
+            self.__password
+        )
+
+        if (password_pattern is None):
+            raise ValueError("The password must contain at least one number, one uppercase letter, one lowercase letter, one special character, and be between 8 and 10 characters long.")
+
+        
+
+class Customer(_User):
+    def __init__(
+            self,
+            username: str,
+            emailaddress: str,
+            password: str,
+            is_blocked: bool
+    ) -> None:
+        super().__init__(
+            username, emailaddress, password, "customer", False
+        )
+
+    
