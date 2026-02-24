@@ -1,23 +1,395 @@
+import json
 import pytest
 from fastapi.testclient import TestClient
+
 from src.backend.main import app
+from src.backend.routers.restaurants import get_controller
+from src.backend.repositories.restaurant_repo import RestaurantRepository
+from src.backend.controllers.restaurant_controller import RestaurantController
 
-# Will fill out when implementing the restaurant controller methods and routes. Just base methods etc for now.
 
-# client = TestClient(app)
+@pytest.fixture
+def test_client(tmp_path):
+    """
+    Provides a TestClient backed by a temporary JSON file instead of the real
+    data/restaurants.json.  The temp file is deleted automatically after each
+    test, so the production database is never touched.
+    """
+    temp_db = tmp_path / "test_restaurants.json"
+    temp_db.write_text(json.dumps([]))
 
-# def test_create_restaurant():
-#     # Test creating a new restaurant
-#     response = client.post("/restaurants/", json={
-#         "name": "Test Restaurant",
-#         "status": "open",
-#         "location": "123 Test St",
-#         "delivery_fee": 5.0,
-#         "owner_id": 1
-#     })
-#     assert response.status_code == 200
-#     data = response.json()
-#     assert data["name"] == "Test Restaurant"
-#     assert data["status"] == "open"
-#     assert data["delivery_fee"] == 5.0
-#     assert data["owner_id"] == 1
+    test_repo = RestaurantRepository(file_path=str(temp_db))
+    test_controller = RestaurantController(repo=test_repo)
+
+    app.dependency_overrides[get_controller] = lambda: test_controller
+
+    with TestClient(app) as client:
+        yield client
+
+    app.dependency_overrides.clear()
+
+new_restaurant = {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99
+    }
+
+def test_get_all_restaurants(test_client):
+    response = test_client.get("/restaurants/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_add_restaurant(test_client):
+    # The controller should return the new restaurant dict, which the router translates to a 200 response
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == new_restaurant["name"]
+    assert data["cuisine"] == new_restaurant["cuisine"]
+    assert data["location"] == new_restaurant["location"]
+    assert data["delivery_fee"] == new_restaurant["delivery_fee"]
+
+def test_add_restaurant_missing_fields(test_client):
+    incomplete = {"name": "Incomplete Restaurant"}
+
+    # The controller should return an error dict, which the router translates to a 422 response due to Pydantic validation failure
+    response = test_client.post("/restaurants/", json=incomplete)
+    assert response.status_code == 422  # Pydantic validation error for missing required fields
+    data = response.json()
+    assert "detail" in data
+
+def test_add_restaurant_invalid_delivery_fee(test_client):
+    invalid = new_restaurant.copy()
+    invalid["delivery_fee"] = -5.0
+
+    # The controller should return an error dict, which the router translates to a 422 response due to Pydantic validation failure
+    response = test_client.post("/restaurants/", json=invalid)
+    assert response.status_code == 422  # Pydantic validation error for invalid delivery fee
+    data = response.json()
+    assert "detail" in data
+
+def test_update_restaurant(test_client):
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # PUT endpoint reads name/delivery_fee as query params, not a JSON body
+    update_params = {"name": "Updated Restaurant Name", "delivery_fee": 3.99}
+    response = test_client.put(f"/restaurants/{restaurant_id}", params=update_params)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == update_params["name"]
+    assert data["delivery_fee"] == update_params["delivery_fee"]
+
+def test_update_restaurant_no_fields(test_client):
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Try to update with no fields provided
+    response = test_client.put(f"/restaurants/{restaurant_id}")
+    assert response.status_code == 400
+    data = response.json()
+    assert "detail" in data
+
+def test_update_restaurant_invalid_delivery_fee(test_client):
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Try to update with an invalid delivery fee
+    update_params = {"delivery_fee": -10.0}
+    response = test_client.put(f"/restaurants/{restaurant_id}", params=update_params)
+    assert response.status_code == 422  # Pydantic validation error for invalid delivery fee
+    data = response.json()
+    assert "detail" in data
+
+def test_update_restaurant_not_found(test_client):
+    # Try to update a restaurant that doesn't exist
+    update_params = {"name": "Nonexistent Restaurant"}
+    response = test_client.put("/restaurants/9999", params=update_params)
+    assert response.status_code == 404
+    data = response.json()
+    assert "detail" in data
+
+def test_delete_restaurant(test_client):
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Delete the restaurant
+    delete_response = test_client.delete(f"/restaurants/{restaurant_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, trying to get the restaurant should return a 404
+    get_response = test_client.get(f"/restaurants/{restaurant_id}")
+    assert get_response.status_code == 404
+
+def test_get_restaurant_by_id(test_client):
+    # First add a restaurant to ensure there is something to retrieve
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to retrieve that restaurant by ID
+    get_response = test_client.get(f"/restaurants/{restaurant_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["id"] == restaurant_id
+    assert data["name"] == new_restaurant["name"]
+
+def test_get_restaurant_by_id_not_found(test_client):
+    # Try to get a restaurant with an ID that doesn't exist
+    get_response = test_client.get("/restaurants/9999")
+    assert get_response.status_code == 404
+    data = get_response.json()
+    assert "detail" in data
+
+def test_get_restaurants_by_owner(test_client):
+    # Add two restaurants with the same owner_id
+    restaurant1 = new_restaurant.copy()
+    restaurant1["owner_id"] = 42
+    response1 = test_client.post("/restaurants/", json=restaurant1)
+    assert response1.status_code == 200
+
+    restaurant2 = new_restaurant.copy()
+    restaurant2["owner_id"] = 42
+    response2 = test_client.post("/restaurants/", json=restaurant2)
+    assert response2.status_code == 200
+
+    # Add a third restaurant with a different owner_id
+    restaurant3 = new_restaurant.copy()
+    restaurant3["owner_id"] = 99
+    response3 = test_client.post("/restaurants/", json=restaurant3)
+    assert response3.status_code == 200
+
+    # Now retrieve restaurants by owner_id 42
+    get_response = test_client.get("/restaurants/owner/42")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert isinstance(data, list)
+    assert len(data) == 2
+    for rest in data:
+        assert rest["owner_id"] == 42
+
+def test_get_restaurants_by_location(test_client):
+    # Add two restaurants with the same location
+    restaurant1 = new_restaurant.copy()
+    restaurant1["location"] = "Test Location"
+    response1 = test_client.post("/restaurants/", json=restaurant1)
+    assert response1.status_code == 200
+
+    restaurant2 = new_restaurant.copy()
+    restaurant2["location"] = "Test Location"
+    response2 = test_client.post("/restaurants/", json=restaurant2)
+    assert response2.status_code == 200
+
+    # Add a third restaurant with a different location
+    restaurant3 = new_restaurant.copy()
+    restaurant3["location"] = "Different Location"
+    response3 = test_client.post("/restaurants/", json=restaurant3)
+    assert response3.status_code == 200
+
+    # Now retrieve restaurants by location "Test Location"
+    get_response = test_client.get("/restaurants/location/Test%20Location")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert isinstance(data, list)
+    assert len(data) == 2
+    for rest in data:
+        assert rest["location"] == "Test Location"
+
+
+'''
+    Menu item operations for a specific restaurant:
+        - Add a menu item to a restaurant
+        - Update a menu item from a restaurant
+        - Delete a menu item from a restaurant
+        - Get menu items for a restaurant
+'''
+
+new_menu_item = {
+        "name": "Test Menu Item",
+        "description": "A menu item for testing",
+        "price": 9.99
+    }
+
+def test_add_menu_item_to_restaurant(test_client):
+    # First add a restaurant to ensure there is something to add a menu item to
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to add a menu item to that restaurant
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=new_menu_item)
+    assert add_response.status_code == 200
+    data = add_response.json()
+    assert data["name"] == new_menu_item["name"]
+    assert data["description"] == new_menu_item["description"]
+    assert data["price"] == new_menu_item["price"]
+
+def test_add_menu_item_to_nonexistent_restaurant(test_client):
+    # Try to add a menu item to a restaurant ID that doesn't exist
+    add_response = test_client.post("/restaurants/9999/menu", json=new_menu_item)
+    assert add_response.status_code == 404
+    data = add_response.json()
+    assert "detail" in data
+
+def test_add_menu_item_invalid_price(test_client):
+    # First add a restaurant to ensure there is something to add a menu item to
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to add a menu item with an invalid price
+    invalid_menu_item = new_menu_item.copy()
+    invalid_menu_item["price"] = -1.0
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=invalid_menu_item)
+    assert add_response.status_code == 422  # Pydantic validation error for invalid price
+    data = add_response.json()
+    assert "detail" in data
+
+def test_add_menu_item_missing_fields(test_client):
+    # First add a restaurant to ensure there is something to add a menu item to
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to add a menu item with missing fields
+    incomplete_menu_item = {"name": "Incomplete Menu Item"}
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=incomplete_menu_item)
+    assert add_response.status_code == 422  # Pydantic validation error for missing required fields
+    data = add_response.json()
+    assert "detail" in data
+
+def test_update_menu_item_from_restaurant(test_client):
+    # First add a restaurant and a menu item to ensure there is something to update
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=new_menu_item)
+    assert add_response.status_code == 200
+    menu_item_id = add_response.json()["id"]
+
+    # Now try to update that menu item
+    update_params = {"name": "Updated Menu Item Name", "price": 12.99}
+    update_response = test_client.put(f"/restaurants/{restaurant_id}/menu/{menu_item_id}", params=update_params)
+    assert update_response.status_code == 200
+    data = update_response.json()
+    assert data["name"] == update_params["name"]
+    assert data["price"] == update_params["price"]
+
+def test_update_menu_item_invalid_price(test_client):
+    # First add a restaurant and a menu item to ensure there is something to update
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=new_menu_item)
+    assert add_response.status_code == 200
+    menu_item_id = add_response.json()["id"]
+
+    # Now try to update that menu item with an invalid price
+    update_params = {"price": -5.0}
+    update_response = test_client.put(f"/restaurants/{restaurant_id}/menu/{menu_item_id}", params=update_params)
+    assert update_response.status_code == 422  # Pydantic validation error for invalid price
+    data = update_response.json()
+    assert "detail" in data
+
+def test_update_menu_item_not_found(test_client):
+    # First add a restaurant to ensure there is something to update
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to update a menu item that doesn't exist
+    update_params = {"name": "Nonexistent Menu Item"}
+    update_response = test_client.put(f"/restaurants/{restaurant_id}/menu/9999", params=update_params)
+    assert update_response.status_code == 404
+    data = update_response.json()
+    assert "detail" in data
+
+def test_update_menu_item_restaurant_not_found(test_client):
+    # Try to update a menu item for a restaurant that doesn't exist
+    update_params = {"name": "Nonexistent Menu Item"}
+    update_response = test_client.put("/restaurants/9999/menu/1", params=update_params)
+    assert update_response.status_code == 404
+    data = update_response.json()
+    assert "detail" in data
+
+def test_delete_menu_item_from_restaurant(test_client):
+    # First add a restaurant and a menu item to ensure there is something to delete
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=new_menu_item)
+    assert add_response.status_code == 200
+    menu_item_id = add_response.json()["id"]
+
+    # Now try to delete that menu item
+    delete_response = test_client.delete(f"/restaurants/{restaurant_id}/menu/{menu_item_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, trying to get the menu item should return a 404
+    get_response = test_client.get(f"/restaurants/{restaurant_id}/menu/{menu_item_id}")
+    assert get_response.status_code == 404
+
+def test_delete_menu_item_restaurant_not_found(test_client):
+    # Try to delete a menu item for a restaurant that doesn't exist
+    delete_response = test_client.delete("/restaurants/9999/menu/1")
+    assert delete_response.status_code == 404
+    data = delete_response.json()
+    assert "detail" in data
+
+def test_delete_menu_item_not_found(test_client):
+    # First add a restaurant to ensure there is something to delete from
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to delete a menu item that doesn't exist
+    delete_response = test_client.delete(f"/restaurants/{restaurant_id}/menu/9999")
+    assert delete_response.status_code == 404
+    data = delete_response.json()
+    assert "detail" in data
+
+def test_get_menu_items_by_restaurant_id(test_client):
+    # First add a restaurant and a menu item to ensure there is something to retrieve
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=new_menu_item)
+    assert add_response.status_code == 200
+
+    # Now try to retrieve menu items for that restaurant
+    get_response = test_client.get(f"/restaurants/{restaurant_id}/menu")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert isinstance(data, list)
+    assert len(data) == 1
+    assert data[0]["name"] == new_menu_item["name"]
+
+def test_get_menu_items_by_restaurant_id_not_found(test_client):
+    # Try to get menu items for a restaurant that doesn't exist
+    get_response = test_client.get("/restaurants/9999/menu")
+    assert get_response.status_code == 404
+    data = get_response.json()
+    assert "detail" in data
+
+def test_get_menu_items_by_restaurant_id_no_items(test_client):
+    # First add a restaurant to ensure there is something to retrieve from
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Now try to retrieve menu items for that restaurant, which has no items
+    get_response = test_client.get(f"/restaurants/{restaurant_id}/menu")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert isinstance(data, list)
+    assert len(data) == 0
+
