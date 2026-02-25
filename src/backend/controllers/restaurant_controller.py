@@ -38,8 +38,8 @@ class RestaurantController:
 
     def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1):
         restaurant_data = restaurant.model_dump()
-        # Use the owner_id from the request body if provided, otherwise fall back to auth value
-        restaurant_data['owner_id'] = restaurant_data.get('owner_id') or owner_id
+        # Always use the authenticated owner's ID; ignore any owner_id from the request body
+        restaurant_data['owner_id'] = owner_id
         added_restaurant = self.repo.add_restaurant(restaurant_data)
         return added_restaurant
 

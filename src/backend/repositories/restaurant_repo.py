@@ -1,8 +1,5 @@
 import json
-from typing import List, Optional, Dict
-from src.backend.models.restaurant import Restaurant
-from src.backend.models.menu_item import MenuItem
-
+from typing import List, Optional
 class RestaurantRepository:
     DEFAULT_FILE = 'data/restaurants.json'
 
@@ -11,8 +8,8 @@ class RestaurantRepository:
         try:
             with open(self.file_path, 'r') as f:
                 json.load(f)
-        except FileNotFoundError:
-            # file doesn't exist, create it with an empty list
+        except (FileNotFoundError, json.JSONDecodeError):
+            # file doesn't exist or is corrupted, create/reset it with an empty list
             with open(self.file_path, 'w') as f:
                 json.dump([], f, indent=4)
         
@@ -37,7 +34,7 @@ class RestaurantRepository:
                 data = json.load(f)
                 return [restaurant for restaurant in data if restaurant['owner_id'] == owner_id]
         except FileNotFoundError:
-            print(f"File {self.file_path} not found.")
+
             return []
         except json.JSONDecodeError as e:
             return [{"error": f"Error decoding JSON: {e}"}]

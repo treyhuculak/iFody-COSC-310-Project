@@ -15,4 +15,4 @@ class RestaurantCreate(RestaurantBase):
 class Restaurant(RestaurantBase):
     id: int
     owner_id: int
-    menu_items: List[MenuItem] = []
+    menu_items: List[MenuItem] = Field(default_factory=list)
