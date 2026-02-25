@@ -10,7 +10,7 @@ class RestaurantBase(BaseModel):
     delivery_fee: float = Field(..., ge=0)  # Delivery fee must be greater than or equal to 0
 
 class RestaurantCreate(RestaurantBase):
-    owner_id: Optional[int] = None
+    pass
 
 class Restaurant(RestaurantBase):
     id: int

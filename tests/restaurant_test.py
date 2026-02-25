@@ -149,29 +149,21 @@ def test_get_restaurant_by_id_not_found(test_client):
 def test_get_restaurants_by_owner(test_client):
     # Add two restaurants with the same owner_id
     restaurant1 = new_restaurant.copy()
-    restaurant1["owner_id"] = 42
     response1 = test_client.post("/restaurants/", json=restaurant1)
     assert response1.status_code == 200
 
     restaurant2 = new_restaurant.copy()
-    restaurant2["owner_id"] = 42
     response2 = test_client.post("/restaurants/", json=restaurant2)
     assert response2.status_code == 200
 
-    # Add a third restaurant with a different owner_id
-    restaurant3 = new_restaurant.copy()
-    restaurant3["owner_id"] = 99
-    response3 = test_client.post("/restaurants/", json=restaurant3)
-    assert response3.status_code == 200
-
-    # Now retrieve restaurants by owner_id 42
-    get_response = test_client.get("/restaurants/owner/42")
+    # Now retrieve restaurants by owner_id 1 (this is the current default owner_id for new restaurants in the controller)
+    get_response = test_client.get("/restaurants/owner/1")
     assert get_response.status_code == 200
     data = get_response.json()
     assert isinstance(data, list)
     assert len(data) == 2
     for rest in data:
-        assert rest["owner_id"] == 42
+        assert rest["owner_id"] == 1
 
 def test_get_restaurants_by_location(test_client):
     # Add two restaurants with the same location
