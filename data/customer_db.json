@@ -1,0 +1,12 @@
+{
+    "users": [
+      {
+        "id": 1,
+        "username": "TestUser",
+        "email": "testuser@email.com",
+        "password": "testpass",
+        "role": "customer",
+        "is_blocked": false
+      }
+    ]
+  }

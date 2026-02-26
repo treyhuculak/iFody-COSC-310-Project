@@ -4,6 +4,12 @@ from src.backend.repositories.user_repo import UserRepository
 
 repo = UserRepository()
 
+def test_getAllUsers() -> None:
+    '''
+    Testing the function getAllUsers()
+    '''
+    assert(repo.getAllUsers() != None)
+
 def test_valid_getUserByUsername() -> None:
     '''
     Testing valid input for function getUserByUsername()

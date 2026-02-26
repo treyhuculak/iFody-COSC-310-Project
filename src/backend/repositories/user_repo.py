@@ -1,36 +1,37 @@
-import csv
-from src.backend.models.user import Customer
+import json
 
 class UserRepository():
-    CUSTOMER_FILE = 'data/customer_db.csv'
+    CUSTOMER_FILE = 'data/customer_db.json'
     
     def __init__(self):
         # check if files exist, if not create them with headers
         pass
     
     def getAllUsers(self):
-        return []
+        with open(self.CUSTOMER_FILE) as file:
+            users = json.load(file)['users']
+            return users
     
-    def getUserByID(): #not necessary for now
+    def getUserByID(self): #not necessary for now
         return []
     
     def getUserByUsername(self, username): #return the user's Username
-        with open(self.CUSTOMER_FILE, newline="") as file:
-            reader = csv.DictReader(file) 
-            for row in reader:
-                if (row['username'] == username) :
+        with open(self.CUSTOMER_FILE) as file:
+            users = json.load(file)['users']
+            for row in users:
+                if row['username'] == username :
                     return row
             return None
-                    
+
     
     def getUserByEmail(self, email):
-        with open(self.CUSTOMER_FILE, newline="") as file:
-            reader = csv.DictReader(file) 
-            for row in reader:
-                if (row['email'] == email) :
+        with open(self.CUSTOMER_FILE) as file:
+            users = json.load(file)['users'] 
+            for row in users:
+                if row['email'] == email :
                     return row
             return None
     
-    def getUserByRole():
+    def getUserByRole(self):
         return []
     
