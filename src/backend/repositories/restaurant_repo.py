@@ -19,16 +19,21 @@ class RestaurantRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 for restaurant in data:
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         return restaurant
                 return {"error": f"Restaurant with id {restaurant_id} not found."}
         except FileNotFoundError:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Restaurant missing id field: {e}"}
 
 
     def get_restaurants_by_owner(self, owner_id: int) -> List[dict]:
+        if owner_id is None or owner_id == 0:
+            return [{"error": "Invalid owner_id provided."}]
+
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
@@ -65,7 +70,7 @@ class RestaurantRepository:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                new_id = max([restaurant.get('id') for restaurant in data], default=0) + 1
+                new_id = max([restaurant['id'] for restaurant in data], default=0) + 1
                 restaurant_data['id'] = new_id
                 data.append(restaurant_data)
             with open(self.file_path, 'w') as f:
@@ -79,6 +84,8 @@ class RestaurantRepository:
             return restaurant_data
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Restaurant missing id field: {e}"}
         
     
     def update_restaurant(self, restaurant_id: int, restaurant_data: dict) -> Optional[dict]:
@@ -86,7 +93,7 @@ class RestaurantRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 for i, restaurant in enumerate(data):
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         data[i].update(restaurant_data)  # Update the existing restaurant data with the new data
                         with open(self.file_path, 'w') as f:
                             json.dump(data, f, indent=4)
@@ -96,6 +103,8 @@ class RestaurantRepository:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Restaurant missing id field: {e}"}
         
     
     def delete_restaurant(self, restaurant_id: int) -> dict:
@@ -105,7 +114,7 @@ class RestaurantRepository:
                 deleted_rest = {}
                 new_data = []
                 for restaurant in data:
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         deleted_rest = restaurant
                     else:
                         new_data.append(restaurant)
@@ -119,6 +128,8 @@ class RestaurantRepository:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Restaurant missing id field: {e}"}
         
     
     def get_menu_items_by_restaurant(self, restaurant_id: int) -> List[dict]:
@@ -126,23 +137,24 @@ class RestaurantRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 for restaurant in data:
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         return restaurant.get('menu_items', [])
                 return [{"error": f"Restaurant with id {restaurant_id} not found."}]
         except FileNotFoundError:
             return [{"error": f"File {self.file_path} not found."}]
         except json.JSONDecodeError as e:
             return [{"error": f"Error decoding JSON: {e}"}]
-        
+        except KeyError as e:
+            return [{"error": f"Restaurant missing id field: {e}"}]
 
     def add_menu_item_to_restaurant(self, item_data: dict, restaurant_id: int) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 for restaurant in data:
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         menu_items = restaurant.get('menu_items', [])
-                        new_item_id = max(item.get('id') for item in menu_items) + 1 if menu_items else 1
+                        new_item_id = max(item['id'] for item in menu_items) + 1 if menu_items else 1
                         item_data['id'] = new_item_id
                         menu_items.append(item_data)
                         restaurant['menu_items'] = menu_items
@@ -154,16 +166,18 @@ class RestaurantRepository:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Menu item missing id field: {e}"}
         
     def update_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int, item_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 for restaurant in data:
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         menu_items = restaurant.get('menu_items', [])
                         for i, item in enumerate(menu_items):
-                            if item.get('id',0) == menu_item_id:
+                            if item['id'] == menu_item_id:
                                 menu_items[i].update(item_data)
                                 with open(self.file_path, 'w') as f:
                                     json.dump(data, f, indent=4)
@@ -174,18 +188,20 @@ class RestaurantRepository:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Menu item missing id field: {e}"}
         
     def delete_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 for restaurant in data:
-                    if restaurant.get('id',0) == restaurant_id:
+                    if restaurant['id'] == restaurant_id:
                         menu_items = restaurant.get('menu_items', [])
                         new_menu_items = []
                         deleted_item = {}
                         for item in menu_items:
-                            if item.get('id',0) == menu_item_id:
+                            if item['id'] == menu_item_id:
                                 deleted_item = item
                             else:
                                 new_menu_items.append(item)
@@ -200,3 +216,5 @@ class RestaurantRepository:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Menu item missing id field: {e}"}
