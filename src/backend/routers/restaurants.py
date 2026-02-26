@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List, Optional
 from src.backend.controllers.restaurant_controller import RestaurantController
 from src.backend.models.restaurant import Restaurant, RestaurantCreate
 from src.backend.models.menu_item import MenuItem, MenuItemCreate
@@ -12,6 +12,20 @@ router = APIRouter(
 def get_controller():
     return RestaurantController()
 
+def get_user_id_from_auth():
+    # TODO: Implement authentication and extract user ID from the token/session
+    return 1  # Placeholder for testing purposes
+
+
+@router.get("/owner/{owner_id}", response_model=List[Restaurant])
+def get_restaurants_by_owner(owner_id: int, controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_owner(owner_id)
+
+
+@router.get("/location/{location}", response_model=List[Restaurant])
+def get_restaurants_by_location(location: str, controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_location(location)
+
 
 @router.get("/", response_model=List[Restaurant])
 def get_all_restaurants(controller: RestaurantController = Depends(get_controller)):
@@ -21,22 +35,41 @@ def get_all_restaurants(controller: RestaurantController = Depends(get_controlle
 @router.get("/{restaurant_id}", response_model=Restaurant)
 def get_restaurant(restaurant_id: int, controller: RestaurantController = Depends(get_controller)):
     restaurant = controller.get_restaurant_by_id(restaurant_id)
-    if not restaurant:
+    if isinstance(restaurant, dict) and "error" in restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
     return restaurant
 
 
 @router.get("/{restaurant_id}/menu", response_model=List[MenuItem])
-def get_menu_items(restaurant_id: int, controller: RestaurantController = Depends(get_controller)):
-    return controller.get_menu_items_by_restaurant_id(restaurant_id)
+def get_all_menu_items_by_restaurant(restaurant_id: int, controller: RestaurantController = Depends(get_controller)):
+    # First verify the restaurant exists
+    restaurant = controller.get_restaurant_by_id(restaurant_id)
+    if isinstance(restaurant, dict) and "error" in restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    menu_items = controller.get_menu_items_by_restaurant_id(restaurant_id)
+    return menu_items
+
+
+@router.get("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
+def get_menu_item_by_id(restaurant_id: int, menu_item_id: int, controller: RestaurantController = Depends(get_controller)):
+    menu_items = controller.get_menu_items_by_restaurant_id(restaurant_id)
+    if isinstance(menu_items, list):
+        for item in menu_items:
+            if isinstance(item, dict) and item.get("id") == menu_item_id:
+                return item
+    raise HTTPException(status_code=404, detail="Menu item not found")
 
 
 @router.post("/", response_model=Restaurant)
-def create_restaurant(
+def add_restaurant(
     restaurant: RestaurantCreate, 
-    controller: RestaurantController = Depends(get_controller)
+    controller: RestaurantController = Depends(get_controller),
+    current_user_id: int = Depends(get_user_id_from_auth)
 ):
-    return controller.create_restaurant(restaurant)
+    new_rest = controller.add_restaurant(restaurant, owner_id=current_user_id)
+    if isinstance(new_rest, dict) and "error" in new_rest:
+        raise HTTPException(status_code=400, detail=new_rest["error"])
+    return new_rest
 
 
 @router.post("/{restaurant_id}/menu", response_model=MenuItem)
@@ -45,4 +78,61 @@ def add_menu_item(
     menu_item: MenuItemCreate, 
     controller: RestaurantController = Depends(get_controller)
 ):
-    return controller.add_menu_item_to_restaurant(menu_item, restaurant_id)
+    new_item = controller.add_menu_item_to_restaurant(menu_item, restaurant_id)
+    if isinstance(new_item, dict) and "error" in new_item:
+        raise HTTPException(status_code=400, detail=new_item["error"])
+    return new_item
+
+
+@router.put("/{restaurant_id}", response_model=Restaurant)
+def update_restaurant(
+    restaurant_id: int, 
+    name: Optional[str] = None, 
+    cuisine: Optional[str] = None,
+    location: Optional[str] = None, 
+    delivery_fee: Optional[float] = Query(default=None, ge=0),
+    controller: RestaurantController = Depends(get_controller)
+):
+    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location)
+    if isinstance(updated_rest, dict) and "error" in updated_rest:
+        if "not found" in updated_rest["error"].lower():
+            raise HTTPException(status_code=404, detail=updated_rest["error"])
+        raise HTTPException(status_code=400, detail=updated_rest["error"])
+    return updated_rest
+
+
+@router.delete("/{restaurant_id}", response_model=Restaurant)
+def delete_restaurant(
+    restaurant_id: int, 
+    controller: RestaurantController = Depends(get_controller)
+):
+    deleted_rest = controller.delete_restaurant(restaurant_id)
+    if isinstance(deleted_rest, dict) and "error" in deleted_rest:
+        raise HTTPException(status_code=404, detail=deleted_rest["error"])
+    return deleted_rest
+
+
+@router.delete("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
+def delete_menu_item(
+    restaurant_id: int, 
+    menu_item_id: int, 
+    controller: RestaurantController = Depends(get_controller)
+):
+    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id, menu_item_id)
+    if isinstance(deleted_item, dict) and "error" in deleted_item:
+        raise HTTPException(status_code=404, detail=deleted_item["error"])
+    return deleted_item
+
+@router.put("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
+def update_menu_item(
+    restaurant_id: int, 
+    menu_item_id: int, 
+    name: Optional[str] = None, 
+    description: Optional[str] = None, 
+    price: Optional[float] = Query(default=None, gt=0),
+    controller: RestaurantController = Depends(get_controller)
+):
+    updated_item = controller.update_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, name=name, description=description, price=price)
+    if isinstance(updated_item, dict) and "error" in updated_item:
+        raise HTTPException(status_code=404, detail=updated_item["error"])
+    return updated_item

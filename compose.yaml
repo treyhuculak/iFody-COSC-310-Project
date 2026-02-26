@@ -6,8 +6,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./src/backend:/app
-      - ./data:/data
+      - ./src/backend:/app/src/backend
+      # NOTE: This bind mount is intended for single-instance/local development only.
+      # If the backend service is scaled to multiple containers, they will all share
+      # the same JSON data files under ./data without coordination, which can corrupt data.
+      # For production or horizontal scaling, replace this with a proper shared datastore
+      # (e.g., a database) or implement robust file locking in the backend before reusing it.
+      - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped

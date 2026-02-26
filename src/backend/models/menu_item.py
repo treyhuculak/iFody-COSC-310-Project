@@ -11,4 +11,3 @@ class MenuItemCreate(MenuItemBase):
 
 class MenuItem(MenuItemBase):
     id: int
-    restaurant_id: int
