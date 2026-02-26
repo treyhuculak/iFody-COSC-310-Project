@@ -27,7 +27,7 @@ def test_customer_login_with_valid_password() -> None:
     customer = Customer('TempUser', 'tempuser@tu.com', 'Abc@1234')
     customer.login()
 
-def test_customer_login_with_valid_password() -> None:
+def test_customer_login_with_invalid_password() -> None:
     '''
     Tests the Customer class when attempting to log in with an invalid password.
     '''

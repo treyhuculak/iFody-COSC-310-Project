@@ -1,0 +1,3 @@
+id,username,email,password,role,is_blocked
+1,TestUser,testuser@email.com,testpass,customer,false
+
