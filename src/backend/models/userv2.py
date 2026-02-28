@@ -5,8 +5,9 @@ password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$#%])[A-Za-z\\d@$#%]{
 role_pattern = "^(Admin|Customer|RestaurantOwner)$"
 
 class UserBase(BaseModel):
+    id: int = Field(..., ge = 1)
     username: str = Field(..., min_length = 1)
-    emailaddress: str = Field(..., pattern = email_pattern)
+    email: str = Field(..., pattern = email_pattern)
     password: str = Field(..., pattern = password_pattern)
     role: str = Field(..., pattern = role_pattern)
     is_logged_in: bool = False
