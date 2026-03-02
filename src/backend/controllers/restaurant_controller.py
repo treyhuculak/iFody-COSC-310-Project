@@ -54,30 +54,15 @@ class RestaurantController:
         # Remove keys with None values to avoid overwriting existing data with None
         restaurant_data = {k: v for k, v in restaurant_data.items() if v is not None}
         if not restaurant_data:
-            return {"error": "No data provided for update."}
+            raise HTTPException(status_code=400, detail="No data provided for update.")
         
         # Block marking restaurant as available if it has no menu items
         if "is_available" in restaurant_data and restaurant_data["is_available"] == True:
             # Check if the restaurant has menu items before allowing it to be marked as available
             menu_items = self.repo.get_menu_items_by_restaurant(restaurant_id)
 
-            # Handle repository error responses explicitly before checking for emptiness.
-            if isinstance(menu_items, dict) and "error" in menu_items:
-                # Propagate repository error (e.g., restaurant not found or other failure)
-                return menu_items
-
-            if isinstance(menu_items, list):
-                # If the repository encodes errors inside a list, surface the first such error.
-                for item in menu_items:
-                    if isinstance(item, dict) and "error" in item:
-                        return item
-                # After confirming there are no error entries, enforce the "must have items" rule.
-                if not menu_items:
-                    return {"error": "Cannot mark restaurant as available without menu items."}
-            else:
-                # Fallback: for non-list responses, still enforce the guard on falsy values.
-                if not menu_items:
-                    return {"error": "Cannot mark restaurant as available without menu items."}
+            if not menu_items:
+                raise HTTPException(status_code=400, detail="Cannot mark restaurant as available without menu items.")
         
         updated_restaurant = self.repo.update_restaurant(restaurant_id, restaurant_data)
         return updated_restaurant
@@ -116,7 +101,7 @@ class RestaurantController:
 
         menu_item_data = {k: v for k, v in menu_item_data.items() if v is not None}
         if not menu_item_data:
-            return {"error": "No data provided for update."}
+            raise HTTPException(status_code=400, detail="No data provided for update.")
         
         updated_item = self.repo.update_menu_item_from_restaurant(restaurant_id, menu_item_id, menu_item_data)
         return updated_item

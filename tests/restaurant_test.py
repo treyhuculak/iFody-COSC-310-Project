@@ -117,6 +117,7 @@ def test_update_restaurant_availability_no_menu_items(test_client):
     response = test_client.post("/restaurants/", json=new_restaurant)
     assert response.status_code == 200
     restaurant_id = response.json()["id"]
+    assert response.json()["is_available"] == False  # New restaurants should start as unavailable
 
     # Try to mark the restaurant as available when it has no menu items
     update_params = {"is_available": True}
