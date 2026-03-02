@@ -130,7 +130,6 @@ class RestaurantRepository:
             return {"error": f"Error decoding JSON: {e}"}
         except KeyError as e:
             return {"error": f"Restaurant missing id field: {e}"}
-        
     
     def get_menu_items_by_restaurant(self, restaurant_id: int) -> List[dict]:
         try:
@@ -218,3 +217,6 @@ class RestaurantRepository:
             return {"error": f"Error decoding JSON: {e}"}
         except KeyError as e:
             return {"error": f"Menu item missing id field: {e}"}
+        
+    
+        

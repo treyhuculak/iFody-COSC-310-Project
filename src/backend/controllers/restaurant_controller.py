@@ -43,17 +43,25 @@ class RestaurantController:
         added_restaurant = self.repo.add_restaurant(restaurant_data)
         return added_restaurant
 
-    def update_restaurant(self, restaurant_id: int, name=None, cuisine=None, delivery_fee=None, location=None):
+    def update_restaurant(self, restaurant_id: int, name=None, cuisine=None, delivery_fee=None, location=None, is_available=None):
         restaurant_data = {
             "name": name,
             "cuisine": cuisine,
             "location": location,
-            "delivery_fee": delivery_fee
+            "delivery_fee": delivery_fee,
+            "is_available": is_available
         }
         # Remove keys with None values to avoid overwriting existing data with None
         restaurant_data = {k: v for k, v in restaurant_data.items() if v is not None}
         if not restaurant_data:
             return {"error": "No data provided for update."}
+        
+        # Block marking restaurant as available if it has no menu items
+        if "is_available" in restaurant_data and restaurant_data["is_available"] == True:
+            # Check if the restaurant has menu items before allowing it to be marked as available
+            menu_items = self.repo.get_menu_items_by_restaurant(restaurant_id)
+            if not menu_items:
+                return {"error": "Cannot mark restaurant as available without menu items."}
         
         updated_restaurant = self.repo.update_restaurant(restaurant_id, restaurant_data)
         return updated_restaurant

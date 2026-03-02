@@ -91,9 +91,10 @@ def update_restaurant(
     cuisine: Optional[str] = None,
     location: Optional[str] = None, 
     delivery_fee: Optional[float] = Query(default=None, ge=0),
+    is_available: Optional[bool] = None,
     controller: RestaurantController = Depends(get_controller)
 ):
-    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location)
+    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location, is_available=is_available)
     if isinstance(updated_rest, dict) and "error" in updated_rest:
         if "not found" in updated_rest["error"].lower():
             raise HTTPException(status_code=404, detail=updated_rest["error"])
