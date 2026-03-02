@@ -207,6 +207,11 @@ class RestaurantRepository:
                                 new_menu_items.append(item)
                         if not deleted_item:
                             raise HTTPException(status_code=404, detail=f"Menu item with id {menu_item_id} not found in restaurant {restaurant_id}.")
+
+                        if not new_menu_items:
+                            # If no menu items remain, we might want to set the restaurant as unavailable
+                            restaurant['is_available'] = False
+
                         restaurant['menu_items'] = new_menu_items
                         with open(self.file_path, 'w') as f:
                             json.dump(data, f, indent=4)
