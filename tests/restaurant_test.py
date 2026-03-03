@@ -113,6 +113,41 @@ def test_update_restaurant_not_found(test_client):
     data = response.json()
     assert "detail" in data
 
+def test_update_restaurant_availability_no_menu_items(test_client):
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+    assert response.json()["is_available"] == False  # New restaurants should start as unavailable
+
+    # Try to mark the restaurant as available when it has no menu items
+    update_params = {"is_available": True}
+    response = test_client.put(f"/restaurants/{restaurant_id}", params=update_params)
+    assert response.status_code == 400
+    data = response.json()
+    assert "detail" in data
+    assert "Cannot mark restaurant as available without menu items" in data["detail"]
+
+def test_update_restaurant_availability_with_menu_items(test_client):
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+
+    # Add a menu item to the restaurant
+    menu_item = {
+        "name": "Test Menu Item",
+        "description": "A menu item for testing",
+        "price": 9.99
+    }
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=menu_item)
+    assert add_response.status_code == 200
+
+    # Now try to mark the restaurant as available
+    update_params = {"is_available": True}
+    response = test_client.put(f"/restaurants/{restaurant_id}", params=update_params)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["is_available"] == True
+
 def test_delete_restaurant(test_client):
     response = test_client.post("/restaurants/", json=new_restaurant)
     assert response.status_code == 200
@@ -347,6 +382,33 @@ def test_delete_menu_item_not_found(test_client):
     assert delete_response.status_code == 404
     data = delete_response.json()
     assert "detail" in data
+
+def test_delete_menu_item_last_item(test_client):
+    # First add a restaurant and a menu item to ensure there is something to delete
+    response = test_client.post("/restaurants/", json=new_restaurant)
+    assert response.status_code == 200
+    restaurant_id = response.json()["id"]
+    assert response.json()["is_available"] == False  # New restaurants should start as unavailable
+
+    add_response = test_client.post(f"/restaurants/{restaurant_id}/menu", json=new_menu_item)
+    assert add_response.status_code == 200
+    menu_item_id = add_response.json()["id"]
+
+    # After adding a menu item, turn the restaurant to available
+    update_params = {"is_available": True}
+    update_response = test_client.put(f"/restaurants/{restaurant_id}", params=update_params)
+    assert update_response.status_code == 200
+    assert update_response.json()["is_available"] == True
+
+    # Now try to delete that menu item, which is the only item in the restaurant's menu
+    delete_response = test_client.delete(f"/restaurants/{restaurant_id}/menu/{menu_item_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, the restaurant should be marked as unavailable since it has no menu items
+    get_restaurant_response = test_client.get(f"/restaurants/{restaurant_id}")
+    assert get_restaurant_response.status_code == 200
+    restaurant_data = get_restaurant_response.json()
+    assert restaurant_data["is_available"] == False
 
 def test_get_menu_items_by_restaurant_id(test_client):
     # First add a restaurant and a menu item to ensure there is something to retrieve
