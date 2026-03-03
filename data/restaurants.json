@@ -64,14 +64,5 @@
                 "id": 2
             }
         ]
-    },
-    {
-        "name": "Waffle House",
-        "cuisine": "Breakfast",
-        "location": "Edmonton, AB",
-        "delivery_fee": 4.99,
-        "owner_id": 1,
-        "id": 4,
-        "menu_items": []
     }
 ]

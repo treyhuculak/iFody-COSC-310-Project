@@ -1,37 +1,47 @@
 import json
 
-class UserRepository():
-    CUSTOMER_FILE = 'data/customer_db.json'
+class UserRepository:
+    USER_FILE = 'data/user_db.json'
     
     def __init__(self):
-        # check if files exist, if not create them with headers
+        '''
+        Checks if data/user_db.json exists. If not, creates it and writes the headers.
+        '''
         pass
     
-    def getAllUsers(self):
-        with open(self.CUSTOMER_FILE) as file:
-            users = json.load(file)['users']
+    def get_all_users(self):
+        '''
+        Returns all the Admin/Customer/RestaurantOwner instances from the database.
+        '''
+        with open(self.USER_FILE) as file:
+            users = json.load(file)['Users']
             return users
     
-    def getUserByID(self): #not necessary for now
+    def get_user_by_id(self):
+        '''
+        Returns the Admin/Customer/RestaurantOwner instance according to the id.
+        '''
         return []
     
-    def getUserByUsername(self, username): #return the user's Username
-        with open(self.CUSTOMER_FILE) as file:
-            users = json.load(file)['users']
+    def get_user_by_username(self, username):
+        '''
+        Returns the Admin/Customer/RestaurantOwner instance according to the username.
+        '''
+        with open(self.USER_FILE) as file:
+            users = json.load(file)['Users']
             for row in users:
                 if row['username'] == username :
                     return row
             return None
 
     
-    def getUserByEmail(self, email):
-        with open(self.CUSTOMER_FILE) as file:
-            users = json.load(file)['users'] 
+    def get_user_by_email(self, email):
+        '''
+        Returns the Admin/Customer/RestaurantOwner instance according to the email.
+        '''
+        with open(self.USER_FILE) as file:
+            users = json.load(file)['Users'] 
             for row in users:
                 if row['email'] == email :
                     return row
             return None
-    
-    def getUserByRole(self):
-        return []
-    

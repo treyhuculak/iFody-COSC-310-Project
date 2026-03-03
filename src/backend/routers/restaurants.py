@@ -35,17 +35,12 @@ def get_all_restaurants(controller: RestaurantController = Depends(get_controlle
 @router.get("/{restaurant_id}", response_model=Restaurant)
 def get_restaurant(restaurant_id: int, controller: RestaurantController = Depends(get_controller)):
     restaurant = controller.get_restaurant_by_id(restaurant_id)
-    if isinstance(restaurant, dict) and "error" in restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
     return restaurant
 
 
 @router.get("/{restaurant_id}/menu", response_model=List[MenuItem])
 def get_all_menu_items_by_restaurant(restaurant_id: int, controller: RestaurantController = Depends(get_controller)):
     # First verify the restaurant exists
-    restaurant = controller.get_restaurant_by_id(restaurant_id)
-    if isinstance(restaurant, dict) and "error" in restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
     menu_items = controller.get_menu_items_by_restaurant_id(restaurant_id)
     return menu_items
 
@@ -67,8 +62,6 @@ def add_restaurant(
     current_user_id: int = Depends(get_user_id_from_auth)
 ):
     new_rest = controller.add_restaurant(restaurant, owner_id=current_user_id)
-    if isinstance(new_rest, dict) and "error" in new_rest:
-        raise HTTPException(status_code=400, detail=new_rest["error"])
     return new_rest
 
 
@@ -79,8 +72,6 @@ def add_menu_item(
     controller: RestaurantController = Depends(get_controller)
 ):
     new_item = controller.add_menu_item_to_restaurant(menu_item, restaurant_id)
-    if isinstance(new_item, dict) and "error" in new_item:
-        raise HTTPException(status_code=400, detail=new_item["error"])
     return new_item
 
 
@@ -91,13 +82,10 @@ def update_restaurant(
     cuisine: Optional[str] = None,
     location: Optional[str] = None, 
     delivery_fee: Optional[float] = Query(default=None, ge=0),
+    is_available: Optional[bool] = None,
     controller: RestaurantController = Depends(get_controller)
 ):
-    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location)
-    if isinstance(updated_rest, dict) and "error" in updated_rest:
-        if "not found" in updated_rest["error"].lower():
-            raise HTTPException(status_code=404, detail=updated_rest["error"])
-        raise HTTPException(status_code=400, detail=updated_rest["error"])
+    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location, is_available=is_available)
     return updated_rest
 
 
@@ -107,8 +95,6 @@ def delete_restaurant(
     controller: RestaurantController = Depends(get_controller)
 ):
     deleted_rest = controller.delete_restaurant(restaurant_id)
-    if isinstance(deleted_rest, dict) and "error" in deleted_rest:
-        raise HTTPException(status_code=404, detail=deleted_rest["error"])
     return deleted_rest
 
 
@@ -119,8 +105,6 @@ def delete_menu_item(
     controller: RestaurantController = Depends(get_controller)
 ):
     deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id, menu_item_id)
-    if isinstance(deleted_item, dict) and "error" in deleted_item:
-        raise HTTPException(status_code=404, detail=deleted_item["error"])
     return deleted_item
 
 @router.put("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
@@ -133,6 +117,4 @@ def update_menu_item(
     controller: RestaurantController = Depends(get_controller)
 ):
     updated_item = controller.update_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, name=name, description=description, price=price)
-    if isinstance(updated_item, dict) and "error" in updated_item:
-        raise HTTPException(status_code=404, detail=updated_item["error"])
     return updated_item
