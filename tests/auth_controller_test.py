@@ -2,6 +2,7 @@ import pytest
 from fastapi import HTTPException
 from src.backend.controllers.auth_controller import AuthController
 from src.backend.repositories.user_repo import UserRepository
+from src.backend.models.user import InvalidEmailError, InvalidPasswordError, InvalidRoleError
 
 controller = AuthController()
 repo = UserRepository()
@@ -24,7 +25,31 @@ def setup_database() -> None:
     repo.add_user(user_example)
 
 def test_valid_register(setup_database) -> None:
+    '''
+    Tests the register functionality using a valid email format, a valid password format, and a valid value for role.
+    '''
     controller.register("TestCustomerV2", "tcv2@outlook.com", "Abc@5678", "Customer")
+
+def test_invalid_email_register(setup_database) -> None:
+    '''
+    Tests the register functionality using an invalid email format.
+    '''
+    with pytest.raises(InvalidEmailError):
+        controller.register("TestCustomerV2", "NotEvenAnEmailAddress", "Abc@5678", "Customer")
+
+def test_invalid_password_register(setup_database) -> None:
+    '''
+    Tests the register functionality using an invalid password format.
+    '''
+    with pytest.raises(InvalidPasswordError):
+        controller.register("TestCustomerV2", "tcv2@outlook.com", "NotValid", "Customer")
+
+def test_invalid_role_register(setup_database) -> None:
+    '''
+    Tests the register functionality using an invalid role value.
+    '''
+    with pytest.raises(InvalidRoleError):
+        controller.register("TestCustomerV2", "tcv2@outlook.com", "Abc@5678", "CoolDude")
 
 def test_valid_login(setup_database) -> None:
     '''
