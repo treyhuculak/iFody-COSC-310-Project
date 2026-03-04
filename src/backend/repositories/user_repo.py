@@ -80,7 +80,7 @@ class UserRepository:
     def _reinit_database(self) -> None:
         """
         Removes all the Admin/Customer/RestaurantOwner instances from the database file.
-        The function can only be used from the user_repo_test.py file for testing purposes.
+        The function can only be used from user_repo_test.py and auth_controller_test.py for testing purposes.
         """
         with open(self.USER_FILE, "w") as file:
             json.dump({"Users": []}, file, indent = 4)

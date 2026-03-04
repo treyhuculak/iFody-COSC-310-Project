@@ -21,7 +21,8 @@ class AuthController:
         '''
         Creates an account instance and saves it to the database when the email, password, and role are all valid.
         '''
-        new_user = UserSave(id = 1, username = username, email = email, password = password, role = role).model_dump()
+        new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
+        new_user = new_user.model_dump()
         self.repo.add_user(new_user)
         
     def login(self, email: str, password: str):

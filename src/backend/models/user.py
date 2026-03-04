@@ -31,7 +31,7 @@ class UserBase(BaseModel):
         )
 
         if result:
-            return result
+            return email_input
         else:
             raise InvalidEmailError('The email address is in an invalid format.')
 
@@ -43,7 +43,7 @@ class UserBase(BaseModel):
         )
 
         if result:
-            return result
+            return password_input
         else:
             raise InvalidPasswordError('The password must contain at least one number, one uppercase letter, one lowercase letter, one special character, and be between 8 and 10 characters long.')
         
@@ -55,7 +55,7 @@ class UserBase(BaseModel):
         )
 
         if result:
-            return result
+            return role_input
         else:
             raise InvalidRoleError('The role must be one of: Admin, Customer, or RestaurantOwner.')
 
