@@ -1,5 +1,7 @@
 import json
 from typing import List, Optional, Dict
+from datetime import datetime
+
 
 class OrderRepository:
     ORDER_FILE = 'data/order.json'
@@ -15,43 +17,43 @@ class OrderRepository:
             with open(self.file_path, 'w') as f:
                 json.dump([], f, indent=4)
         pass
-
+    
     def get_order_by_id(self, order_id: int) -> Optional[dict]:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 # Getting the first order that matches the provided order_id 
-                order = next(filter(lambda o: o["id"] == order_id, data))
-                if order == None:
-                    return {"error": f"Order with id {order_id} not found."}
-                else:
-                    return order
-            
+                order = next(filter(lambda order: order.get("id") == order_id, data), None)
+                return order
+                    
         except FileNotFoundError:
             return {"error": f"File {self.file_path} not found."}
         except json.JSONDecodeError as e:
             return {"error": f"Error decoding JSON: {e}"}
         except KeyError as e:
             return {"error": f"Order missing id field: {e}"}
+    
 
     def create_order(self, order_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                # Creating new order id based on last order added to order_data
-                last_order_created = data[next(reversed(data))]
-                new_id = last_order_created["id"] + 1 if last_order_created != None else 1
+                
+                order_dict = order_data.model_dump()
 
-                # Writing the new order back in order_repo
-                order_data['id'] = new_id
-                data.append(order_data)
+                # Creating new order id based on last order added to order_data
+                new_id = max([order['id'] for order in data], default=0) + 1
+                order_dict['id'] = new_id
+                order_dict["timestamp"] = datetime.now().isoformat()
+
+                data.append(order_dict)
             with open(self.file_path, 'w') as f:
                 json.dump(data, f, indent=4)
-            return order_data
+            return order_dict
 
         except FileNotFoundError:
             # create a new file and store the order data
-            order_data['id'] = 1
+            order_dict['id'] = 1
             with open(self.file_path, 'w') as f:
                 json.dump([order_data], f, indent=4)
             return order_data
@@ -67,11 +69,10 @@ class OrderRepository:
                 new_data = data.copy()
                 deleted_order = None
                 
-                # Iterating data in reverse order to find the order key and then deleting it from new_data
-                for order_key in reversed(data):
-                    order = data[order_key]  
+                # Iterating data to find the order key and then deleting it from new_data
+                for k, order in enumerate(data):
                     if order["id"] == order_id:
-                        deleted_order = new_data.pop(order_key)
+                        deleted_order = new_data.pop(k)
                         break
                 
                 # If nothing is found
