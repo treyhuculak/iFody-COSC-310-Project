@@ -39,7 +39,7 @@ class OrderRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 
-                order_dict = order_data.model_dump()
+                order_dict = order_data.model_dump(mode ='json')
 
                 # Creating new order id based on last order added to order_data
                 new_id = max([order['id'] for order in data], default=0) + 1

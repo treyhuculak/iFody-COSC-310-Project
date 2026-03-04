@@ -6,6 +6,7 @@ from src.backend.main import app
 from src.backend.routers.order import get_controller
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.controllers.order_controller import OrderController
+from src.backend.models.order import OrderStatus
 
 
 @pytest.fixture
