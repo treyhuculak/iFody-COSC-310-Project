@@ -19,6 +19,28 @@ def test_get_all_users() -> None:
         }
     ]
 
+def test_valid_get_user_by_id() -> None:
+    '''
+    Tests valid input for the get_user_by_id function.
+    '''
+    assert repo.get_user_by_id(1) != None
+    assert repo.get_user_by_id(1) == {
+        "id": 1,
+        "username": "TestCustomer",
+        "email": "testcustomer@123.com",
+        "password": "Test@123",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": False   
+    }
+
+def test_invalid_get_user_by_id() -> None:
+    '''
+    Tests invalid input for the get_user_by_id function.
+    '''
+    assert repo.get_user_by_id(0) == None
+    assert repo.get_user_by_id(-1) == None
+
 def test_valid_get_user_by_username() -> None:
     '''
     Tests valid input for the get_user_by_username function.
