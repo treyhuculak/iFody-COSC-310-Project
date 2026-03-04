@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import HTTPException
+from src.backend.models.user import UserSave
 from src.backend.repositories.user_repo import UserRepository
 
 class AccountExistsException(Exception):
@@ -20,7 +21,8 @@ class AuthController:
         '''
         Creates an account instance and saves it to the database when the email, password, and role are all valid.
         '''
-        pass
+        new_user = UserSave(id = 1, username = username, email = email, password = password, role = role).model_dump()
+        self.repo.add_user(new_user)
         
     def login(self, email: str, password: str):
         '''
