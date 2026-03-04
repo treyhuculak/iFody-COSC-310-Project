@@ -59,14 +59,5 @@ class UserBase(BaseModel):
         else:
             raise InvalidRoleError('The role must be one of: Admin, Customer, or RestaurantOwner.')
 
-class Admin(UserBase):
-    role: str = 'Admin'
-    is_logged_in: bool = True
-
-class Customer(UserBase):
-    role: str = 'Customer'
-    is_logged_in: bool = True
-
-class RestaurantOwner(UserBase):
-    role: str = 'RestaurantOwner'
+class UserSave(UserBase):
     is_logged_in: bool = True
