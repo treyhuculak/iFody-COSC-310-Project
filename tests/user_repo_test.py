@@ -21,6 +21,9 @@ def setup_user_db() -> None:
     repo.add_user(user_example)
 
 def test_add_user_with_correct_id_value(setup_user_db) -> None:
+    '''
+    Tests the add_user function and makes sure the value of id is correct.
+    '''
     user_example_2 = {
         "id": 1,
         "username": "TestCustomerNum2",
@@ -32,6 +35,7 @@ def test_add_user_with_correct_id_value(setup_user_db) -> None:
     }
     repo.add_user(user_example_2)
     assert user_example_2["id"] == 2
+    assert len(repo.get_all_users()) == 2
 
 def test_get_all_users(setup_user_db) -> None:
     '''
