@@ -2,7 +2,6 @@ from typing import Optional
 import json
 
 from fastapi import HTTPException
-from src.backend.models.user import UserBase
 from src.backend.repositories.user_repo import UserRepository
 
 
