@@ -1,6 +1,10 @@
 import pytest, pydantic_core
 from src.backend.models.user import Customer, InvalidEmailError, InvalidPasswordError
 
+'''
+Since the Admin, Customer, and RestaurantOwner classes all inherit from User and differ only in their role, we only need to test one of them to verify the behavior.
+'''
+
 def test_customer_with_valid_email() -> None:
     '''
     Tests the Customer class when attempting to log in with a valid email address.
