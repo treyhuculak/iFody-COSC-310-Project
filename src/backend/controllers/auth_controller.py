@@ -3,6 +3,11 @@ from typing import Optional
 from fastapi import HTTPException
 from src.backend.repositories.user_repo import UserRepository
 
+class AccountExistsException(Exception):
+    """
+    Raise it when the account is already in the database for the register function.
+    """
+    pass
 
 class AuthController:
     def __init__(self, repo: Optional[UserRepository] = None) -> None:
