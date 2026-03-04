@@ -3,7 +3,6 @@ import json
 
 class UserRepository:
     USER_FILE = 'data/user_db.json'
-    CURRENT_ID = 1
     
     def __init__(self) -> None:
         """
@@ -11,12 +10,16 @@ class UserRepository:
         """
         try:
             with open(self.USER_FILE, "r") as file:
-                json.load(file)
+                users = json.load(file)["Users"]
+                if users:
+                    self.current_id = max([user["id"] for user in users]) + 1
+                else:
+                    self.current_id = 1
         except (FileNotFoundError, json.JSONDecodeError):
             with open(self.USER_FILE, "w") as file:
-                json.dump([], file, indent = 4)
-                # Because there are no instances in the database, we reset the CURRENT_ID variable to 1.
-                self.CURRENT_ID = 1
+                json.dump({"Users": []}, file, indent = 4)
+                # Because there are no instances in the database, we reset the current_id variable to 1.
+                self.current_id = 1
 
     def add_user(self, user: dict[str, Union[str, int, bool]]) -> dict:
         '''
@@ -24,11 +27,11 @@ class UserRepository:
         '''
         with open(self.USER_FILE, "r") as file:
             users = json.load(file)["Users"]
-            user["id"] = self.CURRENT_ID
-            self.CURRENT_ID += 1
+            user["id"] = self.current_id
+            self.current_id += 1
             users.append(user)
         with open(self.USER_FILE, "w") as file:
-            json.dump(users, file, indent = 4)
+            json.dump({"Users": users}, file, indent = 4)
     
     def get_all_users(self) -> list[dict]:
         '''
@@ -80,5 +83,5 @@ class UserRepository:
         The function can only be used from the user_repo_test.py file for testing purposes.
         """
         with open(self.USER_FILE, "w") as file:
-            json.dump([], file, indent = 4)
-            self.CURRENT_ID = 1
+            json.dump({"Users": []}, file, indent = 4)
+            self.current_id = 1
