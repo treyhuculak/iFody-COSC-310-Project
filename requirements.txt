@@ -41,7 +41,7 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.6.0
 uvicorn==0.40.0
-uvloop==0.21.0
+uvloop==0.21.0; platform_system != "Windows"
 watchfiles==1.1.0
 websockets==16.0
 bcrypt

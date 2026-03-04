@@ -1,22 +1,33 @@
-from typing import Optional
-from src.backend.models.order import Order, OrderCreate
-from src.backend.repositories.order_repo import OrderRepository
-from src.backend.services.order_service import OrderService
 from fastapi import HTTPException
 
+from src.backend.models.order import Order, OrderCreate
+from src.backend.models.order_item import OrderItem
+from src.backend.repositories.order_repo import OrderRepository
+
+
 class OrderController:
-    def __init__(self, repo: Optional[OrderRepository] = None) -> None:
-        self.repo = repo or OrderRepository()
-        self.service = OrderService()
+    def __init__(self) -> None:
+        self.order_repo = OrderRepository()
 
-    def create_order(self, order_data):
-        pass
+    def validate_order_logic(self):
+        # For now
+        return True
 
-    def get_order(self, order_id):
-        pass
-
-    def update_order_status(self, order_id, new_status):
-        pass
+    def add_order(self, order: OrderCreate):
+        flag = self.validate_order_logic()
+        if flag:
+            return self.order_repo.create_order(order)
+        else:
+            raise HTTPException(status_code=404, detail="Order Logic is not correct")
+        
+    def delete_order(self, order_id: int):
+        return self.order_repo.delete_order(order_id)
+    
+    def get_order(self, order_id: int):
+        order = self.order_repo.get_order_by_id(order_id)
+        if order == None:
+            raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+        return order
 
     def calculate_order_total(self, order: Order):
         try:
@@ -26,6 +37,3 @@ class OrderController:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=500, detail="An unexpected error occurred while calculating the order total.")
-
-
-    # Build Reciept -> calc_item_total -> calc_tax -> get_delivery_fee -> calc_grand_total
