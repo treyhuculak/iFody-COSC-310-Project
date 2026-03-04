@@ -4,13 +4,15 @@ class UserRepository:
     USER_FILE = 'data/user_db.json'
     
     def __init__(self) -> None:
-        '''
-        Checks if data/user_db.json exists. If not, creates it and writes the headers.
-        '''
+        """
+        Checks if data/user_db.json exists. If not, creates it and writes an empty JSON object.
+        """
         try:
-            pass
-        except:
-            pass
+            with open(self.USER_FILE, "r") as handle:
+                json.load(handle)
+        except (FileNotFoundError, json.JSONDecodeError):
+            with open(self.USER_FILE, "w") as handle:
+                json.dump([], handle, indent = 4)
     
     def get_all_users(self) -> list[dict]:
         '''
