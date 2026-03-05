@@ -5,6 +5,7 @@ class UserRepository:
     def __init__(self, file: str = None) -> None:
         """
         Checks if data/user_db.json exists. If not, creates it and writes an empty JSON object.
+        A new file argument is given for testing functions to prevent any changes to the main database.
         """
         self.file = file or "data/user_db.json"
         try:
