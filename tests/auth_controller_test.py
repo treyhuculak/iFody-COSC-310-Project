@@ -1,4 +1,4 @@
-import pytest
+import pytest, typing
 from fastapi import HTTPException
 from src.backend.controllers.auth_controller import AuthController, AccountExistsException
 from src.backend.repositories.user_repo import UserRepository
@@ -17,7 +17,7 @@ user_example = {
 }
 
 @pytest.fixture
-def setup_database() -> None:
+def setup_database() -> typing.Generator:
     '''
     Makes sure there is only one instance in the database before each test function runs.
     '''

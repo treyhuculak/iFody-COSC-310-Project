@@ -1,5 +1,5 @@
 from src.backend.repositories.user_repo import UserRepository
-import pytest
+import pytest, typing
 
 repo = UserRepository("data/temp_user_db.json")
 user_example = {
@@ -13,7 +13,7 @@ user_example = {
 }
 
 @pytest.fixture
-def setup_user_db() -> None:
+def setup_user_db() -> typing.Generator:
     '''
     Makes sure there is only one instance in the database before each test function runs.
     '''
