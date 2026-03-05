@@ -2,7 +2,6 @@ import json
 from typing import List, Optional, Dict
 from datetime import datetime
 
-
 class OrderRepository:
     ORDER_FILE = 'data/order.json'
 
@@ -39,7 +38,7 @@ class OrderRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 
-                order_dict = order_data.model_dump()
+                order_dict = order_data.model_dump(mode ='json')
 
                 # Creating new order id based on last order added to order_data
                 new_id = max([order['id'] for order in data], default=0) + 1
@@ -91,3 +90,118 @@ class OrderRepository:
         except KeyError as e:
             return {"error": f"Order missing id field: {e}"}
     
+    def update_order_status(self, order_id: int, order_status: str) -> Optional[dict]:
+        with open(self.file_path, 'r') as j:
+            data = json.load(j)
+            for i, order in enumerate(data):
+                if order["id"] == order_id:
+                    order["status"] = order_status
+                    with open(self.file_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    return order 
+        return None
+                
+    def add_order_item_to_order(self, item_data: dict, order_id: int, price: float) -> dict:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                flag = True
+
+                # Iterate across all orders
+                for order in data:
+                    if order['id'] == order_id:
+                        order_items = order.get('order_items', [])
+
+                        # Look if the order item already exists in order items (find the first match)
+                        order_item = next(filter(lambda item: item["item_id"] == item_data["item_id"], order_items), None)
+
+                        # Adding remaining item fields to order item
+                        item_data["order_id"] = order_id
+                        item_data["subtotal"] = price
+
+                        # If nothing is found, add new item. Else: increase item quantity
+                        if order_item == None:
+                            order_items.append(item_data)
+                            order['order_items'] = order_items
+                        else:
+                            order_item["quantity"] += item_data["quantity"]
+
+                        flag = False
+                        break
+                
+                # Ensure a correct error message appears if order id is not found
+                if flag:
+                    return {"error": f"Order id {order_id} not found."}
+                
+                with open(self.file_path, 'w') as f:
+                    json.dump(data, f, indent=4)
+                return order_item if order_item != None else item_data
+        except FileNotFoundError:
+            return {"error": f"File {self.file_path} not found."}
+        except json.JSONDecodeError as e:
+            return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Order item missing id field: {e}"}
+        
+    def delete_order_item_from_order(self, order_id: int, order_item_id: int) -> dict:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                flag = True
+
+                # Iterate across all orders
+                for order in data:
+                    if order['id'] == order_id:
+                        order_items = order.get('order_items', [])
+                        new_order_items = order_items.copy()
+                        deleted_item = None
+
+                        # Decrease item quantity. If item quantity reaches 0 -> Delete order item as a whole
+                        for k, item in enumerate(order_items):
+                            if item["item_id"] == order_item_id:
+                                if new_order_items[k]["quantity"] <= 1:
+                                    deleted_item = new_order_items.pop(k)
+                                else:
+                                    new_order_items[k]["quantity"] -= 1
+                                    deleted_item = new_order_items[k]
+
+                                flag = False
+                                break
+                        
+                        # Ensure a correct error message appears if order item id is not found
+                        if deleted_item == None:
+                            return {"error": f"Order item with id {order_item_id} not found."}
+                        
+                        order["order_items"] = new_order_items
+                        
+                        with open(self.file_path, 'w') as f:
+                            json.dump(data, f, indent=4)
+                        return deleted_item
+                
+                # Ensure a correct error message appears if order id is not found
+                if flag:
+                    return {"error": f"Order id {order_id} not found."}
+                
+        except FileNotFoundError:
+            return {"error": f"File {self.file_path} not found."}
+        except json.JSONDecodeError as e:
+            return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Order item missing id field: {e}"}
+        
+    def get_order_items_from_order(self, order_id: int) -> List[dict]:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                for order in data:
+                    if order['id'] == order_id:
+                        return order.get('order_items', [])
+                return {"error": f"Order id {order_id} not found."}
+            
+        except FileNotFoundError:
+            return {"error": f"File {self.file_path} not found."}
+        except json.JSONDecodeError as e:
+            return {"error": f"Error decoding JSON: {e}"}
+        except KeyError as e:
+            return {"error": f"Order missing id field: {e}"}
+                    
