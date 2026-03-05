@@ -91,3 +91,15 @@ class OrderRepository:
         except KeyError as e:
             return {"error": f"Order missing id field: {e}"}
     
+    def update_order_status(self, order_id: int, order_status: str) -> Optional[dict]:
+        with open(self.file_path, 'r') as j:
+            data = json.load(j)
+            for i, order in enumerate(data):
+                if order["id"] == order_id:
+                    order["status"] = order_status
+                    with open(self.file_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    return order 
+        return None
+                
+                    

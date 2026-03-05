@@ -35,6 +35,3 @@ class Order(OrderBase):
 
     def calculate_total(self):
         pass
-
-    def update_status(self, new_status: OrderStatus):
-        pass
