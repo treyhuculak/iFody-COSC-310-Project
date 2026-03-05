@@ -1,7 +1,7 @@
 from src.backend.repositories.user_repo import UserRepository
 import pytest
 
-repo = UserRepository()
+repo = UserRepository("data/temp_user_db.json")
 user_example = {
     "id": 1,
     "username": "TestCustomer",
@@ -19,6 +19,9 @@ def setup_user_db() -> None:
     '''
     repo._reinit_database()
     repo.add_user(user_example)
+    yield
+    import os
+    os.remove(os.getcwd() + "/data/temp_user_db.json")
 
 def test_add_user_with_correct_id_value(setup_user_db) -> None:
     '''

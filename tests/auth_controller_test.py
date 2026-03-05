@@ -5,7 +5,7 @@ from src.backend.repositories.user_repo import UserRepository
 from src.backend.models.user import InvalidEmailError, InvalidPasswordError, InvalidRoleError
 
 controller = AuthController()
-repo = UserRepository()
+controller.repo = UserRepository("data/temp_user_db.json")
 user_example = {
     "id": 1,
     "username": "TestCustomer",
@@ -21,8 +21,11 @@ def setup_database() -> None:
     '''
     Makes sure there is only one instance in the database before each test function runs.
     '''
-    repo._reinit_database()
-    repo.add_user(user_example)
+    controller.repo._reinit_database()
+    controller.repo.add_user(user_example)
+    yield
+    import os
+    os.remove(os.getcwd() + "/data/temp_user_db.json")
 
 def test_valid_register(setup_database) -> None:
     '''
