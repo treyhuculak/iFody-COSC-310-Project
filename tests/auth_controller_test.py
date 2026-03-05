@@ -1,6 +1,6 @@
 import pytest
 from fastapi import HTTPException
-from src.backend.controllers.auth_controller import AuthController
+from src.backend.controllers.auth_controller import AuthController, AccountExistsException
 from src.backend.repositories.user_repo import UserRepository
 from src.backend.models.user import InvalidEmailError, InvalidPasswordError, InvalidRoleError
 
@@ -50,6 +50,13 @@ def test_invalid_role_register(setup_database) -> None:
     '''
     with pytest.raises(InvalidRoleError):
         controller.register("TestCustomerV2", "tcv2@outlook.com", "Abc@5678", "CoolDude")
+
+def test_register_with_existing_account(setup_database) -> None:
+    '''
+    Tests the register functionality using an existing account.
+    '''
+    with pytest.raises(AccountExistsException):
+        controller.register("TestCustomer", "testcustomer@123.com", "Test@123", "Customer")
 
 def test_valid_login(setup_database) -> None:
     '''

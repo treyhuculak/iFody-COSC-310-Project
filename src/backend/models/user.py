@@ -6,12 +6,21 @@ password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$#%])[A-Za-z\\d@$#%]{
 role_pattern = "^(Admin|Customer|RestaurantOwner)$"
 
 class InvalidEmailError(Exception):
+    '''
+    Raise it when the given email is in an invalid format.
+    '''
     pass
 
 class InvalidPasswordError(Exception):
+    '''
+    Raise it when the given password is in an invalid format.
+    '''
     pass
 
 class InvalidRoleError(Exception):
+    '''
+    Raise it when the given role has an invalid value.
+    '''
     pass
 
 class UserBase(BaseModel):

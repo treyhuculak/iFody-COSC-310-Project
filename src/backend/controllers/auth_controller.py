@@ -21,6 +21,11 @@ class AuthController:
         '''
         Creates an account instance and saves it to the database when the email, password, and role are all valid.
         '''
+        users = self.repo.get_all_users()
+        usernames = [user["username"] for user in users]
+        emails = [user["email"] for user in users]
+        if (username in usernames) or (email in emails):
+            raise AccountExistsException("The account already exists. Try logging in to the account.")
         new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
         new_user = new_user.model_dump()
         self.repo.add_user(new_user)
