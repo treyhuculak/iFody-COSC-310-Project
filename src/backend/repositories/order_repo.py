@@ -91,3 +91,25 @@ class OrderRepository:
         except KeyError as e:
             return {"error": f"Order missing id field: {e}"}
     
+    def cancel_order(self, order_id: int) -> dict:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+            for i, order in enumerate(data):
+                if order.get["id"] == order_id:
+
+                    data[i] = {**order, **updates} # update the order with the new status
+                    with open(self.file_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    
+                    return data[i]
+                
+                return{"error": f"Order with id {order_id} not found."}
+            
+        except FileNotFoundError:
+            return {"error": f"File {self.file_path} not found."}
+        except json.JSONDecodeError as e:
+            return {"error": f"Error decoding JSON: {e}"}
+        
+        
+                    

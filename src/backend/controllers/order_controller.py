@@ -29,3 +29,27 @@ class OrderController:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
 
+    def cancel_order(self, order_id: int):
+        order = self.order_repo.get_order_by_id(order_id) # Get order from repo
+        if order == None:
+            raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+        
+        status = str(order.get("status", " ")).strip().lower() # Make Status into a uniformed format to compare
+
+        # If the status are in these status, then the order can't be cancelled
+        locked_statuses = ["payment confirmed", "preparing", "out for delivery", "delivered"]
+        
+        if status in locked_statuses:
+            raise HTTPException(status_code=403, detail=f"Order is already being prepared and cannot be cancelled")
+        if status in ["cancelled"]:
+            return order
+        
+        # update the order to cancelled
+        updated = self.order_repo.update_order_status(order_id, {"status": "cancelled"})
+
+        # If the update return error, then make it HTTPException
+        if isinstance(updated, dict) and "error" in updated:
+            raise HTTPException(status_code=404, detail=f"error")
+        
+        # return updated order
+        return updated

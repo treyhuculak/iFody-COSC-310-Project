@@ -26,6 +26,9 @@ def delete_order(order_id: int, controller: OrderController = Depends(get_contro
 def get_order(order_id: int, controller: OrderController = Depends(get_controller)):
     return controller.get_order(order_id)
 
+@router.post("/{order_id}/cancel", response_model=Order)
+def cancel_order(order_id: int, controller: OrderController = Depends(get_controller)):
+    return controller.cancel_order(order_id)
 '''
 @router.delete("/{order_id}/order/{order_item_id}", response_model=OrderItem)
 def delete_order_item(order_id: int, order_item_id: int, controller: OrderController = Depends(get_controller)):
