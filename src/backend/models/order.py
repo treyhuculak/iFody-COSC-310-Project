@@ -10,7 +10,7 @@ class OrderBase(BaseModel):
     total_price: float
     tax: float
 
-class OrderCreate(BaseModel):
+class OrderCreate(OrderBase):
     customer_id: int
     restaurant_id: int
     status: str
@@ -22,9 +22,3 @@ class Order(OrderBase):
     id: int
     timestamp: datetime
     order_items: Optional[List[OrderItem]] = None
-
-    def calculate_total(self):
-        pass
-
-    def update_status(self, new_status: str):
-        pass

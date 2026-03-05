@@ -9,16 +9,8 @@ class OrderController:
     def __init__(self) -> None:
         self.order_repo = OrderRepository()
 
-    def validate_order_logic(self):
-        # For now
-        return True
-
-    def add_order(self, order: OrderCreate):
-        flag = self.validate_order_logic()
-        if flag:
-            return self.order_repo.create_order(order)
-        else:
-            raise HTTPException(status_code=404, detail="Order Logic is not correct")
+    def add_order(self, order: OrderCreate):      
+        return self.order_repo.create_order(order)
         
     def delete_order(self, order_id: int):
         return self.order_repo.delete_order(order_id)
@@ -28,4 +20,10 @@ class OrderController:
         if order == None:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
+    
+    def calculate_order_total(self):
+        pass
+
+    def update_order_status(self, new_status: str):
+        pass
 
