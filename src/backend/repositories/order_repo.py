@@ -39,7 +39,7 @@ class OrderRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 
-                order_dict = order_data.model_dump()
+                order_dict = order_data.model_dump(mode ='json')
 
                 # Creating new order id based on last order added to order_data
                 new_id = max([order['id'] for order in data], default=0) + 1
@@ -91,3 +91,15 @@ class OrderRepository:
         except KeyError as e:
             return {"error": f"Order missing id field: {e}"}
     
+    def update_order_status(self, order_id: int, order_status: str) -> Optional[dict]:
+        with open(self.file_path, 'r') as j:
+            data = json.load(j)
+            for i, order in enumerate(data):
+                if order["id"] == order_id:
+                    order["status"] = order_status
+                    with open(self.file_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    return order 
+        return None
+                
+                    

@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from src.backend.models.order import Order, OrderCreate
 from src.backend.models.order_item import OrderItem
 from src.backend.repositories.order_repo import OrderRepository
+from src.backend.models.order import OrderStatus
 
 
 class OrderController:
@@ -28,4 +29,15 @@ class OrderController:
         if order == None:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
+    
+    def update_order_status(self, order_id: int, new_status: OrderStatus, role: str):
+        if role != "manager":
+            raise HTTPException(status_code=403, detail="Only managers can update order status")
+        
+        updated_order = self.order_repo.update_order_status(order_id, new_status)
+        if updated_order is None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        else:
+            return updated_order
+
 
