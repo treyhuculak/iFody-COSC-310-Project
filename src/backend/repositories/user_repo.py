@@ -79,6 +79,7 @@ class UserRepository:
     def _reinit_database(self) -> None:
         """
         Removes all the Admin/Customer/RestaurantOwner instances from the draft database file.
+        To ensure security, the function will never remove the main database file.
         The function can only be used from user_repo_test.py and auth_controller_test.py for testing purposes.
         """
         if self.file != "data/user_db.json":
