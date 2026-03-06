@@ -12,26 +12,35 @@ class OrderStatus(Enum):
     OUT_FOR_DELIVERY = "out for delivery"
     DELIVERED = "delivered"
 
+class OrderLocation(Enum):
+    BRITISH_COLUMBIA = "BC"
+    ALBERTA = "AB"
+    SASKATCHEWAN = "SK"
+    MANITOBA = "MB"
+    ONTARIO = "ON"
+    QUEBEC = "QC"
+    NEW_BRUNSWICK = "NB"
+    NOVA_SCOTIA = "NS"
+    PRINCE_EDWARD_ISLAND = "PE"
+    NEWFOUNDLAND_AND_LABRADOR = "NL"
+    YUKON = "YT"
+    NORTHWEST_TERRITORIES = "NT"
+    NUNAVUT = "NU"
 
 class OrderBase(BaseModel):
     customer_id: int
     restaurant_id: int
-    status: OrderStatus
-    total_price: float
-    tax: float
+    status: OrderStatus = OrderStatus.PENDING
+    location: OrderLocation = OrderLocation.BRITISH_COLUMBIA
+    order_items: List[OrderItem] = []
 
-class OrderCreate(BaseModel):
-    customer_id: int
-    restaurant_id: int
-    status: OrderStatus
-    total_price: float
-    tax: float
-    order_items: Optional[List[OrderItem]] = None
+class OrderCreate(OrderBase):
+    pass
 
 class Order(OrderBase):
     id: int
     timestamp: datetime
-    order_items: Optional[List[OrderItem]] = None
-
-    def calculate_total(self):
-        pass
+    subtotal_price: float
+    total_price: float
+    tax: float
+    delivery_fee: float

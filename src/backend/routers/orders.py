@@ -5,8 +5,8 @@ from src.backend.models.order import Order, OrderCreate
 from src.backend.models.order_item import OrderItem
 
 router = APIRouter(
-    prefix="/order",
-    tags=["order"]
+    prefix="/orders",
+    tags=["orders"]
 )
 
 def get_controller():
