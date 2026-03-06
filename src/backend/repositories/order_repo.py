@@ -39,22 +39,20 @@ class OrderRepository:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                
-                order_dict = order_data
 
                 # Creating new order id based on last order added to order_data
                 new_id = max([order['id'] for order in data], default=0) + 1
-                order_dict['id'] = new_id
-                order_dict["timestamp"] = datetime.now().isoformat()
+                order_data['id'] = new_id
+                order_data["timestamp"] = datetime.now().isoformat()
 
-                data.append(order_dict)
+                data.append(order_data)
             with open(self.file_path, 'w') as f:
                 json.dump(data, f, indent=4)
-            return order_dict
+            return order_data
 
         except FileNotFoundError:
             # create a new file and store the order data
-            order_dict['id'] = 1
+            order_data['id'] = 1
             with open(self.file_path, 'w') as f:
                 json.dump([order_data], f, indent=4)
             return order_data
@@ -91,4 +89,16 @@ class OrderRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
-    
+        
+    def update_order_status(self, order_id: int, order_status: str) -> Optional[dict]:
+        with open(self.file_path, 'r') as j:
+            data = json.load(j)
+            for i, order in enumerate(data):
+                if order["id"] == order_id:
+                    order["status"] = order_status
+                    with open(self.file_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    return order 
+        return None
+                
+                    

@@ -1,13 +1,13 @@
 {
-  "Users": [
-    {
-      "id": 1,
-      "username": "TestCustomer",
-      "email": "testcustomer@123.com",
-      "password": "Test@123",
-      "role": "Customer",
-      "is_logged_in": false,
-      "is_blocked": false
-    }
-  ]
+    "Users": [
+        {
+            "id": 1,
+            "username": "TestCustomer",
+            "email": "testcustomer@123.com",
+            "password": "Test@123",
+            "role": "Customer",
+            "is_logged_in": false,
+            "is_blocked": false
+        }
+    ]
 }
