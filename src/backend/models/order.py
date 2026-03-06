@@ -31,7 +31,7 @@ class OrderBase(BaseModel):
     customer_id: int
     restaurant_id: int
     status: OrderStatus = OrderStatus.PENDING
-    location: OrderLocation
+    location: OrderLocation = OrderLocation.BRITISH_COLUMBIA
     order_items: List[OrderItem] = []
 
 class OrderCreate(OrderBase):
