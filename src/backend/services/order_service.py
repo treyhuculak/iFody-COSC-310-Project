@@ -1,5 +1,7 @@
+from typing import Optional
+
 from src.backend.repositories.restaurant_repo import RestaurantRepository
-from src.backend.models.order import Order
+from src.backend.models.order import OrderCreate
 import json
 
 '''
@@ -12,32 +14,25 @@ class OrderService:
     def __init__(self):
         self.restaurant_repo = RestaurantRepository()
 
-    def calculate_order_total(self, order: Order):
-        order.subtotal_price = self.calculate_order_subtotal(order)
-        order.tax = self.calculate_tax(order)
-        order.delivery_fee = self.get_delivery_fee(order)
-        order.total_price = order.subtotal_price + order.tax + order.delivery_fee
-        return order.total_price
-
-    def calculate_order_subtotal(self, order: Order):
+    def calculate_order_subtotal(self, order: OrderCreate):
         total_price = 0
         for item in order.order_items:
-            total_price += item.price        
+            total_price += item.price * item.quantity     
         return total_price
 
-    def calculate_tax(self, order: Order):
+    def calculate_tax(self, order: OrderCreate, order_subtotal: Optional[float] = None):
         try:
             with open(self.TAX_RATES, 'r') as f:
                 tax_data = json.load(f)
-                tax_rate = tax_data.get(str(order.location), 0)
-                return order.total_price * tax_rate
+                tax_rate = tax_data.get(order.location.value, 0)
+                return (order_subtotal if order_subtotal is not None else self.calculate_order_subtotal(order)) * tax_rate
         except FileNotFoundError:
             raise ValueError("Tax rates file not found")
         except json.JSONDecodeError:
             raise ValueError("Error decoding tax rates file")
 
 
-    def get_delivery_fee(self, order: Order):
+    def get_delivery_fee(self, order: OrderCreate):
         restaurant = self.restaurant_repo.get_restaurant_by_id(order.restaurant_id)
         if not restaurant:
             raise ValueError("Restaurant not found")
