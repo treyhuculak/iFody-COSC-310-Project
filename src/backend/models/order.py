@@ -20,12 +20,7 @@ class OrderBase(BaseModel):
     total_price: float
     tax: float
 
-class OrderCreate(BaseModel):
-    customer_id: int
-    restaurant_id: int
-    status: OrderStatus
-    total_price: float
-    tax: float
+class OrderCreate(OrderBase):
     order_items: Optional[List[OrderItem]] = None
 
 class Order(OrderBase):
