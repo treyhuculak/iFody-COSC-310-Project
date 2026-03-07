@@ -1,6 +1,7 @@
 import json
 from typing import List, Optional, Dict
 from datetime import datetime
+from fastapi import HTTPException
 
 class OrderRepository:
     ORDER_FILE = 'data/order.json'
@@ -26,11 +27,11 @@ class OrderRepository:
                 return order
                     
         except FileNotFoundError:
-            return {"error": f"File {self.file_path} not found."}
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
-            return {"error": f"Error decoding JSON: {e}"}
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            return {"error": f"Order missing id field: {e}"}
+            raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
 
     def create_order(self, order_data: dict) -> dict:
@@ -57,9 +58,9 @@ class OrderRepository:
                 json.dump([order_data], f, indent=4)
             return order_data
         except json.JSONDecodeError as e:
-            return {"error": f"Error decoding JSON: {e}"}
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            return {"error": f"Order missing id field: {e}"}
+            raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
     def delete_order(self, order_id: int) -> dict:
         try:
@@ -76,7 +77,7 @@ class OrderRepository:
                 
                 # If nothing is found
                 if deleted_order == None:
-                    return {"error": f"Order with id {order_id} not found."}
+                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
                 
                 # Saving changes
                 with open(self.file_path, 'w') as f:
@@ -84,11 +85,11 @@ class OrderRepository:
 
                 return deleted_order
         except FileNotFoundError:
-            return {"error": f"File {self.file_path} not found."}
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
-            return {"error": f"Error decoding JSON: {e}"}
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            return {"error": f"Order missing id field: {e}"}
+            raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
     def update_order_status(self, order_id: int, order_status: str) -> Optional[dict]:
         with open(self.file_path, 'r') as j:
@@ -115,33 +116,38 @@ class OrderRepository:
                         # Look if the order item already exists in order items (find the first match)
                         order_item = next(filter(lambda item: item["item_id"] == item_data["item_id"], order_items), None)
 
-                        # Adding remaining item fields to order item
+                        # Adding order_id field to order item
                         item_data["order_id"] = order_id
-                        item_data["subtotal"] = price
 
                         # If nothing is found, add new item. Else: increase item quantity
                         if order_item == None:
+                            # Adding subtotal field to order item
+                            item_data["subtotal"] = price * item_data["quantity"]
+
                             order_items.append(item_data)
                             order['order_items'] = order_items
                         else:
                             order_item["quantity"] += item_data["quantity"]
+                            
+                            # Adding subtotal field to order item
+                            item_data["subtotal"] = price * order_item["quantity"]
 
                         flag = False
                         break
                 
                 # Ensure a correct error message appears if order id is not found
                 if flag:
-                    return {"error": f"Order id {order_id} not found."}
+                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
                 
                 with open(self.file_path, 'w') as f:
                     json.dump(data, f, indent=4)
                 return order_item if order_item != None else item_data
         except FileNotFoundError:
-            return {"error": f"File {self.file_path} not found."}
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
-            return {"error": f"Error decoding JSON: {e}"}
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            return {"error": f"Order item missing id field: {e}"}
+            raise HTTPException(status_code=500, detail=f"Order item missing id field: {e}")
         
     def delete_order_item_from_order(self, order_id: int, order_item_id: int) -> dict:
         try:
@@ -170,7 +176,7 @@ class OrderRepository:
                         
                         # Ensure a correct error message appears if order item id is not found
                         if deleted_item == None:
-                            return {"error": f"Order item with id {order_item_id} not found."}
+                            raise HTTPException(status_code=404, detail=f"Order item with id {order_item_id} not found.")
                         
                         order["order_items"] = new_order_items
                         
@@ -180,14 +186,14 @@ class OrderRepository:
                 
                 # Ensure a correct error message appears if order id is not found
                 if flag:
-                    return {"error": f"Order id {order_id} not found."}
+                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
                 
         except FileNotFoundError:
-            return {"error": f"File {self.file_path} not found."}
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
-            return {"error": f"Error decoding JSON: {e}"}
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            return {"error": f"Order item missing id field: {e}"}
+            raise HTTPException(status_code=500, detail=f"Order item missing id field: {e}")
         
     def get_order_items_from_order(self, order_id: int) -> List[dict]:
         try:
@@ -196,12 +202,12 @@ class OrderRepository:
                 for order in data:
                     if order['id'] == order_id:
                         return order.get('order_items', [])
-                return {"error": f"Order id {order_id} not found."}
+                raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
             
         except FileNotFoundError:
-            return {"error": f"File {self.file_path} not found."}
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
-            return {"error": f"Error decoding JSON: {e}"}
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            return {"error": f"Order missing id field: {e}"}
+            raise HTTPException(status_code=500, detail=f"Order item missing id field: {e}")
                     

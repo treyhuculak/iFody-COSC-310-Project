@@ -54,14 +54,16 @@ class OrderController:
     '''
     The idea here is that we pass the whole menu item and we create an order item from that menu item (basically so they have the same id - easier to recognize same items that way)
     Inside the repo we assign the item price/subtotal and the order id itself.
+
+    Order item inherited from menu item
     '''
-    def add_order_item_to_order(self, menu_item: MenuItem, order_id: int):
+    def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int):
         order = self.get_order(order_id)
         # Checking if order should be able to be modified or not
         if not (order["status"] == "out for delivery" or order["status"] == "delivered"):
 
             # Creating order item based on menu item
-            order_item = OrderItemCreate(item_id = menu_item.id, quantity = 1)
+            order_item = OrderItemCreate(item_id = menu_item.id, quantity = quantity)
             if isinstance(order, dict) and "error" in order:
                 raise HTTPException(status_code=404, detail=order["error"])
             

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+#from src.backend.models.menu_item import MenuItem
 
 class OrderItemBase(BaseModel):
     item_id: int

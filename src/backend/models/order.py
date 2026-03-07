@@ -21,11 +21,6 @@ class OrderBase(BaseModel):
     tax: float
 
 class OrderCreate(OrderBase):
-    customer_id: int
-    restaurant_id: int
-    status: OrderStatus
-    total_price: float
-    tax: float
     order_items: Optional[List[OrderItem]] = None
 
 class Order(OrderBase):

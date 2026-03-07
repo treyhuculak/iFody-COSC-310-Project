@@ -59,34 +59,44 @@ def test_add_order(test_client):
 
 def test_delete_order(test_client):
     response = test_client.post("/order/", json=new_order)
-    response2 = test_client.post("/order/", json=new_order_2)
-    response3 = test_client.post("/order/", json=new_order_3)
 
     assert response.status_code == 200
-    assert response2.status_code == 200
-    assert response3.status_code == 200
 
     order_id = response.json()["id"]
-    order_id_2 = response2.json()["id"]
-    order_id_3 = response3.json()["id"]
 
     # Delete order
     delete_response = test_client.delete(f"/order/{order_id}")
     assert delete_response.status_code == 200
 
-    # Try to delete order when order status = preparing
-    delete_response_2 = test_client.delete(f"/order/{order_id_2}")
-    assert delete_response_2.status_code == 200
-
-    # Try to delete order when order status = out for delivery
-    delete_response_3 = test_client.delete(f"/order/{order_id_3}")
-    assert delete_response_3.status_code == 403
-
     # After deletion, trying to get the order should return a 404
     get_response = test_client.get(f"/order/{order_id}")
     assert get_response.status_code == 404
-    get_response_2 = test_client.get(f"/order/{order_id_2}")
-    assert get_response_2.status_code == 404
+
+def test_delete_order_preparing(test_client):
+    response = test_client.post("/order/", json=new_order_2)
+
+    assert response.status_code == 200
+
+    order_id = response.json()["id"]
+
+    # Try to delete order when order status = out for delivery
+    delete_response = test_client.delete(f"/order/{order_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, trying to get the order should return a 404
+    get_response = test_client.get(f"/order/{order_id}")
+    assert get_response.status_code == 404    
+
+def test_delete_order_out_for_delivery(test_client):
+    response = test_client.post("/order/", json=new_order_3)
+
+    assert response.status_code == 200
+
+    order_id = response.json()["id"]
+
+    # Try to delete order when order status = out for delivery
+    delete_response = test_client.delete(f"/order/{order_id}")
+    assert delete_response.status_code == 403
 
     '''
     Order item tests:
@@ -120,12 +130,12 @@ def test_add_order_item_to_order(test_client):
     order_id = response.json()["id"]
 
     # Now try to add an order item to that order
-    add_response = test_client.post(f"/order/{order_id}/items", json=menu_item)
+    add_response = test_client.post(f"/order/{order_id}/items", params={"quantity": 2}, json=menu_item)
     assert add_response.status_code == 200
     data = add_response.json()
     assert data["item_id"] == menu_item["id"]
-    assert data["quantity"] == 1
-    assert data["subtotal"] == 9.99
+    assert data["quantity"] == 2
+    assert data["subtotal"] == 9.99*2
 
 def test_delete_order_item_from_order(test_client):
     # First add an order and an order item to ensure there is something to delete
@@ -133,7 +143,7 @@ def test_delete_order_item_from_order(test_client):
     assert response.status_code == 200
     order_id = response.json()["id"]
 
-    add_response = test_client.post(f"/order/{order_id}/items", json=menu_item)
+    add_response = test_client.post(f"/order/{order_id}/items", params={"quantity": 1}, json=menu_item)
     assert add_response.status_code == 200
     item_id = add_response.json()["item_id"]
 
@@ -151,7 +161,7 @@ def test_update_order_item_from_order(test_client):
     assert response.status_code == 200
     order_id = response.json()["id"]
 
-    add_response = test_client.post(f"/order/{order_id}/items", json=menu_item)
+    add_response = test_client.post(f"/order/{order_id}/items", params={"quantity": 1}, json=menu_item)
     assert add_response.status_code == 200
     item_id = add_response.json()["item_id"]
 
@@ -160,7 +170,7 @@ def test_update_order_item_from_order(test_client):
     assert data["quantity"] == 1
 
     # Now try to update that order item (increment one item already existent in that order)
-    add_response_2 = test_client.post(f"/order/{order_id}/items", json=menu_item)
+    add_response_2 = test_client.post(f"/order/{order_id}/items", params={"quantity": 1}, json=menu_item)
     assert add_response_2.status_code == 200
     data_2 = add_response_2.json()
     assert data_2["item_id"] == menu_item["id"]

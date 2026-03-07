@@ -37,8 +37,8 @@ def delete_order_item(order_id: int, item_id: int, controller: OrderController =
     return deleted_item
 
 @router.post("/{order_id}/items", response_model=OrderItem)
-def add_order_item(order_id: int, order_item: MenuItem, controller: OrderController = Depends(get_controller)):
-    new_item = controller.add_order_item_to_order(order_item, order_id)
+def add_order_item(order_id: int, order_item: MenuItem, quantity: int, controller: OrderController = Depends(get_controller)):
+    new_item = controller.add_order_item_to_order(order_item, order_id, quantity)
     return new_item
 
 @router.get("/{order_id}/items", response_model=List[OrderItem])
