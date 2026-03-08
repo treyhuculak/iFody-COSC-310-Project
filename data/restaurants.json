@@ -6,6 +6,7 @@
         "delivery_fee": 5.99,
         "owner_id": 1,
         "id": 1,
+        "is_available": true,
         "menu_items": [
             {
                 "name": "Spaghetti Carbonara",
@@ -22,12 +23,13 @@
         ]
     },
     {
-        "name": "Sushi World",
+        "name": "The Sushi World",
         "cuisine": "Japanese",
         "location": "Vancouver, BC",
         "delivery_fee": 3.99,
         "owner_id": 2,
         "id": 2,
+        "is_available": true,
         "menu_items": [
             {
                 "name": "California Roll",
@@ -44,25 +46,232 @@
         ]
     },
     {
-        "name": "Taco Fiesta",
-        "cuisine": "Mexican",
-        "location": "Kelowna, BC",
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
         "delivery_fee": 2.99,
-        "owner_id": 3,
-        "id": 3,
+        "owner_id": 1,
+        "id": 3
+    },
+    {
+        "name": "Updated Restaurant Name",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 3.99,
+        "owner_id": 1,
+        "id": 4
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 5
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 6
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 7
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 8,
         "menu_items": [
             {
-                "name": "Chicken Tacos",
-                "description": "Grilled chicken with lettuce, cheese, and salsa in a soft tortilla.",
-                "price": 7.99,
-                "id": 1
-            },
-            {
-                "name": "Beef Burrito",
-                "description": "Seasoned beef, rice, beans, and cheese wrapped in a large tortilla.",
+                "name": "Test Menu Item",
+                "description": "A menu item for testing",
                 "price": 9.99,
-                "id": 2
+                "id": 1
+            }
+        ],
+        "is_available": true
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 9
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 10
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 11
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "Test Location",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 12
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "Test Location",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 13
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "Different Location",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 14
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 15,
+        "menu_items": [
+            {
+                "name": "Test Menu Item",
+                "description": "A menu item for testing",
+                "price": 9.99,
+                "id": 1
             }
         ]
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 16
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 17
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 18,
+        "menu_items": [
+            {
+                "name": "Updated Menu Item Name",
+                "description": "A menu item for testing",
+                "price": 12.99,
+                "id": 1
+            }
+        ]
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 19,
+        "menu_items": [
+            {
+                "name": "Test Menu Item",
+                "description": "A menu item for testing",
+                "price": 9.99,
+                "id": 1
+            }
+        ]
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 20
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 21,
+        "menu_items": [],
+        "is_available": false
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 22
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 23,
+        "menu_items": [],
+        "is_available": false
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 24,
+        "menu_items": [
+            {
+                "name": "Test Menu Item",
+                "description": "A menu item for testing",
+                "price": 9.99,
+                "id": 1
+            }
+        ]
+    },
+    {
+        "name": "Test Restaurant",
+        "cuisine": "Test Cuisine",
+        "location": "123 Test St",
+        "delivery_fee": 2.99,
+        "owner_id": 1,
+        "id": 25
     }
 ]
