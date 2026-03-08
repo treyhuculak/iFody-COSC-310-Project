@@ -26,6 +26,10 @@ def get_restaurants_by_owner(owner_id: int, controller: RestaurantController = D
 def get_restaurants_by_location(location: str, controller: RestaurantController = Depends(get_controller)):
     return controller.get_restaurants_by_location(location)
 
+@router.get("/search/", response_model=List[Restaurant])
+def search_restaurants(name: str = Query(default=""), controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_partial_name(name)
+
 
 @router.get("/", response_model=List[Restaurant])
 def get_all_restaurants(controller: RestaurantController = Depends(get_controller)):
