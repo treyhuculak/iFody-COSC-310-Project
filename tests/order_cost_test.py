@@ -31,8 +31,8 @@ def test_client(tmp_path):
     app.dependency_overrides.clear()
 
 order_items = [
-    OrderItem(item_id=1, name="Burger", description="A delicious burger", price=10.0, quantity=2),
-    OrderItem(item_id=2, name="Fries", description="Crispy fries", price=5.0, quantity=1)
+    OrderItem(item_id=1, price_at_purchase=10.0, quantity=2),
+    OrderItem(item_id=2, price_at_purchase=5.0, quantity=1)
 ]
 
 order = OrderCreate(customer_id=1, restaurant_id=1, location=OrderLocation.BRITISH_COLUMBIA, order_items=order_items, status=OrderStatus.PENDING)

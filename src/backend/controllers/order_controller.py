@@ -21,13 +21,19 @@ class OrderController:
 
     def add_order(self, order: OrderCreate):
         try:
-            order_data = order.model_dump(mode="json")
-
-            # Calculate total price, tax, and delivery fee before saving the order
-            order_data['subtotal_price'] = self.order_service.calculate_order_subtotal(order)
-            order_data['tax'] = self.order_service.calculate_tax(order, order_data['subtotal_price'])
-            order_data['delivery_fee'] = self.order_service.get_delivery_fee(order)
-            order_data['total_price'] = order_data['subtotal_price'] + order_data['tax'] + order_data['delivery_fee']
+            # Calculate totals first using the original order with Enum objects
+            subtotal = self.order_service.calculate_order_subtotal(order)
+            tax = self.order_service.calculate_tax(order, subtotal)
+            delivery_fee = self.order_service.get_delivery_fee(order)
+            
+            # Now serialize the order data for storage
+            order_data = order.model_dump()
+            order_data['status'] = order.status.value
+            order_data['location'] = order.location.value
+            order_data['subtotal_price'] = subtotal
+            order_data['tax'] = tax
+            order_data['delivery_fee'] = delivery_fee
+            order_data['total_price'] = subtotal + tax + delivery_fee
 
             return self.order_repo.create_order(order_data)
         except ValueError as e:
@@ -56,11 +62,17 @@ class OrderController:
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be cancelled")
     
-    def update_order_status(self, order_id: int, new_status: OrderStatus, role: str):
+    def update_order_status(self, order_id: int, new_status: str, role: str):
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
         
-        updated_order = self.order_repo.update_order_status(order_id, new_status.value)
+        # Convert string to OrderStatus enum
+        try:
+            status_enum = OrderStatus(new_status)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
+        
+        updated_order = self.order_repo.update_order_status(order_id, status_enum.value)
         if updated_order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         else:

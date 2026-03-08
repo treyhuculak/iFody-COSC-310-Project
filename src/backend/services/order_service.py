@@ -17,7 +17,7 @@ class OrderService:
     def calculate_order_subtotal(self, order: OrderCreate):
         total_price = 0
         for item in order.order_items:
-            total_price += item.price * item.quantity     
+            total_price += item.price_at_purchase * item.quantity     
         return total_price
 
     def calculate_tax(self, order: OrderCreate, order_subtotal: Optional[float] = None):

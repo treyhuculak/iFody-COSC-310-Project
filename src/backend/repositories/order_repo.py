@@ -114,21 +114,16 @@ class OrderRepository:
                         # Look if the order item already exists in order items (find the first match)
                         order_item = next(filter(lambda item: item["item_id"] == item_data["item_id"], order_items), None)
 
-                        # Adding order_id field to order item
+                        # Adding order_id and price_at_purchase fields to order item
                         item_data["order_id"] = order_id
+                        item_data["price_at_purchase"] = price
 
                         # If nothing is found, add new item. Else: increase item quantity
                         if order_item == None:
-                            # Adding subtotal field to order item
-                            item_data["subtotal"] = price * item_data["quantity"]
-
                             order_items.append(item_data)
                             order['order_items'] = order_items
                         else:
                             order_item["quantity"] += item_data["quantity"]
-                            
-                            # Adding subtotal field to order item
-                            item_data["subtotal"] = price * order_item["quantity"]
 
                         flag = False
                         break

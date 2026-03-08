@@ -9,4 +9,4 @@ class OrderItemCreate(OrderItemBase):
     pass
 
 class OrderItem(OrderItemBase):
-    pass
+    price_at_purchase: float 
