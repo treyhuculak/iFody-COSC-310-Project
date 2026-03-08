@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field
-from src.backend.models.menu_item import MenuItemBase
+#from src.backend.models.menu_item import MenuItem
 
-class OrderItemBase(MenuItemBase):
+class OrderItemBase(BaseModel):
     quantity: int = Field(..., gt=0)  # must be > 0
+    item_id: int
 
 class OrderItemCreate(OrderItemBase):
     pass
 
 class OrderItem(OrderItemBase):
-    item_id: int
+    pass
