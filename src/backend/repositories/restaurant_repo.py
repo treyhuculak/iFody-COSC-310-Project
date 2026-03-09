@@ -44,6 +44,9 @@ class RestaurantRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
 
     def get_restaurants_by_location(self, location: str) -> List[dict]:
+        location = location.lower().strip()
+        if location is None or location == "":
+            return self.get_all_restaurants()
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
@@ -54,6 +57,7 @@ class RestaurantRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         
     def get_restaurants_by_partial_name(self, name: str) -> List[dict]:
+        name = name.lower().strip()
         if name is None or name == "":
             return self.get_all_restaurants()
         try:
@@ -61,7 +65,7 @@ class RestaurantRepository:
                 data = json.load(f)
                 restaurants = []
                 for restaurant in data:
-                    if name.lower().strip() in restaurant.get('name', '').lower().strip():
+                    if name in restaurant.get('name', '').lower().strip():
                         restaurants.append(restaurant)
                 return restaurants
         except FileNotFoundError:
@@ -157,6 +161,7 @@ class RestaurantRepository:
             raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
 
     def get_menu_item_by_partial_name(self, restaurant_id: int, name: str) -> List[dict]:
+        name = name.lower().strip()
         if name is None or name == "":
             return self.get_menu_items_by_restaurant(restaurant_id)
         try:
@@ -165,7 +170,7 @@ class RestaurantRepository:
                 for restaurant in data:
                     if restaurant['id'] == restaurant_id:
                         menu_items = restaurant.get('menu_items', [])
-                        return [item for item in menu_items if name.lower().strip() in item.get('name', '').lower().strip()]
+                        return [item for item in menu_items if name in item.get('name', '').lower().strip()]
                 raise HTTPException(status_code=404, detail=f"Restaurant with id {restaurant_id} not found.")
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
