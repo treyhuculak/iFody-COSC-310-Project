@@ -38,22 +38,20 @@ class OrderRepository:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                
-                order_dict = order_data.model_dump(mode ='json')
 
                 # Creating new order id based on last order added to order_data
                 new_id = max([order['id'] for order in data], default=0) + 1
-                order_dict['id'] = new_id
-                order_dict["timestamp"] = datetime.now().isoformat()
+                order_data['id'] = new_id
+                order_data["timestamp"] = datetime.now().isoformat()
 
-                data.append(order_dict)
+                data.append(order_data)
             with open(self.file_path, 'w') as f:
                 json.dump(data, f, indent=4)
-            return order_dict
+            return order_data
 
         except FileNotFoundError:
             # create a new file and store the order data
-            order_dict['id'] = 1
+            order_data['id'] = 1
             with open(self.file_path, 'w') as f:
                 json.dump([order_data], f, indent=4)
             return order_data
@@ -90,7 +88,7 @@ class OrderRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
-    
+        
     def update_order_status(self, order_id: int, order_status: str) -> Optional[dict]:
         with open(self.file_path, 'r') as j:
             data = json.load(j)
@@ -116,21 +114,16 @@ class OrderRepository:
                         # Look if the order item already exists in order items (find the first match)
                         order_item = next(filter(lambda item: item["item_id"] == item_data["item_id"], order_items), None)
 
-                        # Adding order_id field to order item
+                        # Adding order_id and price_at_purchase fields to order item
                         item_data["order_id"] = order_id
+                        item_data["price_at_purchase"] = price
 
                         # If nothing is found, add new item. Else: increase item quantity
                         if order_item == None:
-                            # Adding subtotal field to order item
-                            item_data["subtotal"] = price * item_data["quantity"]
-
                             order_items.append(item_data)
                             order['order_items'] = order_items
                         else:
                             order_item["quantity"] += item_data["quantity"]
-                            
-                            # Adding subtotal field to order item
-                            item_data["subtotal"] = price * order_item["quantity"]
 
                         flag = False
                         break
@@ -149,7 +142,7 @@ class OrderRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order item missing id field: {e}")
         
-    def delete_order_item_from_order(self, order_id: int, order_item_id: int) -> dict:
+    def delete_order_item_from_order(self, order_id: int, order_item_id: int):
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import HTTPException
-from src.backend.models.restaurant import RestaurantCreate
+from src.backend.models.restaurant import RestaurantCreate, Restaurant
 from src.backend.models.menu_item import MenuItemCreate
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
@@ -36,12 +36,12 @@ class RestaurantController:
         all_restaurants = self.repo.get_all_restaurants()
         return all_restaurants
 
-    def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1):
+    def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1) -> Restaurant:
         restaurant_data = restaurant.model_dump()
         # Always use the authenticated owner's ID; ignore any owner_id from the request body
         restaurant_data['owner_id'] = owner_id
         added_restaurant = self.repo.add_restaurant(restaurant_data)
-        return added_restaurant
+        return Restaurant(**added_restaurant)
 
     def update_restaurant(self, restaurant_id: int, name=None, cuisine=None, delivery_fee=None, location=None, is_available=None):
         restaurant_data = {
