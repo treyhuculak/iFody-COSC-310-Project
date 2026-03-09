@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import HTTPException
 from src.backend.models.restaurant import RestaurantCreate, Restaurant
-from src.backend.models.menu_item import MenuItemCreate
+from src.backend.models.menu_item import MenuItem, MenuItemCreate
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class RestaurantController:
@@ -22,19 +22,23 @@ class RestaurantController:
     '''
     def get_restaurant_by_id(self, restaurant_id: int):
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
-        return restaurant
+        return Restaurant(**restaurant)
 
     def get_restaurants_by_owner(self, owner_id: int):
         owner_restaurants = self.repo.get_restaurants_by_owner(owner_id)
-        return owner_restaurants
+        return [Restaurant(**restaurant) for restaurant in owner_restaurants]
 
     def get_restaurants_by_location(self, location: str):
         location_restaurants = self.repo.get_restaurants_by_location(location)
-        return location_restaurants
+        return [Restaurant(**restaurant) for restaurant in location_restaurants]
+    
+    def get_restaurants_by_partial_name(self, partial_name: str):
+        matching_restaurants = self.repo.get_restaurants_by_partial_name(partial_name)
+        return [Restaurant(**restaurant) for restaurant in matching_restaurants]
 
     def get_all_restaurants(self):
         all_restaurants = self.repo.get_all_restaurants()
-        return all_restaurants
+        return [Restaurant(**restaurant) for restaurant in all_restaurants]
 
     def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1) -> Restaurant:
         restaurant_data = restaurant.model_dump()
@@ -65,15 +69,15 @@ class RestaurantController:
                 raise HTTPException(status_code=400, detail="Cannot mark restaurant as available without menu items.")
         
         updated_restaurant = self.repo.update_restaurant(restaurant_id, restaurant_data)
-        return updated_restaurant
+        return Restaurant(**updated_restaurant)
 
     def delete_restaurant(self, restaurant_id: int):
         deleted_restaurant = self.repo.delete_restaurant(restaurant_id)
-        return deleted_restaurant
+        return Restaurant(**deleted_restaurant)
 
     def get_menu_items_by_restaurant_id(self, restaurant_id: int):
         all_menu_items = self.repo.get_menu_items_by_restaurant(restaurant_id)
-        return all_menu_items
+        return [MenuItem(**item) for item in all_menu_items]
     
 
     '''
@@ -82,6 +86,11 @@ class RestaurantController:
         - Update a menu item from a restaurant
         - Delete a menu item from a restaurant
     '''
+    def get_menu_item_by_partial_name(self, restaurant_id: int, partial_name: str):
+        menu_items = self.repo.get_menu_item_by_partial_name(restaurant_id, partial_name)
+        return [MenuItem(**item) for item in menu_items]
+
+
     def add_menu_item_to_restaurant(self, menu_item: MenuItemCreate, restaurant_id: int):
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
         if isinstance(restaurant, dict) and "error" in restaurant:
@@ -90,7 +99,7 @@ class RestaurantController:
         # Note: Basic field validation (e.g., price > 0) is handled by the MenuItemCreate Pydantic model.
         menu_item_data = menu_item.model_dump()
         added_item = self.repo.add_menu_item_to_restaurant(menu_item_data, restaurant_id)
-        return added_item
+        return MenuItem(**added_item)
         
     def update_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int, name=None, description=None, price=None):
         menu_item_data = {
@@ -104,8 +113,8 @@ class RestaurantController:
             raise HTTPException(status_code=400, detail="No data provided for update.")
         
         updated_item = self.repo.update_menu_item_from_restaurant(restaurant_id, menu_item_id, menu_item_data)
-        return updated_item
+        return MenuItem(**updated_item)
 
     def delete_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int):
         deleted_item = self.repo.delete_menu_item_from_restaurant(restaurant_id, menu_item_id)
-        return deleted_item 
+        return MenuItem(**deleted_item) 

@@ -13,7 +13,7 @@ def test_client(tmp_path):
     data/order.json.  The temp file is deleted automatically after each
     test, so the production database is never touched.
     """
-    temp_db = tmp_path / "test_order.json"
+    temp_db = tmp_path / "test.json"
     temp_db.write_text(json.dumps([]))
 
     test_repo = OrderRepository(file_path=str(temp_db))
