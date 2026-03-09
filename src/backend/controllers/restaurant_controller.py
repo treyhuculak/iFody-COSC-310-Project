@@ -40,7 +40,7 @@ class RestaurantController:
         all_restaurants = self.repo.get_all_restaurants()
         return [Restaurant(**restaurant) for restaurant in all_restaurants]
 
-    def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1):
+    def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1) -> Restaurant:
         restaurant_data = restaurant.model_dump()
         # Always use the authenticated owner's ID; ignore any owner_id from the request body
         restaurant_data['owner_id'] = owner_id
