@@ -11,6 +11,7 @@ class OrderStatus(Enum):
     PREPARING_ORDER = "preparing"
     OUT_FOR_DELIVERY = "out for delivery"
     DELIVERED = "delivered"
+    PAYMENT_FAILED = "payment failed"
 
 
 class OrderBase(BaseModel):

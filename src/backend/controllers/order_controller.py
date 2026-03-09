@@ -5,11 +5,15 @@ from src.backend.models.order_item import OrderItem, OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
-
+from src.backend.controllers.notification_controller import NotificationController
+from src.backend.models.notification import NotificationCreate, NotificationType
+from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class OrderController:
     def __init__(self) -> None:
         self.order_repo = OrderRepository()
+        self.notif_controller = NotificationController()
+        self.restaurant_repo = RestaurantRepository()
 
     def get_order(self, order_id: int):
         order = self.order_repo.get_order_by_id(order_id)
@@ -43,6 +47,47 @@ class OrderController:
         if updated_order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         else:
+            customer_status_map = {
+                OrderStatus.PAYMENT_CONFIRMED: NotificationType.ORDER_CONFIRMED,
+                OrderStatus.PAYMENT_FAILED: NotificationType.PAYMENT_FAILED,
+                OrderStatus.PREPARING_ORDER: NotificationType.ORDER_IN_PROGRESS,
+                OrderStatus.OUT_FOR_DELIVERY: NotificationType.ORDER_IN_TRANSIT,
+                OrderStatus.DELIVERED: NotificationType.ORDER_DELIVERED
+            }
+
+            notif_type = customer_status_map.get(new_status, NotificationType.ORDER_CONFIRMED)
+
+            #create notification for the customer
+            customer_notification = NotificationCreate(
+                user_id = updated_order["customer_id"],
+                type = notif_type,
+                title = "Order Status Updated",
+                message = f"Your order status is now {new_status.value}",
+                order_id=order_id,
+                is_read=False
+            )
+            self.notif_controller.create_notif(customer_notification)
+
+            manager_status_map = {
+                OrderStatus.OUT_FOR_DELIVERY: (NotificationType.ORDER_IN_TRANSIT, "Driver Picked Up", f"Order #{order_id} picked up by driver"),
+                OrderStatus.DELIVERED: (NotificationType.ORDER_DELIVERED, "Order has been delivered", f"Order #{order_id} has been delivered")
+            }
+
+            if new_status in manager_status_map:
+                notif_type, title, message = manager_status_map[new_status]
+                restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])
+                owner_id = restaurant["owner_id"]
+                manager_notification = NotificationCreate(
+                    user_id = owner_id,
+                    type = notif_type,
+                    title = title,
+                    message = message,
+                    order_id = order_id,
+                    is_read = False
+                )
+                self.notif_controller.create_notif(manager_notification)
+
+            
             return updated_order
         
     '''
