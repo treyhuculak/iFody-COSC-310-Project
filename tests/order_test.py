@@ -49,7 +49,7 @@ new_order_3 = {
 }
 
 def test_add_order(test_client):
-    # The controller should return the new restaurant dict, which the router translates to a 200 response
+    # The controller should return the new order dict, which the router translates to a 200 response
     response = test_client.post("/order/", json=new_order)
     assert response.status_code == 200
     data = response.json()
@@ -132,10 +132,24 @@ def test_add_order_item_to_order(test_client):
     # Now try to add an order item to that order
     add_response = test_client.post(f"/order/{order_id}/items", params={"quantity": 2}, json=menu_item)
     assert add_response.status_code == 200
+
+    # Fetch updated order
+    get_response = test_client.get(f"/order/{order_id}")
+    assert get_response.status_code == 200
+
+    order_data = get_response.json()
+
+    assert len(order_data["order_items"]) == 2
+    assert order_data["order_items"][1]["item_id"] == menu_item["id"]
+    assert order_data["order_items"][1]["quantity"] == 2
+    assert order_data["order_items"][1]["subtotal"] == menu_item["price"] * 2
+    '''
     data = add_response.json()
-    assert data["item_id"] == menu_item["id"]
+    data2 = response.json()
+    assert data2["order_items"][1]["item_id"] == menu_item["id"]
     assert data["quantity"] == 2
     assert data["subtotal"] == 9.99*2
+    '''
 
 def test_delete_order_item_from_order(test_client):
     # First add an order and an order item to ensure there is something to delete
@@ -172,9 +186,14 @@ def test_update_order_item_from_order(test_client):
     # Now try to update that order item (increment one item already existent in that order)
     add_response_2 = test_client.post(f"/order/{order_id}/items", params={"quantity": 1}, json=menu_item)
     assert add_response_2.status_code == 200
-    data_2 = add_response_2.json()
-    assert data_2["item_id"] == menu_item["id"]
-    assert data_2["quantity"] == 2
+
+    # Fetch updated order
+    get_response = test_client.get(f"/order/{order_id}")
+    assert get_response.status_code == 200
+
+    order_data = get_response.json()
+    assert order_data["order_items"][1]["item_id"] == menu_item["id"]
+    assert order_data["order_items"][1]["quantity"] == 2
 
     # Now try to delete that order item
     delete_response = test_client.delete(f"/order/{order_id}/items/{item_id}")
