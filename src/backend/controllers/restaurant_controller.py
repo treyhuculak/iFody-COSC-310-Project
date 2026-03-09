@@ -86,6 +86,11 @@ class RestaurantController:
         - Update a menu item from a restaurant
         - Delete a menu item from a restaurant
     '''
+    def get_menu_item_by_partial_name(self, restaurant_id: int, partial_name: str):
+        menu_items = self.repo.get_menu_item_by_partial_name(restaurant_id, partial_name)
+        return [MenuItem(**item) for item in menu_items]
+
+
     def add_menu_item_to_restaurant(self, menu_item: MenuItemCreate, restaurant_id: int):
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
         if isinstance(restaurant, dict) and "error" in restaurant:

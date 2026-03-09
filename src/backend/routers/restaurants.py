@@ -1,3 +1,5 @@
+from email.policy import default
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from src.backend.controllers.restaurant_controller import RestaurantController
@@ -58,6 +60,9 @@ def get_menu_item_by_id(restaurant_id: int, menu_item_id: int, controller: Resta
                 return item
     raise HTTPException(status_code=404, detail="Menu item not found")
 
+@router.get("/{restaurant_id}/menu/search/", response_model=List[MenuItem])
+def search_menu_items(restaurant_id: int, name: str = Query(default=""), controller: RestaurantController = Depends(get_controller)):
+    return controller.get_menu_item_by_partial_name(restaurant_id, name)
 
 @router.post("/", response_model=Restaurant)
 def add_restaurant(
