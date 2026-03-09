@@ -102,3 +102,36 @@ class NotificationRepository:
             raise HTTPException(status_code = 404, detail=f"File {self.file_path} not found")
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+
+    def delete_notification(self, notif_id: int) -> dict:
+        try:
+            with open (self.file_path, 'r') as f:
+                data = json.load(f)
+            deleted_notif = None
+            for k, notif in enumerate(data):
+                if notif.get("id") == notif_id:
+                    deleted_notif = data.pop(k)
+                    break
+            if deleted_notif is None:
+                raise HTTPException(status_code=404, detail = "Notification not found")
+            with open (self.file_path, 'w') as f:
+                json.dump(data, f, indent=4)
+            return deleted_notif
+        except FileNotFoundError:
+            raise HTTPException(status_code = 404, detail=f"File {self.file_path} not found")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        
+    def count_unread(self, user_id: int) -> int:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                notifs = [notif for notif in data if notif.get("user_id") == user_id and notif.get("is_read") == False]
+            return len(notifs)
+        
+        except FileNotFoundError:
+            raise HTTPException(status_code = 404, detail=f"File {self.file_path} not found")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+
+
