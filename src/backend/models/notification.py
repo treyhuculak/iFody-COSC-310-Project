@@ -3,12 +3,13 @@ from datetime import datetime
 from pydantic import BaseModel
 
 class NotificationType(Enum):
-    ORDER_CONFIRMED = "order_confirmed"
-    ORDER_IN_TRANSIT = "order_in_transit"
-    ORDER_DELIVERED = "order_delivered"
-    ORDER_CANCELLED = "order_cancelled"
-    PAYMENT_FAILED = "payment_failed"
+    ORDER_CONFIRMED = "order confirmed"
+    ORDER_IN_TRANSIT = "order in transit"
+    ORDER_DELIVERED = "order delivered"
+    ORDER_CANCELLED = "order cancelled"
+    PAYMENT_FAILED = "payment failed"
     ORDER_IN_PROGRESS = "order in progress"
+    NEW_ORDER_RECEIVED = "new order received"
 
 class NotificationBase(BaseModel):
     user_id: int

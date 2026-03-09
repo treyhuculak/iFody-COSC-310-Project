@@ -21,8 +21,21 @@ class OrderController:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
 
-    def add_order(self, order: OrderCreate):      
-        return self.order_repo.create_order(order)
+    def add_order(self, order: OrderCreate):
+        new_order = self.order_repo.create_order(order)
+        restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+        owner_id = restaurant["owner_id"]
+
+        manager_notification = NotificationCreate(
+            user_id = owner_id,
+            type = NotificationType.NEW_ORDER_RECEIVED,
+            title = "New Order Received",
+            message = f"You have received a new order (Order ID #{new_order[id]})",
+            order_id = new_order[id],
+            is_read = False
+        )
+        self.notif_controller.create_notif(manager_notification)
+        return new_order
         
     def delete_order(self, order_id: int):
         order = self.get_order(order_id)
