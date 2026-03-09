@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from src.backend.controllers.notif_controller import NotificationController
-from src.backend.models.notif import Notification, NotificationCreate
+from src.backend.controllers.notification_controller import NotificationController
+from src.backend.models.notification import Notification, NotificationCreate
 from typing import List
 
 router = APIRouter(

@@ -1,5 +1,5 @@
-from src.backend.models.notif import Notification, NotificationCreate
-from src.backend.repositories.notif_repo import NotificationRepository
+from src.backend.models.notification import Notification, NotificationCreate
+from src.backend.repositories.notification_repo import NotificationRepository
 from fastapi import HTTPException
 from typing import List
 
