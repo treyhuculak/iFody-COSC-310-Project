@@ -8,5 +8,2045 @@
         "is_read": false,
         "created_at": "2026-03-08T15:30:45.123456",
         "order_id": 42
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 2,
+        "created_at": "2026-03-09T19:03:21.092054"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 3,
+        "created_at": "2026-03-09T19:03:21.096153"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 4,
+        "created_at": "2026-03-09T19:03:21.099132"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 5,
+        "created_at": "2026-03-09T19:03:21.103573"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 6,
+        "created_at": "2026-03-09T19:03:21.107806"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 7,
+        "created_at": "2026-03-09T19:03:21.113446"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 8,
+        "created_at": "2026-03-09T19:03:21.117242"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 9,
+        "created_at": "2026-03-09T19:03:21.120723"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 10,
+        "created_at": "2026-03-09T19:03:21.126091"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 11,
+        "created_at": "2026-03-09T19:03:21.131264"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 12,
+        "created_at": "2026-03-09T19:03:21.134711"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 13,
+        "created_at": "2026-03-09T19:03:21.135676"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 14,
+        "created_at": "2026-03-09T19:07:40.540726"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 15,
+        "created_at": "2026-03-09T19:07:40.544706"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 16,
+        "created_at": "2026-03-09T19:07:40.547989"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 17,
+        "created_at": "2026-03-09T19:07:40.552284"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 18,
+        "created_at": "2026-03-09T19:07:40.556861"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 19,
+        "created_at": "2026-03-09T19:07:40.560296"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 20,
+        "created_at": "2026-03-09T19:07:40.563692"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 21,
+        "created_at": "2026-03-09T19:07:40.567401"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 22,
+        "created_at": "2026-03-09T19:07:40.572636"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 23,
+        "created_at": "2026-03-09T19:07:40.577882"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 24,
+        "created_at": "2026-03-09T19:07:40.581649"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 25,
+        "created_at": "2026-03-09T19:07:40.582798"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 26,
+        "created_at": "2026-03-09T19:09:07.319821"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 27,
+        "created_at": "2026-03-09T19:09:07.324330"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 28,
+        "created_at": "2026-03-09T19:09:07.327407"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 29,
+        "created_at": "2026-03-09T19:09:07.331586"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 30,
+        "created_at": "2026-03-09T19:09:07.335891"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 31,
+        "created_at": "2026-03-09T19:09:07.339596"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 32,
+        "created_at": "2026-03-09T19:09:07.342956"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 33,
+        "created_at": "2026-03-09T19:09:07.346580"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 34,
+        "created_at": "2026-03-09T19:09:07.351480"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 35,
+        "created_at": "2026-03-09T19:09:07.356971"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 36,
+        "created_at": "2026-03-09T19:09:07.360287"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 37,
+        "created_at": "2026-03-09T19:09:07.361390"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 38,
+        "created_at": "2026-03-09T19:09:34.832102"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 39,
+        "created_at": "2026-03-09T19:09:34.836653"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 40,
+        "created_at": "2026-03-09T19:09:34.839796"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 41,
+        "created_at": "2026-03-09T19:09:34.844187"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 42,
+        "created_at": "2026-03-09T19:09:34.848454"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 43,
+        "created_at": "2026-03-09T19:09:34.851805"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 44,
+        "created_at": "2026-03-09T19:09:34.855343"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 45,
+        "created_at": "2026-03-09T19:09:34.859551"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 46,
+        "created_at": "2026-03-09T19:09:34.865246"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 47,
+        "created_at": "2026-03-09T19:09:34.871536"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 48,
+        "created_at": "2026-03-09T19:09:34.875327"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 49,
+        "created_at": "2026-03-09T19:09:34.876817"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 50,
+        "created_at": "2026-03-09T19:11:12.776942"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 51,
+        "created_at": "2026-03-09T19:11:12.781361"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 52,
+        "created_at": "2026-03-09T19:11:12.784480"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 53,
+        "created_at": "2026-03-09T19:11:12.789487"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 54,
+        "created_at": "2026-03-09T19:11:12.794250"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 55,
+        "created_at": "2026-03-09T19:11:12.797887"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 56,
+        "created_at": "2026-03-09T19:11:12.801809"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 57,
+        "created_at": "2026-03-09T19:11:12.806131"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 58,
+        "created_at": "2026-03-09T19:11:12.811900"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 59,
+        "created_at": "2026-03-09T19:11:12.817201"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 60,
+        "created_at": "2026-03-09T19:11:12.820924"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 61,
+        "created_at": "2026-03-09T19:11:12.822179"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 62,
+        "created_at": "2026-03-09T19:18:00.735410"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 63,
+        "created_at": "2026-03-09T19:18:00.740574"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 64,
+        "created_at": "2026-03-09T19:18:00.743754"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 65,
+        "created_at": "2026-03-09T19:18:00.749242"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 66,
+        "created_at": "2026-03-09T19:18:00.754379"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 67,
+        "created_at": "2026-03-09T19:18:00.758332"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 68,
+        "created_at": "2026-03-09T19:18:00.762519"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 69,
+        "created_at": "2026-03-09T19:18:00.766983"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 70,
+        "created_at": "2026-03-09T19:18:00.774365"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 71,
+        "created_at": "2026-03-09T19:18:00.781608"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 72,
+        "created_at": "2026-03-09T19:18:00.785959"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 73,
+        "created_at": "2026-03-09T19:18:00.787422"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 74,
+        "created_at": "2026-03-09T19:18:50.556199"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 75,
+        "created_at": "2026-03-09T19:18:50.560479"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 76,
+        "created_at": "2026-03-09T19:18:50.563941"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 77,
+        "created_at": "2026-03-09T19:18:50.568611"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 78,
+        "created_at": "2026-03-09T19:18:50.572896"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 79,
+        "created_at": "2026-03-09T19:18:50.576625"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 80,
+        "created_at": "2026-03-09T19:18:50.580456"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 81,
+        "created_at": "2026-03-09T19:18:50.584425"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 82,
+        "created_at": "2026-03-09T19:18:50.590043"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 83,
+        "created_at": "2026-03-09T19:18:50.595799"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 84,
+        "created_at": "2026-03-09T19:18:50.599455"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 85,
+        "created_at": "2026-03-09T19:18:50.600816"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 86,
+        "created_at": "2026-03-09T19:19:46.939573"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 87,
+        "created_at": "2026-03-09T19:19:46.944312"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 88,
+        "created_at": "2026-03-09T19:19:46.947854"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 89,
+        "created_at": "2026-03-09T19:19:46.952806"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 90,
+        "created_at": "2026-03-09T19:19:46.957125"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 91,
+        "created_at": "2026-03-09T19:19:46.961398"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 92,
+        "created_at": "2026-03-09T19:19:46.965503"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 93,
+        "created_at": "2026-03-09T19:19:46.969769"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 94,
+        "created_at": "2026-03-09T19:19:46.975437"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 95,
+        "created_at": "2026-03-09T19:19:46.981025"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 96,
+        "created_at": "2026-03-09T19:19:46.984932"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 97,
+        "created_at": "2026-03-09T19:19:46.986550"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 98,
+        "created_at": "2026-03-09T19:21:39.363817"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 99,
+        "created_at": "2026-03-09T19:21:39.368906"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 100,
+        "created_at": "2026-03-09T19:21:39.372709"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 101,
+        "created_at": "2026-03-09T19:21:39.378023"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 102,
+        "created_at": "2026-03-09T19:21:39.382691"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 103,
+        "created_at": "2026-03-09T19:21:39.386474"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 104,
+        "created_at": "2026-03-09T19:21:39.390597"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 105,
+        "created_at": "2026-03-09T19:21:39.394813"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 106,
+        "created_at": "2026-03-09T19:21:39.400725"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 107,
+        "created_at": "2026-03-09T19:21:39.406520"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 108,
+        "created_at": "2026-03-09T19:21:39.410558"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 109,
+        "created_at": "2026-03-09T19:21:39.412156"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 110,
+        "created_at": "2026-03-09T19:21:47.620272"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 111,
+        "created_at": "2026-03-09T19:21:47.627386"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 112,
+        "created_at": "2026-03-09T19:21:47.631168"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 113,
+        "created_at": "2026-03-09T19:21:47.636248"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 114,
+        "created_at": "2026-03-09T19:21:47.641262"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 115,
+        "created_at": "2026-03-09T19:21:47.645553"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 116,
+        "created_at": "2026-03-09T19:21:47.649726"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 117,
+        "created_at": "2026-03-09T19:21:47.654067"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 118,
+        "created_at": "2026-03-09T19:21:47.659988"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 119,
+        "created_at": "2026-03-09T19:21:47.665714"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 120,
+        "created_at": "2026-03-09T19:21:47.669664"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 121,
+        "created_at": "2026-03-09T19:21:47.671516"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 122,
+        "created_at": "2026-03-09T19:23:15.370364"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 123,
+        "created_at": "2026-03-09T19:23:15.375359"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 124,
+        "created_at": "2026-03-09T19:23:15.378786"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 125,
+        "created_at": "2026-03-09T19:23:15.383731"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 126,
+        "created_at": "2026-03-09T19:23:15.388661"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 127,
+        "created_at": "2026-03-09T19:23:15.392385"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 128,
+        "created_at": "2026-03-09T19:23:15.396421"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 129,
+        "created_at": "2026-03-09T19:23:15.400712"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 130,
+        "created_at": "2026-03-09T19:23:15.406609"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 131,
+        "created_at": "2026-03-09T19:23:15.411934"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 132,
+        "created_at": "2026-03-09T19:23:15.416058"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 133,
+        "created_at": "2026-03-09T19:23:15.417713"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 134,
+        "created_at": "2026-03-09T19:26:47.039632"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 135,
+        "created_at": "2026-03-09T19:26:47.044889"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 136,
+        "created_at": "2026-03-09T19:26:47.048529"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 137,
+        "created_at": "2026-03-09T19:26:47.054352"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 138,
+        "created_at": "2026-03-09T19:26:47.058872"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 139,
+        "created_at": "2026-03-09T19:26:47.062940"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 140,
+        "created_at": "2026-03-09T19:26:47.067265"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 141,
+        "created_at": "2026-03-09T19:26:47.071911"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 142,
+        "created_at": "2026-03-09T19:26:47.078131"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 143,
+        "created_at": "2026-03-09T19:26:47.083731"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 144,
+        "created_at": "2026-03-09T19:26:47.088206"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 145,
+        "created_at": "2026-03-09T19:26:47.089883"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 146,
+        "created_at": "2026-03-09T19:27:14.142185"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 147,
+        "created_at": "2026-03-09T19:27:14.146556"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 148,
+        "created_at": "2026-03-09T19:27:14.150452"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 149,
+        "created_at": "2026-03-09T19:27:14.155689"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 150,
+        "created_at": "2026-03-09T19:27:14.160265"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 151,
+        "created_at": "2026-03-09T19:27:14.164169"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 152,
+        "created_at": "2026-03-09T19:27:14.168549"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 153,
+        "created_at": "2026-03-09T19:27:14.173212"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 154,
+        "created_at": "2026-03-09T19:27:14.178733"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 155,
+        "created_at": "2026-03-09T19:27:14.185123"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 156,
+        "created_at": "2026-03-09T19:27:14.189883"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 157,
+        "created_at": "2026-03-09T19:27:14.191623"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 158,
+        "created_at": "2026-03-09T19:28:07.635683"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 159,
+        "created_at": "2026-03-09T19:28:07.640792"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 160,
+        "created_at": "2026-03-09T19:28:07.644674"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 161,
+        "created_at": "2026-03-09T19:28:07.649883"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 162,
+        "created_at": "2026-03-09T19:28:07.684001"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 163,
+        "created_at": "2026-03-09T19:28:07.690292"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 164,
+        "created_at": "2026-03-09T19:28:07.698881"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 165,
+        "created_at": "2026-03-09T19:28:07.704049"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 166,
+        "created_at": "2026-03-09T19:28:07.710347"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 167,
+        "created_at": "2026-03-09T19:28:07.716977"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 168,
+        "created_at": "2026-03-09T19:28:07.721305"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 169,
+        "created_at": "2026-03-09T19:28:07.723146"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 170,
+        "created_at": "2026-03-09T19:30:28.903604"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 171,
+        "created_at": "2026-03-09T19:30:28.908688"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 172,
+        "created_at": "2026-03-09T19:30:28.912721"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 173,
+        "created_at": "2026-03-09T19:30:28.918878"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 174,
+        "created_at": "2026-03-09T19:30:28.924045"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 175,
+        "created_at": "2026-03-09T19:30:28.928286"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 176,
+        "created_at": "2026-03-09T19:30:28.933042"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 177,
+        "created_at": "2026-03-09T19:30:28.937829"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 178,
+        "created_at": "2026-03-09T19:30:28.943871"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 179,
+        "created_at": "2026-03-09T19:30:28.949905"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 180,
+        "created_at": "2026-03-09T19:30:28.954122"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 181,
+        "created_at": "2026-03-09T19:30:28.956050"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 182,
+        "created_at": "2026-03-09T19:31:08.124411"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 183,
+        "created_at": "2026-03-09T19:31:08.129056"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 184,
+        "created_at": "2026-03-09T19:31:08.134619"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 185,
+        "created_at": "2026-03-09T19:31:08.139693"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 186,
+        "created_at": "2026-03-09T19:31:08.144572"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 187,
+        "created_at": "2026-03-09T19:31:08.149146"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 188,
+        "created_at": "2026-03-09T19:31:08.153369"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 189,
+        "created_at": "2026-03-09T19:31:08.157821"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 190,
+        "created_at": "2026-03-09T19:31:08.164249"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 191,
+        "created_at": "2026-03-09T19:31:08.170526"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 192,
+        "created_at": "2026-03-09T19:31:08.175119"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 193,
+        "created_at": "2026-03-09T19:31:08.176946"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 194,
+        "created_at": "2026-03-09T19:31:52.568636"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 195,
+        "created_at": "2026-03-09T19:31:52.573375"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 196,
+        "created_at": "2026-03-09T19:31:52.577463"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 197,
+        "created_at": "2026-03-09T19:31:52.583326"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 198,
+        "created_at": "2026-03-09T19:31:52.590157"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 199,
+        "created_at": "2026-03-09T19:31:52.594802"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 200,
+        "created_at": "2026-03-09T19:31:52.599472"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 201,
+        "created_at": "2026-03-09T19:31:52.604350"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 202,
+        "created_at": "2026-03-09T19:31:52.610494"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 203,
+        "created_at": "2026-03-09T19:31:52.616828"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "You have received a new order (Order ID #1)",
+        "is_read": false,
+        "order_id": 1,
+        "id": 204,
+        "created_at": "2026-03-09T19:31:52.621271"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Order Status Updated",
+        "message": "Your order status is now preparing",
+        "is_read": false,
+        "order_id": 1,
+        "id": 205,
+        "created_at": "2026-03-09T19:31:52.623249"
     }
 ]

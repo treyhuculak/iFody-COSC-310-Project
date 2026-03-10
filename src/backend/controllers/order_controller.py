@@ -13,8 +13,8 @@ from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class OrderController:
-    def __init__(self) -> None:
-        self.order_repo = OrderRepository()
+    def __init__(self, repo: Optional[OrderRepository] = None) -> None:
+        self.order_repo = repo or OrderRepository()
         self.notif_controller = NotificationController()
         self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
@@ -40,19 +40,21 @@ class OrderController:
             order_data['total_price'] = subtotal + tax + delivery_fee
 
             new_order = self.order_repo.create_order(order_data)
-
-            restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
-            owner_id = restaurant["owner_id"]
-
-            manager_notification = NotificationCreate(
-                user_id = owner_id,
-                type = NotificationType.NEW_ORDER_RECEIVED,
-                title = "New Order Received",
-                message = f"You have received a new order (Order ID #{new_order[id]})",
-                order_id = new_order['id'],
-                is_read = False
-            )
-            self.notif_controller.create_notif(manager_notification)
+            try:    
+                restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+                if restaurant:
+                    owner_id = restaurant["owner_id"]
+                    manager_notification = NotificationCreate(
+                        user_id = owner_id,
+                        type = NotificationType.NEW_ORDER_RECEIVED,
+                        title = "New Order Received",
+                        message = f"You have received a new order (Order ID #{new_order['id']})",
+                        order_id = new_order['id'],
+                        is_read = False
+                    )
+                    self.notif_controller.create_notif(manager_notification)
+            except Exception as e:
+                print(f"Failed to create notification: {e}")
             
             return new_order
 
@@ -123,7 +125,7 @@ class OrderController:
             }
 
             if status_enum in manager_status_map:
-                notif_type, title, message = manager_status_map[new_status]
+                notif_type, title, message = manager_status_map[status_enum]
                 restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])
                 owner_id = restaurant["owner_id"]
                 manager_notification = NotificationCreate(
