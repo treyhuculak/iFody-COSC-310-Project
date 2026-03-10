@@ -2,7 +2,7 @@ import pytest, typing
 from fastapi import HTTPException
 from src.backend.controllers.auth_controller import AuthController, AccountExistsException
 from src.backend.repositories.user_repo import UserRepository
-from src.backend.models.user import InvalidEmailError, InvalidPasswordError, InvalidRoleError
+from src.backend.models.user import InvalidEmailError, InvalidPasswordError
 
 controller = AuthController()
 controller.repo = UserRepository("data/temp_user_db.json")

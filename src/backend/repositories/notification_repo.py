@@ -2,7 +2,7 @@ import json
 from typing import List, Optional, Dict
 from datetime import datetime
 from fastapi import HTTPException
-from src.backend.models.notif import NotificationCreate
+from src.backend.models.notification import NotificationCreate
 
 class NotificationRepository:
     NOTIFICATION_FILE = 'data/notification.json'
