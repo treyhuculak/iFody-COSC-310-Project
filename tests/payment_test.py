@@ -6,6 +6,28 @@ from src.backend.main import app
 from src.backend.routers.payment import get_controller
 from src.backend.models.payment import PaymentOptions
 from src.backend.models.card_payment import CardPaymentBrand
+from src.backend.repositories.payment_repo import PaymentRepository
+from src.backend.controllers.payment_controller import PaymentController
+
+@pytest.fixture
+def test_client(tmp_path):
+    """
+    Provides a TestClient backed by a temporary JSON file instead of the real
+    data/payment.json.  The temp file is deleted automatically after each
+    test, so the production database is never touched.
+    """
+    temp_db = tmp_path / "test_payment.json"
+    temp_db.write_text(json.dumps([]))
+
+    test_repo = PaymentRepository(file_path=str(temp_db))
+    test_controller = PaymentController(repo=test_repo)
+
+    app.dependency_overrides[get_controller] = lambda: test_controller
+
+    with TestClient(app) as client:
+        yield client
+
+    app.dependency_overrides.clear()
 
 cash_payment = {
     "user_id": 1,
