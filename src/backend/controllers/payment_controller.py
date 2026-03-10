@@ -22,25 +22,20 @@ class PaymentController:
         try:
             # Now serialize the payment for storage (if card option was given, serialize card info instead)
             payment_info = None
-            if(payment.method.value == PaymentOptions.CASH.value):
+            if(payment.method == PaymentOptions.CASH):
                 payment_info = payment.model_dump(mode="json")
             
-            elif (payment.method.value == PaymentOptions.CREDIT_CARD.value or payment.method.value == PaymentOptions.DEBIT_CARD.value):
+            elif (payment.method in [PaymentOptions.CREDIT_CARD, PaymentOptions.DEBIT_CARD]):
                 # Ensuring payment parameter has card information
                 if not isinstance(payment, CardPaymentCreate):
                     raise ValueError("Card payment data is required.")
                 
                 # Validating payment/card info
-                self.payment_service.simulate_payment(payment)
+                success = self.payment_service.simulate_payment(payment)
                     
                 payment_info = payment.model_dump(mode="json")
 
-                if(payment.card_brand.value == CardPaymentBrand.MASTER_CARD.value or payment.card_brand.value == CardPaymentBrand.VISA.value):
-                    # FOR NOW, accept all card payments that have a brand
-                    payment_info["is_successful"] = True
-                else:
-                    # FOR NOW, decline all card that do not have a brand
-                    payment_info["is_successful"] = False
+                payment_info["is_successful"] = success
             else:
                 raise ValueError("Invalid payment method.")
             
@@ -48,7 +43,7 @@ class PaymentController:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            raise HTTPException(status_code=500, detail="An unexpected error occurred while adding the payment method.")
+            raise HTTPException(status_code=500, detail=str(e))
         
     def delete_payment_method(self, payment_id: int):
         return self.payment_repo.delete_payment_method(payment_id)

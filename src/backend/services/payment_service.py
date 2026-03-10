@@ -12,13 +12,24 @@ class PaymentService:
     def __init__(self):
         pass
     
-    def simulate_payment(self, payment_data: CardPaymentCreate):
+    def simulate_payment(self, payment_data: CardPaymentCreate) -> bool:
         self.validate_payment_logic(payment_data)
         self.define_card_brand(payment_data)
+
+        return self.checking_payment_is_successful(payment_data)
+    
+    def checking_payment_is_successful(self, payment: CardPaymentCreate) -> bool:
+        if(payment.card_brand in [CardPaymentBrand.MASTER_CARD, CardPaymentBrand.VISA]):
+            # FOR NOW, accept all card payments that have a brand
+            return True
+        else:
+            # FOR NOW, decline all card that do not have a brand
+            return False
 
     def define_card_brand(self, payment_data: CardPaymentCreate):
         card_digits = payment_data.card_digits.strip()
 
+        # Defining card brand based on first digit
         if(card_digits[0] == "4"):
             payment_data.card_brand = CardPaymentBrand.VISA
         elif(card_digits[0] == "5"):
