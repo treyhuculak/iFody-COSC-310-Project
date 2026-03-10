@@ -46,8 +46,7 @@ class PaymentRepository:
                     # FOR NOW, accept all cash payments
                     payment_data['is_successful'] = True
                 else:
-                     # FOR NOW, accept all card payments
-                    payment_data['is_successful'] = True
+                    # Only retain 4 last digits for best practises
                     payment_data['last4'] = "".join([payment_data['card_digits'][-4], payment_data['card_digits'][-3], payment_data['card_digits'][-2], payment_data['card_digits'][-1]])
                     
                     # Removing critical user information (best practise)
@@ -66,8 +65,6 @@ class PaymentRepository:
                 # FOR NOW, accept all cash payments
                 payment_data['is_successful'] = True
             else:
-                # FOR NOW, accept all card payments
-                payment_data['is_successful'] = True
                 payment_data['last4'] = "".join([payment_data['card_digits'][-4], payment_data['card_digits'][-3], payment_data['card_digits'][-2], payment_data['card_digits'][-1]])
                     
                 # Removing critical user information (best practise)

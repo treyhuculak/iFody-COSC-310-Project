@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from src.backend.repositories.payment_repo import PaymentRepository
 from src.backend.models.payment import PaymentCreate, PaymentOptions
-from src.backend.models.card_payment import CardPaymentCreate
+from src.backend.models.card_payment import CardPaymentCreate, CardPaymentBrand
 from src.backend.services.payment_service import PaymentService
 
 class PaymentController:
@@ -31,8 +31,16 @@ class PaymentController:
                     raise ValueError("Card payment data is required.")
                 
                 # Validating payment/card info
-                self.payment_service.validate_payment_logic(payment)
+                self.payment_service.simulate_payment(payment)
+                    
                 payment_info = payment.model_dump(mode="json")
+
+                if(payment.card_brand.value == CardPaymentBrand.MASTER_CARD.value or payment.card_brand.value == CardPaymentBrand.VISA.value):
+                    # FOR NOW, accept all card payments that have a brand
+                    payment_info["is_successful"] = True
+                else:
+                    # FOR NOW, decline all card that do not have a brand
+                    payment_info["is_successful"] = False
             else:
                 raise ValueError("Invalid payment method.")
             
