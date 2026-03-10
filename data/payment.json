@@ -811,5 +811,115 @@
         "is_successful": true,
         "id": 83,
         "last4": "5678"
+    },
+    {
+        "user_id": 1,
+        "order_id": 10,
+        "amount": 25.5,
+        "method": "cash",
+        "id": 84,
+        "is_successful": true
+    },
+    {
+        "user_id": 2,
+        "order_id": 15,
+        "amount": 49.99,
+        "method": "credit_card",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "name_on_card": "Umberto De Luca",
+        "card_brand": "Visa",
+        "is_successful": true,
+        "id": 85,
+        "last4": "5678"
+    },
+    {
+        "user_id": 2,
+        "order_id": 15,
+        "amount": 49.99,
+        "method": "credit_card",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "name_on_card": "Umberto De Luca",
+        "card_brand": "brand_not_found",
+        "is_successful": false,
+        "id": 86,
+        "last4": "5678"
+    },
+    {
+        "user_id": 1,
+        "order_id": 10,
+        "amount": 25.5,
+        "method": "cash",
+        "id": 87,
+        "is_successful": true
+    },
+    {
+        "user_id": 2,
+        "order_id": 15,
+        "amount": 49.99,
+        "method": "credit_card",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "name_on_card": "Umberto De Luca",
+        "card_brand": "Visa",
+        "is_successful": true,
+        "id": 88,
+        "last4": "5678"
+    },
+    {
+        "user_id": 1,
+        "order_id": 10,
+        "amount": 25.5,
+        "method": "cash",
+        "id": 89,
+        "is_successful": true
+    },
+    {
+        "user_id": 2,
+        "order_id": 15,
+        "amount": 49.99,
+        "method": "credit_card",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "name_on_card": "Umberto De Luca",
+        "card_brand": "Visa",
+        "is_successful": true,
+        "id": 90,
+        "last4": "5678"
+    },
+    {
+        "user_id": 2,
+        "order_id": 15,
+        "amount": 49.99,
+        "method": "credit_card",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "name_on_card": "Umberto De Luca",
+        "card_brand": "brand_not_found",
+        "is_successful": false,
+        "id": 91,
+        "last4": "5678"
+    },
+    {
+        "user_id": 1,
+        "order_id": 10,
+        "amount": 25.5,
+        "method": "cash",
+        "id": 92,
+        "is_successful": true
+    },
+    {
+        "user_id": 2,
+        "order_id": 15,
+        "amount": 49.99,
+        "method": "credit_card",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "name_on_card": "Umberto De Luca",
+        "card_brand": "Visa",
+        "is_successful": true,
+        "id": 93,
+        "last4": "5678"
     }
 ]

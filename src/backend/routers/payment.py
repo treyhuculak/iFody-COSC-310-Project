@@ -22,7 +22,12 @@ def add_payment(payment: PaymentCreate, controller: PaymentController = Depends(
     new_payment = controller.add_payment_method(payment)
     return new_payment
 
-@router.delete("/{payment_id}", response_model=Payment)
+@router.delete("/card/{payment_id}", response_model=CardPaymentResponse)
+def delete_payment(payment_id: int, controller: PaymentController = Depends(get_controller)):
+    deleted_payment = controller.delete_payment_method(payment_id)
+    return deleted_payment
+
+@router.delete("/cash/{payment_id}", response_model=Payment)
 def delete_payment(payment_id: int, controller: PaymentController = Depends(get_controller)):
     deleted_payment = controller.delete_payment_method(payment_id)
     return deleted_payment

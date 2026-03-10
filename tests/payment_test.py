@@ -180,3 +180,31 @@ def test_get_card_payment_by_id(test_client):
     assert data["last4"] == "5678"
     assert "CVV" not in data
     assert data["card_brand"] == CardPaymentBrand.VISA.value
+
+def test_delete_cash_payment(test_client):
+    response = test_client.post("/payment/cash/", json=cash_payment)
+    assert response.status_code == 200
+
+    payment_id = response.json()["id"]
+
+    # Delete payment method
+    delete_response = test_client.delete(f"/payment/cash/{payment_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, trying to get the payment method should return a 404
+    get_response = test_client.get(f"/payment/cash/{payment_id}")
+    assert get_response.status_code == 404
+
+def test_delete_card_payment(test_client):
+    response = test_client.post("/payment/card/", json=card_payment)
+    assert response.status_code == 200
+
+    payment_id = response.json()["id"]
+
+    # Delete payment method
+    delete_response = test_client.delete(f"/payment/card/{payment_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, trying to get the payment method should return a 404
+    get_response = test_client.get(f"/payment/card/{payment_id}")
+    assert get_response.status_code == 404
