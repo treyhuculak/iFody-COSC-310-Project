@@ -1,11 +1,11 @@
 from src.backend.models.notification import Notification, NotificationCreate
 from src.backend.repositories.notification_repo import NotificationRepository
 from fastapi import HTTPException
-from typing import List
+from typing import List, Optional
 
 class NotificationController:
-    def __init__(self) -> None:
-        self.notif_repo = NotificationRepository()
+    def __init__(self, repo: Optional[NotificationRepository] = None) -> None:
+        self.notif_repo = repo or NotificationRepository()
     
     def get_notifs_by_user_id(self, user_id: int) -> List[dict]:
         return self.notif_repo.get_notifications_by_user_id(user_id)

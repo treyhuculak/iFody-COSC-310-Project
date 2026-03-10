@@ -13,11 +13,12 @@ from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class OrderController:
-    def __init__(self, repo: Optional[OrderRepository] = None) -> None:
+    def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
         self.order_repo = repo or OrderRepository()
-        self.notif_controller = NotificationController()
+        self.notif_controller = notif_controller or NotificationController()
         self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
+        
 
     def validate_order_logic(self):
         # For now
@@ -44,18 +45,10 @@ class OrderController:
                 restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
                 if restaurant:
                     owner_id = restaurant["owner_id"]
-                    manager_notification = NotificationCreate(
-                        user_id = owner_id,
-                        type = NotificationType.NEW_ORDER_RECEIVED,
-                        title = "New Order Received",
-                        message = f"You have received a new order (Order ID #{new_order['id']})",
-                        order_id = new_order['id'],
-                        is_read = False
-                    )
+                    manager_notification = NotificationCreate(...)
                     self.notif_controller.create_notif(manager_notification)
-            except Exception as e:
-                print(f"Failed to create notification: {e}")
-            
+            except:
+                pass
             return new_order
 
         except ValueError as e:

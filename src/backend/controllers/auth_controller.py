@@ -29,7 +29,7 @@ class AuthController:
         new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
         user_dict = new_user.model_dump()
         
-        if hasattr(user_dict['role'], 'value'):
+        if hasattr(user_dict['role'], 'value'): #If role gets converted to Enum by Pydantic, convert back to string
             user_dict['role'] = user_dict['role'].value
 
         self.repo.add_user(user_dict)

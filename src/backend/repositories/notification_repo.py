@@ -10,8 +10,9 @@ class NotificationRepository:
     def __init__(self, file_path: Optional[str] = None) -> None:
         # check if files exist, if not create them with headers
         self.file_path = file_path or self.NOTIFICATION_FILE
+        print(f"NotificationRepository initialized with file: {self.file_path}")
         try:
-            with open(self.NOTIFICATION_FILE, 'r') as f:
+            with open(self.file_path, 'r') as f:
                 json.load(f)
         except(FileNotFoundError, json.JSONDecodeError):
         # file doesn't exist or is corrupted, create/reset it with an empty list
