@@ -6,6 +6,7 @@
         "delivery_fee": 5.99,
         "owner_id": 1,
         "id": 1,
+        "is_available": true,
         "menu_items": [
             {
                 "name": "Spaghetti Carbonara",
@@ -22,12 +23,13 @@
         ]
     },
     {
-        "name": "Sushi World",
+        "name": "The Sushi World",
         "cuisine": "Japanese",
         "location": "Vancouver, BC",
         "delivery_fee": 3.99,
         "owner_id": 2,
         "id": 2,
+        "is_available": true,
         "menu_items": [
             {
                 "name": "California Roll",
@@ -38,28 +40,6 @@
             {
                 "name": "Spicy Tuna Roll",
                 "description": "Tuna mixed with spicy mayo, rolled with sushi rice and seaweed.",
-                "price": 9.99,
-                "id": 2
-            }
-        ]
-    },
-    {
-        "name": "Taco Fiesta",
-        "cuisine": "Mexican",
-        "location": "Kelowna, BC",
-        "delivery_fee": 2.99,
-        "owner_id": 3,
-        "id": 3,
-        "menu_items": [
-            {
-                "name": "Chicken Tacos",
-                "description": "Grilled chicken with lettuce, cheese, and salsa in a soft tortilla.",
-                "price": 7.99,
-                "id": 1
-            },
-            {
-                "name": "Beef Burrito",
-                "description": "Seasoned beef, rice, beans, and cheese wrapped in a large tortilla.",
                 "price": 9.99,
                 "id": 2
             }

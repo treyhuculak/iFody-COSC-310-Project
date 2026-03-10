@@ -1,8 +1,11 @@
+from typing import Optional
+
 from fastapi import HTTPException
 
 from src.backend.models.order import Order, OrderCreate
 from src.backend.models.order_item import OrderItem, OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
+from src.backend.services.order_service import OrderService
 from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
 from src.backend.controllers.notification_controller import NotificationController
@@ -13,29 +16,56 @@ class OrderController:
     def __init__(self) -> None:
         self.order_repo = OrderRepository()
         self.notif_controller = NotificationController()
+        self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
 
+    def validate_order_logic(self):
+        # For now
+        return True
+
+    def add_order(self, order: OrderCreate):
+        try:
+            # Calculate totals first using the original order with Enum objects
+            subtotal = self.order_service.calculate_order_subtotal(order)
+            tax = self.order_service.calculate_tax(order, subtotal)
+            delivery_fee = self.order_service.get_delivery_fee(order)
+            
+            # Now serialize the order data for storage
+            order_data = order.model_dump()
+            order_data['status'] = order.status.value
+            order_data['location'] = order.location.value
+            order_data['subtotal_price'] = subtotal
+            order_data['tax'] = tax
+            order_data['delivery_fee'] = delivery_fee
+            order_data['total_price'] = subtotal + tax + delivery_fee
+
+            new_order = self.order_repo.create_order(order_data)
+
+            restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+            owner_id = restaurant["owner_id"]
+
+            manager_notification = NotificationCreate(
+                user_id = owner_id,
+                type = NotificationType.NEW_ORDER_RECEIVED,
+                title = "New Order Received",
+                message = f"You have received a new order (Order ID #{new_order[id]})",
+                order_id = new_order['id'],
+                is_read = False
+            )
+            self.notif_controller.create_notif(manager_notification)
+            
+            return new_order
+
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="An unexpected error occurred while creating the order.")
+    
     def get_order(self, order_id: int):
         order = self.order_repo.get_order_by_id(order_id)
         if order == None:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
-
-    def add_order(self, order: OrderCreate):
-        new_order = self.order_repo.create_order(order)
-        restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
-        owner_id = restaurant["owner_id"]
-
-        manager_notification = NotificationCreate(
-            user_id = owner_id,
-            type = NotificationType.NEW_ORDER_RECEIVED,
-            title = "New Order Received",
-            message = f"You have received a new order (Order ID #{new_order[id]})",
-            order_id = new_order[id],
-            is_read = False
-        )
-        self.notif_controller.create_notif(manager_notification)
-        return new_order
         
     def delete_order(self, order_id: int):
         order = self.get_order(order_id)
@@ -52,11 +82,17 @@ class OrderController:
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be cancelled")
     
-    def update_order_status(self, order_id: int, new_status: OrderStatus, role: str):
+    def update_order_status(self, order_id: int, new_status: str, role: str):
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
         
-        updated_order = self.order_repo.update_order_status(order_id, new_status)
+        # Convert string to OrderStatus enum
+        try:
+            status_enum = OrderStatus(new_status)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
+        
+        updated_order = self.order_repo.update_order_status(order_id, status_enum.value)
         if updated_order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         else:
@@ -68,14 +104,14 @@ class OrderController:
                 OrderStatus.DELIVERED: NotificationType.ORDER_DELIVERED
             }
 
-            notif_type = customer_status_map.get(new_status, NotificationType.ORDER_CONFIRMED)
+            notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
 
             #create notification for the customer
             customer_notification = NotificationCreate(
                 user_id = updated_order["customer_id"],
                 type = notif_type,
                 title = "Order Status Updated",
-                message = f"Your order status is now {new_status.value}",
+                message = f"Your order status is now {status_enum.value}",
                 order_id=order_id,
                 is_read=False
             )
@@ -86,7 +122,7 @@ class OrderController:
                 OrderStatus.DELIVERED: (NotificationType.ORDER_DELIVERED, "Order has been delivered", f"Order #{order_id} has been delivered")
             }
 
-            if new_status in manager_status_map:
+            if status_enum in manager_status_map:
                 notif_type, title, message = manager_status_map[new_status]
                 restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])
                 owner_id = restaurant["owner_id"]
@@ -121,7 +157,7 @@ class OrderController:
         if not (order["status"] == "out for delivery" or order["status"] == "delivered"):
 
             # Creating order item based on menu item
-            order_item = OrderItemCreate(item_id = menu_item.id, quantity = quantity)
+            order_item = OrderItemCreate(item_id=menu_item.id, quantity=quantity)
             if isinstance(order, dict) and "error" in order:
                 raise HTTPException(status_code=404, detail=order["error"])
             
