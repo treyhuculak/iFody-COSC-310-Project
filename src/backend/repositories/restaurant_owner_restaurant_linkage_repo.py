@@ -27,7 +27,7 @@ class RestaurantOwnerRestaurantLinkageRepo:
         # The field self.manageable_rests_file is a database that shows which restaurant owners manage which restaurants.
         user_repo_file = user_repo_file or "data/user_db.json"
         rest_repo_file = rest_repo_file or "data/restaurants.json"
-        self.manageable_rests_file = manageable_rests or "data/manageable_rests.json"
+        self.manageable_rests_file = manageable_rests or "data/rest_owner_rest_db.json"
 
         # We call the initializers for UserRepository and RestaurantRepository.
         self.user_repo = user_repo.UserRepository(user_repo_file)
