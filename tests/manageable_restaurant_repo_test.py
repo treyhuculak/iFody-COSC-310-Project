@@ -8,7 +8,7 @@ repo = ManageableRestaurantRepository(
         "data/temp_rest_db.json",
         "data/temp_link_db.json"
 )
-user_example = {
+restaurant_owner_example = {
     "id": 1,
     "username": "TestRO",
     "email": "TestRO@123.com",
@@ -17,29 +17,14 @@ user_example = {
     "is_logged_in": True,
     "is_blocked": False
 }
-linked_restaurant_example = {
-    "name": "The Gourmet Kitchen",
-    "cuisine": "Italian",
-    "location": "Kelowna, BC",
-    "delivery_fee": 5.99,
-    "owner_id": 1,
-    "id": 1,
-    "is_available": True,
-    "menu_items": [
-        {
-            "name": "Spaghetti Carbonara",
-            "description": "Classic Italian pasta with creamy sauce, pancetta, and Parmesan cheese.",
-            "price": 12.99,
-            "id": 1
-        },
-        {
-            "name": "Margherita Pizza",
-            "description": "Traditional pizza with fresh tomatoes, mozzarella, basil, and olive oil.",
-            "price": 10.99,
-            "id": 2
-        }
-    ],
-    "is_linked": True
+customer_example = {
+    "id": 2,
+    "username": "NotARestaurantOwner",
+    "email": "NotARestaurantOwner@123.com",
+    "password": "Test@480",
+    "role": "customer",
+    "is_logged_in": True,
+    "is_blocked": False
 }
 not_linked_restaurant_example = {
     "name": "The Sushi World",
@@ -76,8 +61,7 @@ def setup_user_db() -> typing.Generator:
         "data/temp_rest_db.json",
         "data/temp_link_db.json"
     )
-    repo.user_repo.add_user(user_example)
-    repo.rest_repo.add_restaurant(linked_restaurant_example)
+    repo.user_repo.add_user(restaurant_owner_example)
     repo.rest_repo.add_restaurant(not_linked_restaurant_example)
     yield
     import os
@@ -86,4 +70,25 @@ def setup_user_db() -> typing.Generator:
     os.remove(os.getcwd() + "/data/temp_link_db.json")
 
 def test_valid_add_restaurant_to_restaurant_owner(setup_user_db) -> None:
-    repo.add_restaurant_to_restaurant_owner(user_example["id"], not_linked_restaurant_example["id"])
+    '''
+    Tests linking an unlinked restaurant with a valid restaurant owner.
+    '''
+    repo.add_restaurant_to_restaurant_owner(restaurant_owner_example["id"], not_linked_restaurant_example["id"])
+
+def test_add_linked_restaurant_to_restaurant_owner(setup_user_db) -> None:
+    '''
+    Tests linking a linked restaurant with a valid restaurant owner.
+    '''
+    # We first mark not_linked_restaurant_example as linked.
+    repo.add_restaurant_to_restaurant_owner(restaurant_owner_example["id"], not_linked_restaurant_example["id"])
+    with pytest.raises(RestaurantLinkedException):
+        # The variable not_linked_restaurant_example is linked, so a RestaurantLinkedException should be raised now.
+        repo.add_restaurant_to_restaurant_owner(restaurant_owner_example["id"], not_linked_restaurant_example["id"])
+
+def test_add_restaurant_to_customer(setup_user_db) -> None:
+    '''
+    Tests attempting to link an unlinked restaurant to a customer, which should be treated as an invalid restaurant owner.
+    '''
+    repo.user_repo.add_user(customer_example)
+    with pytest.raises(NotARestaurantOwnerError):
+        repo.add_restaurant_to_restaurant_owner(customer_example["id"], not_linked_restaurant_example["id"])
