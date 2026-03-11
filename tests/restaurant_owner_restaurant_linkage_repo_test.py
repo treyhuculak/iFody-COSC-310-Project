@@ -48,7 +48,6 @@ def setup_user_db() -> typing.Generator:
         "data/temp_rest_db.json",
         "data/temp_link_db.json"
     )
-    repo.user_repo._reinit_database()
     repo.user_repo.add_user(restaurant_owner_example)
     repo.rest_repo.add_restaurant(not_linked_restaurant_example)
     yield
@@ -61,17 +60,17 @@ def test_valid_add_restaurant_to_restaurant_owner(setup_user_db) -> None:
     '''
     Tests linking an unlinked restaurant with a valid restaurant owner.
     '''
-    repo.add_restaurant_to_restaurant_owner(restaurant_owner_example["id"], not_linked_restaurant_example["id"])
+    repo.add_restaurant_to_restaurant_owner(not_linked_restaurant_example["id"], restaurant_owner_example["id"])
 
 def test_add_linked_restaurant_to_restaurant_owner(setup_user_db) -> None:
     '''
     Tests linking a linked restaurant with a valid restaurant owner.
     '''
     # We first mark not_linked_restaurant_example as linked.
-    repo.add_restaurant_to_restaurant_owner(restaurant_owner_example["id"], not_linked_restaurant_example["id"])
+    repo.add_restaurant_to_restaurant_owner(not_linked_restaurant_example["id"], restaurant_owner_example["id"])
     with pytest.raises(RestaurantLinkedException):
         # The variable not_linked_restaurant_example is linked, so a RestaurantLinkedException should be raised now.
-        repo.add_restaurant_to_restaurant_owner(restaurant_owner_example["id"], not_linked_restaurant_example["id"])
+        repo.add_restaurant_to_restaurant_owner(not_linked_restaurant_example["id"], restaurant_owner_example["id"])
 
 def test_add_restaurant_to_customer(setup_user_db) -> None:
     '''
@@ -88,4 +87,23 @@ def test_add_restaurant_to_customer(setup_user_db) -> None:
     }
     repo.user_repo.add_user(customer)
     with pytest.raises(NotARestaurantOwnerError):
-        repo.add_restaurant_to_restaurant_owner(customer["id"], not_linked_restaurant_example["id"])
+        repo.add_restaurant_to_restaurant_owner(not_linked_restaurant_example["id"], customer["id"])
+
+def test_get_restaurants_by_restaurant_owner_id(setup_user_db) -> None:
+    '''
+    Tests the get_restaurants_by_restaurant_owner_id function using a valid restaurant_owner_id value.
+    '''
+    assert repo.get_restaurants_by_restaurant_owner_id(restaurant_owner_example["id"]) == []
+    repo.add_restaurant_to_restaurant_owner(not_linked_restaurant_example["id"], restaurant_owner_example["id"])
+    assert repo.get_restaurants_by_restaurant_owner_id(restaurant_owner_example["id"]) == [1]
+
+def test_get_restaurants_by_invalid_restaurant_owner_id(setup_user_db) -> None:
+    '''
+    Tests the get_restaurants_by_restaurant_owner_id function using an invalid restaurant_owner_id value.
+    '''
+    with pytest.raises(NotARestaurantOwnerError):
+        repo.get_restaurants_by_restaurant_owner_id(-1)
+    with pytest.raises(NotARestaurantOwnerError):
+        repo.get_restaurants_by_restaurant_owner_id(10000)
+    with pytest.raises(NotARestaurantOwnerError):
+        repo.get_restaurants_by_restaurant_owner_id(12345)
