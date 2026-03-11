@@ -69,7 +69,7 @@ not_linked_restaurant_example = {
 @pytest.fixture
 def setup_user_db() -> typing.Generator:
     '''
-    Make sure there are three empty draft databases before each test function runs.
+    Make sure there are three draft databases before each test function runs.
     '''
     repo = ManageableRestaurantRepository(
         "data/temp_user_db.json",
