@@ -48,3 +48,10 @@ class ManageableRestaurantRepository:
             retrieved_restaurant = self.rest_repo.get_restaurant_by_id(restaurant_id)
             if (not retrieved_restaurant) or retrieved_restaurant["is_linked"]:
                 raise RestaurantLinkedException("This Restaurant instance is already associated with a RestaurantOwner.")
+            else:
+                try:
+                    with open(self.manageable_rests_file, "r") as file:
+                        json.load(file)
+                except (FileNotFoundError, json.JSONDecodeError):
+                    with open(self.manageable_rests_file, "w") as file:
+                        json.dump({}, file, indent = 4)
