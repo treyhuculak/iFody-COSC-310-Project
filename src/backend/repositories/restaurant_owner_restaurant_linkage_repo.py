@@ -76,6 +76,9 @@ class RestaurantOwnerRestaurantLinkageRepo:
                         json.dump(new_restowner_rest_pair, file, indent = 4)
 
     def get_restaurants_by_restaurant_owner_id(self, restaurant_owner_id: int) -> list[dict]:
+        '''
+        Retrieves all the Restaurant instances as a list based on the ID of the RestaurantOwner instance.
+        '''
         retrieved_user = self.user_repo.get_user_by_id(restaurant_owner_id)
         if (not retrieved_user) or ("owner" not in retrieved_user["role"].lower()):
             raise NotARestaurantOwnerError("This is not a RestaurantOwner account.")
