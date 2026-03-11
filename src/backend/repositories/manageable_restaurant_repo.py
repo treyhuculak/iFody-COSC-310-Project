@@ -7,6 +7,12 @@ class NotARestaurantOwnerError(Exception):
     '''
     pass
 
+class RestaurantLinkedException(Exception):
+    '''
+    Raise it when the Restaurant is already associated with a RestaurantOwner instance.
+    '''
+    pass
+
 class ManageableRestaurantRepository:
     def __init__(
             self,
@@ -39,4 +45,6 @@ class ManageableRestaurantRepository:
         if (not retrieved_user) or (retrieved_user["role"] != "restaurant owner"):
             raise NotARestaurantOwnerError("This is not a RestaurantOwner account.")
         else:
-            
+            retrieved_restaurant = self.rest_repo.get_restaurant_by_id(restaurant_id)
+            if (not retrieved_restaurant) or retrieved_restaurant["is_linked"]:
+                raise RestaurantLinkedException("This Restaurant instance is already associated with a RestaurantOwner.")
