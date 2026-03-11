@@ -1,6 +1,12 @@
 import json
 from src.backend.repositories import user_repo, restaurant_repo
 
+class NotARestaurantOwnerError(Exception):
+    '''
+    Raise it when the retrieved account is not a RestaurantOwner instance.
+    '''
+    pass
+
 class ManageableRestaurantRepository:
     def __init__(
             self,
@@ -29,4 +35,8 @@ class ManageableRestaurantRepository:
                 json.dump({}, file, indent = 4)
 
     def add_restaurant_to_restaurant_owner(self, restaurant_owner_id: int, restaurant_id: int) -> None:
-        pass
+        retrieved_user = self.user_repo.get_user_by_id(restaurant_owner_id)
+        if (not retrieved_user) or (retrieved_user["role"] != "restaurant owner"):
+            raise NotARestaurantOwnerError("This is not a RestaurantOwner account.")
+        else:
+            

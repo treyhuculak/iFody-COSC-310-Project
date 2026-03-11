@@ -17,7 +17,7 @@ class AuthController:
         '''
         self.repo = repo or UserRepository()
 
-    def register(self, username: str, email: str, password: str, role: Role):
+    def register(self, username: str, email: str, password: str, role: str | Role):
         '''
         Creates an account instance and saves it to the database when the email, password, and role are all valid.
         '''
@@ -29,7 +29,7 @@ class AuthController:
         new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
         user_dict = new_user.model_dump()
         
-        if hasattr(user_dict['role'], 'value'): #If role gets converted to Enum by Pydantic, convert back to string
+        if hasattr(user_dict['role'], 'value'): # If the role is converted to an Enum by Pydantic, convert it back to a string.
             user_dict['role'] = user_dict['role'].value
 
         self.repo.add_user(user_dict)
