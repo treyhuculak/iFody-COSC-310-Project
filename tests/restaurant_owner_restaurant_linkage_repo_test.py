@@ -1,6 +1,6 @@
 import pytest, typing
-from src.backend.repositories.manageable_restaurant_repo import \
-    ManageableRestaurantRepository, NotARestaurantOwnerError, RestaurantLinkedException
+from src.backend.repositories.restaurant_owner_restaurant_linkage_repo import \
+    RestaurantOwnerRestaurantLinkageRepo, NotARestaurantOwnerError, RestaurantLinkedException
 
 repo = None
 restaurant_owner_example = {
@@ -43,7 +43,7 @@ def setup_user_db() -> typing.Generator:
     Make sure there are three draft databases before each test function runs.
     '''
     global repo
-    repo = ManageableRestaurantRepository(
+    repo = RestaurantOwnerRestaurantLinkageRepo(
         "data/temp_user_db.json",
         "data/temp_rest_db.json",
         "data/temp_link_db.json"

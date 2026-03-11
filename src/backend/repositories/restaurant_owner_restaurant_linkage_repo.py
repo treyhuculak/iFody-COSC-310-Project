@@ -13,7 +13,7 @@ class RestaurantLinkedException(Exception):
     '''
     pass
 
-class ManageableRestaurantRepository:
+class RestaurantOwnerRestaurantLinkageRepo:
     def __init__(
             self,
             user_repo_file: str = None,
@@ -21,7 +21,7 @@ class ManageableRestaurantRepository:
             manageable_rests: str = None
         ) -> None:
         '''
-        Initializes a ManageableRestaurantRepository instance with the user_repo_file, rest_repo_file, and manageable_rests arguments.
+        Initializes a RestaurantOwnerRestaurantLinkageRepo instance with the user_repo_file, rest_repo_file, and manageable_rests arguments.
         '''
         # We check whether alternative file paths are given, otherwise, we use the default paths.
         # The field self.manageable_rests_file is a database that shows which restaurant owners manage which restaurants.
