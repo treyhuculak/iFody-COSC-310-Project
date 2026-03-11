@@ -3,7 +3,11 @@ from src.backend.repositories.manageable_restaurant_repo import \
     ManageableRestaurantRepository, NotARestaurantOwnerError, RestaurantLinkedException
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
-repo = None
+repo = ManageableRestaurantRepository(
+        "data/temp_user_db.json",
+        "data/temp_rest_db.json",
+        "data/temp_link_db.json"
+)
 user_example = {
     "id": 1,
     "username": "TestRO",
@@ -73,8 +77,13 @@ def setup_user_db() -> typing.Generator:
         "data/temp_link_db.json"
     )
     repo.user_repo.add_user(user_example)
+    repo.rest_repo.add_restaurant(linked_restaurant_example)
+    repo.rest_repo.add_restaurant(not_linked_restaurant_example)
     yield
     import os
     os.remove(os.getcwd() + "/data/temp_user_db.json")
     os.remove(os.getcwd() + "/data/temp_rest_db.json")
     os.remove(os.getcwd() + "/data/temp_link_db.json")
+
+def test_valid_add_restaurant_to_restaurant_owner(setup_user_db) -> None:
+    repo.add_restaurant_to_restaurant_owner(user_example["id"], not_linked_restaurant_example["id"])
