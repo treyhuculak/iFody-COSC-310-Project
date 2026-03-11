@@ -1,28 +1,14 @@
 import pytest, typing
 from src.backend.repositories.manageable_restaurant_repo import \
     ManageableRestaurantRepository, NotARestaurantOwnerError, RestaurantLinkedException
-from src.backend.repositories.restaurant_repo import RestaurantRepository
 
-repo = ManageableRestaurantRepository(
-        "data/temp_user_db.json",
-        "data/temp_rest_db.json",
-        "data/temp_link_db.json"
-)
+repo = None
 restaurant_owner_example = {
     "id": 1,
     "username": "TestRO",
     "email": "TestRO@123.com",
     "password": "Test@222",
     "role": "restaurant owner",
-    "is_logged_in": True,
-    "is_blocked": False
-}
-customer_example = {
-    "id": 2,
-    "username": "NotARestaurantOwner",
-    "email": "NotARestaurantOwner@123.com",
-    "password": "Test@480",
-    "role": "customer",
     "is_logged_in": True,
     "is_blocked": False
 }
@@ -56,11 +42,13 @@ def setup_user_db() -> typing.Generator:
     '''
     Make sure there are three draft databases before each test function runs.
     '''
+    global repo
     repo = ManageableRestaurantRepository(
         "data/temp_user_db.json",
         "data/temp_rest_db.json",
         "data/temp_link_db.json"
     )
+    repo.user_repo._reinit_database()
     repo.user_repo.add_user(restaurant_owner_example)
     repo.rest_repo.add_restaurant(not_linked_restaurant_example)
     yield
@@ -89,6 +77,15 @@ def test_add_restaurant_to_customer(setup_user_db) -> None:
     '''
     Tests attempting to link an unlinked restaurant to a customer, which should be treated as an invalid restaurant owner.
     '''
-    repo.user_repo.add_user(customer_example)
+    customer = {
+        "id": 2,
+        "username": "NotARestaurantOwner",
+        "email": "NotARestaurantOwner@123.com",
+        "password": "Test@480",
+        "role": "customer",
+        "is_logged_in": True,
+        "is_blocked": False
+    }
+    repo.user_repo.add_user(customer)
     with pytest.raises(NotARestaurantOwnerError):
-        repo.add_restaurant_to_restaurant_owner(customer_example["id"], not_linked_restaurant_example["id"])
+        repo.add_restaurant_to_restaurant_owner(customer["id"], not_linked_restaurant_example["id"])

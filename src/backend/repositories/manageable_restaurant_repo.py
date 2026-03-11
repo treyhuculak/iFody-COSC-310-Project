@@ -42,7 +42,7 @@ class ManageableRestaurantRepository:
 
     def add_restaurant_to_restaurant_owner(self, restaurant_owner_id: int, restaurant_id: int) -> None:
         retrieved_user = self.user_repo.get_user_by_id(restaurant_owner_id)
-        if (not retrieved_user) or ("owner" not in retrieved_user["role"]):
+        if (not retrieved_user) or ("owner" not in retrieved_user["role"].lower()):
             raise NotARestaurantOwnerError("This is not a RestaurantOwner account.")
         else:
             retrieved_restaurant = self.rest_repo.get_restaurant_by_id(restaurant_id)
