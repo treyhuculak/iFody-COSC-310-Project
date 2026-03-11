@@ -53,6 +53,7 @@ class RestaurantOwnerRestaurantLinkageRepo:
                 raise RestaurantLinkedException("This Restaurant instance is already associated with a RestaurantOwner.")
             else:
                 try:
+                    retrieved_restaurant["owner_id"] = restaurant_owner_id
                     retrieved_restaurant["is_linked"] = True
                     self.rest_repo.update_restaurant(restaurant_id, retrieved_restaurant)
                     with open(self.manageable_rests_file, "r") as file:
@@ -74,7 +75,7 @@ class RestaurantOwnerRestaurantLinkageRepo:
                     with open(self.manageable_rests_file, "w") as file:
                         json.dump(new_restowner_rest_pair, file, indent = 4)
 
-    def get_restaurants_by_restaurant_owner_id(self, restaurant_owner_id: int) -> list:
+    def get_restaurants_by_restaurant_owner_id(self, restaurant_owner_id: int) -> list[dict]:
         retrieved_user = self.user_repo.get_user_by_id(restaurant_owner_id)
         if (not retrieved_user) or ("owner" not in retrieved_user["role"].lower()):
             raise NotARestaurantOwnerError("This is not a RestaurantOwner account.")
@@ -83,6 +84,8 @@ class RestaurantOwnerRestaurantLinkageRepo:
                 with open(self.manageable_rests_file, "r") as file:
                     # Although we use an integer as the key, the json module still stores it as a string.
                     restaurants = json.load(file)[str(restaurant_owner_id)]
+                    restaurants = [self.rest_repo.get_restaurant_by_id(rest_id) for rest_id in restaurants]
+                    print(restaurants)
                     return restaurants
             except KeyError:
                 return []
