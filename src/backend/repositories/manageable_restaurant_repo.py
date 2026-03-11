@@ -51,7 +51,16 @@ class ManageableRestaurantRepository:
             else:
                 try:
                     with open(self.manageable_rests_file, "r") as file:
-                        json.load(file)
+                        rest_owner_accounts = json.load(file)
+                        for id_number in rest_owner_accounts:
+                            if id_number == restaurant_owner_id:
+                                if restaurant_id not in rest_owner_accounts[restaurant_owner_id]:
+                                    rest_owner_accounts[restaurant_owner_id].append(restaurant_id)
+                        json.dump(rest_owner_accounts, file, indent = 4)
                 except (FileNotFoundError, json.JSONDecodeError):
+                    retrieved_restaurant["is_linked"] = True
+                    self.rest_repo.update_restaurant(restaurant_id, retrieved_restaurant)
+                    new_restowner_rest_pair = dict()
+                    new_restowner_rest_pair[restaurant_owner_id] = [restaurant_id]
                     with open(self.manageable_rests_file, "w") as file:
-                        json.dump({}, file, indent = 4)
+                        json.dump(new_restowner_rest_pair, file, indent = 4)
