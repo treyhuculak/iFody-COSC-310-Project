@@ -14,9 +14,8 @@ class RestaurantRepository:
             # file doesn't exist or is corrupted, create/reset it with an empty list
             with open(self.file_path, 'w') as f:
                 json.dump([], f, indent=4)
-        
 
-    def get_restaurant_by_id(self, restaurant_id: int) -> Optional[dict]:
+    def get_restaurant_by_id(self, restaurant_id: int) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
@@ -31,7 +30,6 @@ class RestaurantRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
 
-
     def get_restaurants_by_owner(self, owner_id: int) -> List[dict]:
         if owner_id is None or owner_id == 0:
             raise HTTPException(status_code=400, detail="Invalid owner_id provided.")
@@ -44,19 +42,56 @@ class RestaurantRepository:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        
 
     def get_restaurants_by_location(self, location: str) -> List[dict]:
+        location = location.lower().strip()
+        if location is None or location == "":
+            return self.get_all_restaurants()
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                return [restaurant for restaurant in data if restaurant.get('location','').lower() == location.lower()]
+                return [restaurant for restaurant in data if restaurant.get('location','').lower().strip() == location.lower().strip()]
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        
 
+    def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0) -> List[dict]:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                filtered = []
+                for restaurant in data:
+                    if cuisine and cuisine.lower().strip() != restaurant.get('cuisine','').lower().strip():
+                        continue
+                    if location and location.lower().strip() != restaurant.get('location','').lower().strip():
+                        continue
+                    if max_fee > 0 and restaurant.get('delivery_fee', float('inf')) > max_fee:
+                        continue
+                    filtered.append(restaurant)
+                return filtered
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+
+    def get_restaurants_by_partial_name(self, name: str) -> List[dict]:
+        name = name.lower().strip()
+        if name is None or name == "":
+            return self.get_all_restaurants()
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                restaurants = []
+                for restaurant in data:
+                    if name in restaurant.get('name', '').lower().strip():
+                        restaurants.append(restaurant)
+                return restaurants
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+            
     def get_all_restaurants(self) -> List[dict]:
         try:
             with open(self.file_path, 'r') as f:
@@ -65,7 +100,6 @@ class RestaurantRepository:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        
 
     def add_restaurant(self, restaurant_data: dict) -> dict:
         try:
@@ -87,9 +121,8 @@ class RestaurantRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
-        
     
-    def update_restaurant(self, restaurant_id: int, restaurant_data: dict) -> Optional[dict]:
+    def update_restaurant(self, restaurant_id: int, restaurant_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
@@ -106,7 +139,6 @@ class RestaurantRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
-        
     
     def delete_restaurant(self, restaurant_id: int) -> dict:
         try:
@@ -139,6 +171,41 @@ class RestaurantRepository:
                 for restaurant in data:
                     if restaurant['id'] == restaurant_id:
                         return restaurant.get('menu_items', [])
+                raise HTTPException(status_code=404, detail=f"Restaurant with id {restaurant_id} not found.")
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
+
+    def get_menu_item_by_partial_name(self, restaurant_id: int, name: str) -> List[dict]:
+        name = name.lower().strip()
+        if name is None or name == "":
+            return self.get_menu_items_by_restaurant(restaurant_id)
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                for restaurant in data:
+                    if restaurant['id'] == restaurant_id:
+                        menu_items = restaurant.get('menu_items', [])
+                        return [item for item in menu_items if name in item.get('name', '').lower().strip()]
+                raise HTTPException(status_code=404, detail=f"Restaurant with id {restaurant_id} not found.")
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
+        
+    def filter_menu_items(self, restaurant_id: int, max_price: float) -> List[dict]:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                for restaurant in data:
+                    if restaurant['id'] == restaurant_id:
+                        menu_items = restaurant.get('menu_items', [])
+                        return [item for item in menu_items if item.get('price', float('inf')) <= max_price]
                 raise HTTPException(status_code=404, detail=f"Restaurant with id {restaurant_id} not found.")
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")

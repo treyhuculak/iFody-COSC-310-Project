@@ -1,3 +1,5 @@
+from email.policy import default
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from src.backend.controllers.restaurant_controller import RestaurantController
@@ -21,11 +23,22 @@ def get_user_id_from_auth():
 def get_restaurants_by_owner(owner_id: int, controller: RestaurantController = Depends(get_controller)):
     return controller.get_restaurants_by_owner(owner_id)
 
-
 @router.get("/location/{location}", response_model=List[Restaurant])
 def get_restaurants_by_location(location: str, controller: RestaurantController = Depends(get_controller)):
     return controller.get_restaurants_by_location(location)
 
+@router.get("/filter", response_model=List[Restaurant])
+def filter_restaurants(
+    cuisine: str = Query(default=""),
+    location: str = Query(default=""),
+    max_fee: float = Query(default=0, ge=0),
+    controller: RestaurantController = Depends(get_controller)
+):
+    return controller.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee)
+
+@router.get("/search", response_model=List[Restaurant])
+def search_restaurants(name: str = Query(default=""), controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_partial_name(name)
 
 @router.get("/", response_model=List[Restaurant])
 def get_all_restaurants(controller: RestaurantController = Depends(get_controller)):
@@ -44,6 +57,13 @@ def get_all_menu_items_by_restaurant(restaurant_id: int, controller: RestaurantC
     menu_items = controller.get_menu_items_by_restaurant_id(restaurant_id)
     return menu_items
 
+@router.get("/{restaurant_id}/menu/search", response_model=List[MenuItem])
+def search_menu_items(restaurant_id: int, name: str = Query(default=""), controller: RestaurantController = Depends(get_controller)):
+    return controller.get_menu_items_by_partial_name(restaurant_id, name)
+
+@router.get("/{restaurant_id}/menu/filter", response_model=List[MenuItem])
+def filter_menu_items(restaurant_id: int, max_price: float = Query(..., gt=0), controller: RestaurantController = Depends(get_controller)):
+    return controller.filter_menu_items(restaurant_id, max_price)
 
 @router.get("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
 def get_menu_item_by_id(restaurant_id: int, menu_item_id: int, controller: RestaurantController = Depends(get_controller)):
@@ -53,7 +73,6 @@ def get_menu_item_by_id(restaurant_id: int, menu_item_id: int, controller: Resta
             if isinstance(item, dict) and item.get("id") == menu_item_id:
                 return item
     raise HTTPException(status_code=404, detail="Menu item not found")
-
 
 @router.post("/", response_model=Restaurant)
 def add_restaurant(
