@@ -65,6 +65,7 @@ def test_register_with_existing_account(setup_database) -> None:
 def test_valid_login(setup_database) -> None:
     '''
     Tests the login functionality using an existing email with the correct password.
+    The is_logged_in field should be set to True after the function is called.
     '''
     assert controller.login("testcustomer@123.com", "Test@123") != None
     assert controller.login("testcustomer@123.com", "Test@123") == {
@@ -73,7 +74,7 @@ def test_valid_login(setup_database) -> None:
         "email": "testcustomer@123.com",
         "password": "Test@123",
         "role": "Customer",
-        "is_logged_in": False,
+        "is_logged_in": True,
         "is_blocked": False
     }
 

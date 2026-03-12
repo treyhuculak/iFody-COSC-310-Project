@@ -35,10 +35,11 @@ class AuthController:
         Logs in using the email and password given.
         '''
         user_info = self.repo.get_user_by_email(email)
-        
+
         if user_info == None:
             raise HTTPException(status_code = 404, detail = "The account is not found.")
         if password == user_info['password']:
+              user_info["is_logged_in"] = True
               return user_info
         else:
             raise HTTPException(status_code = 400, detail = "The password is incorrect.")
