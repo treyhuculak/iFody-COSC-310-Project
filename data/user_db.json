@@ -14,7 +14,7 @@
             "username": "TestOwner",
             "email": "testowner@123.com",
             "password": "Test@123",
-            "role": "RestaurantOwner",
+            "role": "Restaurant Owner",
             "is_logged_in": false,
             "is_blocked": false
         }
