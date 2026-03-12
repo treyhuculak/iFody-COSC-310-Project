@@ -32,6 +32,10 @@ class RestaurantController:
         location_restaurants = self.repo.get_restaurants_by_location(location)
         return [Restaurant(**restaurant) for restaurant in location_restaurants]
     
+    def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0):
+        filtered_restaurants = self.repo.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee)
+        return [Restaurant(**restaurant) for restaurant in filtered_restaurants]
+    
     def get_restaurants_by_partial_name(self, partial_name: str):
         matching_restaurants = self.repo.get_restaurants_by_partial_name(partial_name)
         return [Restaurant(**restaurant) for restaurant in matching_restaurants]
@@ -79,17 +83,19 @@ class RestaurantController:
         all_menu_items = self.repo.get_menu_items_by_restaurant(restaurant_id)
         return [MenuItem(**item) for item in all_menu_items]
     
-
     '''
     Menu item operations for a specific restaurant:
         - Add a menu item to a restaurant
         - Update a menu item from a restaurant
         - Delete a menu item from a restaurant
     '''
-    def get_menu_item_by_partial_name(self, restaurant_id: int, partial_name: str):
+    def get_menu_items_by_partial_name(self, restaurant_id: int, partial_name: str):
         menu_items = self.repo.get_menu_item_by_partial_name(restaurant_id, partial_name)
         return [MenuItem(**item) for item in menu_items]
-
+    
+    def filter_menu_items(self, restaurant_id: int, max_price: float):
+        menu_items = self.repo.filter_menu_items(restaurant_id, max_price)
+        return [MenuItem(**item) for item in menu_items]
 
     def add_menu_item_to_restaurant(self, menu_item: MenuItemCreate, restaurant_id: int):
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
