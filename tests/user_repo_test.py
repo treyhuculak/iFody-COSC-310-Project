@@ -17,6 +17,7 @@ def setup_user_db() -> typing.Generator:
     '''
     Makes sure there is only one instance in the database before each test function runs.
     '''
+    global repo
     repo._reinit_database()
     repo.add_user(user_example)
     yield
