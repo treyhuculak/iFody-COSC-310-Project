@@ -20,6 +20,10 @@ class TransactionController:
             raise HTTPException(status_code=404, detail=f"Payment {payment_id} not found")
         return payment
     
+    '''
+    The idea for creting a transaction is to create a transaction object holding an payment_method_id and call the function below
+    FYI, it is needed that when adding a payment_method_id to call and retrieve the id from the active payment method (there is function on the payment controller that retrieves the active payment method using the user_id)
+    '''
     def create_transaction(self, transaction: PaymentTransactionCreate):
         try:
             # Now serialize the payment transaction for storage

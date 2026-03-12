@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
 from src.backend.controllers.payment_controller import PaymentController
 from src.backend.models.payment import Payment, PaymentCreate
 from src.backend.models.card_payment import CardPaymentResponse, CardPaymentCreate
