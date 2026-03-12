@@ -11,6 +11,7 @@ from src.backend.models.menu_item import MenuItem
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
+from src.backend.models.user import Role
 
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
@@ -43,9 +44,17 @@ class OrderController:
             new_order = self.order_repo.create_order(order_data)
             try:    
                 restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+                new_order_id = new_order["id"]
                 if restaurant:
                     owner_id = restaurant["owner_id"]
-                    manager_notification = NotificationCreate(...)
+                    manager_notification = NotificationCreate(
+                        user_id = owner_id,
+                        type = NotificationType.ORDER_CONFIRMED,
+                        title = "New Order Received",
+                        message = (f"A new order with id {new_order_id} has been received"),
+                        is_read = False,
+                        order_id = new_order["id"]
+                    )
                     self.notif_controller.create_notif(manager_notification)
             except:
                 pass
@@ -68,17 +77,32 @@ class OrderController:
             '''
             Ensure no punishment happens, since the order was canceled before the restaurant accepting it
             '''
+            delete_notif = NotificationCreate(
+                user_id = order["id"],
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Order with ID {order_id} has been cancelled, no punishment",
+                is_read = False,
+                order_id = order_id
+            )
+
+            self.notif_controller.create_notif(delete_notif)
             return self.order_repo.delete_order(order_id)
         elif(order["status"] == "payment confirmed" or order["status"] == "preparing"):
             '''
             Need some kind of punishment for cancelling after restaurant accepted the order
             '''
+
+
+            #ADD NOTIFICATION FOR ORDER CANCELATION WITH PUNISHMENT HERE
+
+
             return self.order_repo.delete_order(order_id)
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be cancelled")
     
-    def update_order_status(self, order_id: int, new_status: str, role: str):
-        if role != "manager":
+    def update_order_status(self, order_id: int, new_status: str, role: Role):
+        if role != Role.RESTAURANT_OWNER:
             raise HTTPException(status_code=403, detail="Only managers can update order status")
         
         # Convert string to OrderStatus enum
