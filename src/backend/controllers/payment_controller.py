@@ -20,7 +20,7 @@ class PaymentController:
 
     def get_payment_methods_by_user_id(self, user_id: int):
         list_of_payments = self.payment_repo.get_payment_methods_by_user_id(user_id)
-        if list_of_payments == None:
+        if len(list_of_payments) == 0:
             raise HTTPException(status_code=404, detail=f"No payment method was found for user id: {user_id}")
         return list_of_payments
     

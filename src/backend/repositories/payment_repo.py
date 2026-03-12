@@ -38,7 +38,7 @@ class PaymentRepository:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
                 # Getting the list of payments that have the same user_id 
-                list_of_payments = list(filter(lambda p: p['user_id'] == user_id, data), None)
+                list_of_payments = list(filter(lambda p: p['user_id'] == user_id, data))
                 return list_of_payments
                     
         except FileNotFoundError:

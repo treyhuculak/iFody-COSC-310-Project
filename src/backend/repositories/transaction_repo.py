@@ -29,7 +29,7 @@ class TransactionRepository:
             data.append(transaction_data)
 
             with open(self.file_path, 'w') as f:
-                json.dump([transaction_data], f, indent=4)
+                json.dump([data], f, indent=4)
             return transaction_data
         
         except FileNotFoundError:

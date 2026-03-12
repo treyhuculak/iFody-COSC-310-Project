@@ -15,7 +15,7 @@ from src.backend.controllers.payment_controller import PaymentController
 def test_client(tmp_path):
     """
     Provides a TestClient backed by a temporary JSON file instead of the real
-    data/transaction.json.  The temp file is deleted automatically after each
+    data/transaction.json & data/payment.json.  The temp file is deleted automatically after each
     test, so the production database is never touched.
     """
     temp_payment_db = tmp_path / "test_payment.json"
