@@ -2,7 +2,7 @@ import pytest, typing
 from fastapi import HTTPException
 from src.backend.controllers.auth_controller import AuthController, AccountExistsException, NotLoggedInException
 from src.backend.repositories.user_repo import UserRepository
-from src.backend.models.user import InvalidEmailError, InvalidPasswordError, InvalidRoleError
+from src.backend.models.user import InvalidEmailError, InvalidPasswordError, Role
 
 controller = AuthController()
 controller.repo = UserRepository("data/temp_user_db.json")
@@ -11,7 +11,7 @@ user_example = {
     "username": "TestCustomer",
     "email": "testcustomer@123.com",
     "password": "Test@123",
-    "role": "Customer",
+    "role": Role.CUSTOMER.value,
     "is_logged_in": False,
     "is_blocked": False
 }
@@ -32,27 +32,27 @@ def test_valid_register(setup_database) -> None:
     '''
     Tests the register functionality using a valid email format, a valid password format, and a valid value for role.
     '''
-    controller.register("TestCustomerV2", "tcv2@outlook.com", "Abc@5678", "Customer")
+    controller.register("TestCustomerV2", "tcv2@outlook.com", "Abc@5678", Role.CUSTOMER.value)
 
 def test_invalid_email_register(setup_database) -> None:
     '''
     Tests the register functionality using an invalid email format.
     '''
     with pytest.raises(InvalidEmailError):
-        controller.register("TestCustomerV2", "NotEvenAnEmailAddress", "Abc@5678", "Customer")
+        controller.register("TestCustomerV2", "NotEvenAnEmailAddress", "Abc@5678", Role.CUSTOMER)
 
 def test_invalid_password_register(setup_database) -> None:
     '''
     Tests the register functionality using an invalid password format.
     '''
     with pytest.raises(InvalidPasswordError):
-        controller.register("TestCustomerV2", "tcv2@outlook.com", "NotValid", "Customer")
+        controller.register("TestCustomerV2", "tcv2@outlook.com", "NotValid", Role.CUSTOMER.value)
 
 def test_invalid_role_register(setup_database) -> None:
     '''
     Tests the register functionality using an invalid role value.
     '''
-    with pytest.raises(InvalidRoleError):
+    with pytest.raises(Exception):
         controller.register("TestCustomerV2", "tcv2@outlook.com", "Abc@5678", "CoolDude")
 
 def test_register_with_existing_account(setup_database) -> None:
@@ -60,7 +60,7 @@ def test_register_with_existing_account(setup_database) -> None:
     Tests the register functionality using an existing account.
     '''
     with pytest.raises(AccountExistsException):
-        controller.register("TestCustomer", "testcustomer@123.com", "Test@123", "Customer")
+        controller.register("TestCustomer", "testcustomer@123.com", "Test@123", Role.CUSTOMER.value)
 
 def test_valid_login(setup_database) -> None:
     '''
@@ -73,7 +73,7 @@ def test_valid_login(setup_database) -> None:
         "username": "TestCustomer",
         "email": "testcustomer@123.com",
         "password": "Test@123",
-        "role": "Customer",
+        "role": Role.CUSTOMER.value,
         "is_logged_in": True,
         "is_blocked": False
     }

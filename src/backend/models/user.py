@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 import re
+from enum import Enum
 
 email_pattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
 password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$#%])[A-Za-z\\d@$#%]{8,10}$"
@@ -17,18 +18,17 @@ class InvalidPasswordError(Exception):
     '''
     pass
 
-class InvalidRoleError(Exception):
-    '''
-    Raise it when the given role has an invalid value.
-    '''
-    pass
+class Role(Enum):
+    ADMIN = "administrator"
+    CUSTOMER = "customer"
+    RESTAURANT_OWNER = "restaurant owner"
 
 class UserBase(BaseModel):
     id: int = Field(..., ge = 1)
     username: str = Field(..., min_length = 1)
     email: str = Field(..., min_length = 1)
     password: str = Field(..., min_length = 1)
-    role: str = Field(..., min_length = 5)
+    role: Role
     is_logged_in: bool = False
     is_blocked: bool = False
 
@@ -55,18 +55,6 @@ class UserBase(BaseModel):
             return password_input
         else:
             raise InvalidPasswordError('The password must contain at least one number, one uppercase letter, one lowercase letter, one special character, and be between 8 and 10 characters long.')
-        
-    @field_validator('role')
-    def check_role(cls, role_input: str) -> str:
-        result = re.fullmatch(
-            role_pattern,
-            role_input
-        )
-
-        if result:
-            return role_input
-        else:
-            raise InvalidRoleError('The role must be one of: Admin, Customer, or RestaurantOwner.')
 
 class UserSave(UserBase):
     is_logged_in: bool = True

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import HTTPException
-from src.backend.models.user import UserSave
+from src.backend.models.user import UserSave, Role
 from src.backend.repositories.user_repo import UserRepository
 
 class AccountExistsException(Exception):
@@ -25,7 +25,7 @@ class AuthController:
         self.repo = repo or UserRepository()
         self.cur_user = None
 
-    def register(self, username: str, email: str, password: str, role: str):
+    def register(self, username: str, email: str, password: str, role: Role):
         '''
         Creates an account instance and saves it to the database when the email, password, and role are all valid.
         '''
@@ -35,8 +35,12 @@ class AuthController:
         if (username in usernames) or (email in emails):
             raise AccountExistsException("The account already exists. Try logging in to the account.")
         new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
-        new_user = new_user.model_dump()
-        self.repo.add_user(new_user)
+        user_dict = new_user.model_dump()
+        
+        if hasattr(user_dict['role'], 'value'): #If role gets converted to Enum by Pydantic, convert back to string
+            user_dict['role'] = user_dict['role'].value
+
+        self.repo.add_user(user_dict)
         
     def login(self, email: str, password: str):
         '''
