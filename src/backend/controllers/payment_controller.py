@@ -18,7 +18,16 @@ class PaymentController:
             raise HTTPException(status_code=404, detail=f"Payment {payment_id} not found")
         return payment
 
-    def add_payment_method(self, payment: CardPaymentCreate | PaymentCreate):
+    def get_payment_methods_by_user_id(self, user_id: int):
+        list_of_payments = self.payment_repo.get_payment_methods_by_user_id(user_id)
+        if list_of_payments == None:
+            raise HTTPException(status_code=404, detail=f"No payment method was found for user id: {user_id}")
+        return list_of_payments
+    
+    def delete_payment_method(self, payment_id: int):
+        return self.payment_repo.delete_payment_method(payment_id)
+
+    def add_payment_method(self, payment: CardPaymentCreate | PaymentCreate, active: bool):
         try:
             # Now serialize the payment for storage (if card option was given, serialize card info instead)
             payment_info = None
@@ -31,19 +40,27 @@ class PaymentController:
                     raise ValueError("Card payment data is required.")
                 
                 # Validating payment/card info
-                success = self.payment_service.simulate_payment(payment)
+                self.payment_service.validate_payment_logic(payment)
+                self.payment_service.define_card_brand(payment)
                     
                 payment_info = payment.model_dump(mode="json")
-
-                payment_info["is_successful"] = success
             else:
                 raise ValueError("Invalid payment method.")
             
-            return self.payment_repo.create_payment_method(payment_info)
+            payment_info['is_active'] = False
+            new_payment = self.payment_repo.create_payment_method(payment_info)
+            
+            if active:
+                self.switch_active_payment_method(payment_info['user_id'], new_payment['id'])
+
+                # Just so the return value of this function have the updated version of new_payment
+                new_payment['is_active'] = True
+            
+            return new_payment
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-        
-    def delete_payment_method(self, payment_id: int):
-        return self.payment_repo.delete_payment_method(payment_id)
+    
+    def switch_active_payment_method(self, user_id: int, payment_id: int):
+        self.payment_repo.switch_active_payment_method(user_id, payment_id)

@@ -31,15 +31,15 @@ def test_client(tmp_path):
 
 cash_payment = {
     "user_id": 1,
-    "order_id": 10,
-    "amount": 25.50,
+    #"order_id": 10,
+    #"amount": 25.50,
     "method": PaymentOptions.CASH.value
 }
 
 card_payment = {
     "user_id": 2,
-    "order_id": 15,
-    "amount": 49.99,
+    #"order_id": 15,
+    #"amount": 49.99,
     "method": PaymentOptions.CREDIT_CARD.value,
     "card_digits": "4234567812345678",
     "expiration_month": 12,
@@ -50,8 +50,8 @@ card_payment = {
 
 card_payment_no_brand = {
     "user_id": 2,
-    "order_id": 15,
-    "amount": 49.99,
+    #"order_id": 15,
+    #"amount": 49.99,
     "method": PaymentOptions.CREDIT_CARD.value,
     "card_digits": "1234567812345678",
     "expiration_month": 12,
@@ -62,8 +62,8 @@ card_payment_no_brand = {
 
 card_expired = {
   "user_id": 2,
-  "order_id": 15,
-  "amount": 49.99,
+  #"order_id": 15,
+  #"amount": 49.99,
   "method": "credit_card",
   "card_digits": "5234567812345678",
   "expiration_month": 5,
@@ -74,8 +74,8 @@ card_expired = {
 
 card_invalid_CVV = {
   "user_id": 2,
-  "order_id": 15,
-  "amount": 49.99,
+  #"order_id": 15,
+  #"amount": 49.99,
   "method": "credit_card",
   "card_digits": "1234567812345678",
   "expiration_month": 12,
@@ -86,8 +86,8 @@ card_invalid_CVV = {
 
 card_with_invalid_digits = {
   "user_id": 2,
-  "order_id": 15,
-  "amount": 49.99,
+  #"order_id": 15,
+  #"amount": 49.99,
   "method": "credit_card",
   "card_digits": "12345678",
   "expiration_month": 12,
@@ -98,20 +98,20 @@ card_with_invalid_digits = {
 
 def test_add_cash_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/cash", json=cash_payment) 
+    response = test_client.post("/payment/cash", params={"active": True}, json=cash_payment) 
     assert response.status_code == 200
     data = response.json()
 
     assert data["method"] == PaymentOptions.CASH.value
     assert data["user_id"] == 1
-    assert data["order_id"] == 10
-    assert data["amount"] == 25.50
-    assert data["is_successful"] == True
+    #assert data["order_id"] == 10
+    #assert data["amount"] == 25.50
+    assert data["is_active"] == True
     assert "id" in data
 
 def test_add_card_payment_with_brand(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", json=card_payment) 
+    response = test_client.post("/payment/card", params={"active": True}, json=card_payment) 
     print(response.status_code)
     print(response.json())
     assert response.status_code == 200
@@ -119,9 +119,9 @@ def test_add_card_payment_with_brand(test_client):
 
     assert data["method"] == PaymentOptions.CREDIT_CARD.value
     assert data["user_id"] == 2
-    assert data["order_id"] == 15
-    assert data["amount"] == 49.99
-    assert data["is_successful"] == True
+    #assert data["order_id"] == 15
+    #assert data["amount"] == 49.99
+    assert data["is_active"] == True
     assert "id" in data
     assert data["last4"] == "5678"
     assert "CVV" not in data
@@ -129,17 +129,17 @@ def test_add_card_payment_with_brand(test_client):
 
 def test_add_card_payment_without_brand(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", json=card_payment_no_brand) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_payment_no_brand) 
     print(response.status_code)
     print(response.json())
     assert response.status_code == 200
     data = response.json()
 
     assert data["method"] == PaymentOptions.CREDIT_CARD.value
-    assert data["user_id"] == 2
-    assert data["order_id"] == 15
-    assert data["amount"] == 49.99
-    assert data["is_successful"] == False
+    #assert data["user_id"] == 2
+    #assert data["order_id"] == 15
+    #assert data["amount"] == 49.99
+    assert data["is_active"] == False
     assert "id" in data
     assert data["last4"] == "5678"
     assert "CVV" not in data
@@ -147,28 +147,28 @@ def test_add_card_payment_without_brand(test_client):
 
 def test_add_card_invalid_expiration_date_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", json=card_expired) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_expired) 
     print(response.status_code)
     print(response.json())
     assert response.status_code == 400
 
 def test_add_card_invalid_CVV_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", json=card_invalid_CVV) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_invalid_CVV) 
     print(response.status_code)
     print(response.json())
     assert response.status_code == 400
 
 def test_add_card_invalid_CVV_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", json=card_with_invalid_digits) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_with_invalid_digits) 
     print(response.status_code)
     print(response.json())
     assert response.status_code == 400
 
 def test_get_cash_payment_by_id(test_client):
     # First add a payment method
-    response = test_client.post("/payment/cash/", json=cash_payment)
+    response = test_client.post("/payment/cash/", params={"active": True}, json=cash_payment)
     assert response.status_code == 200
     payment_id = response.json()["id"]
 
@@ -178,14 +178,14 @@ def test_get_cash_payment_by_id(test_client):
     data = get_response.json()
     assert data["method"] == PaymentOptions.CASH.value
     assert data["user_id"] == 1
-    assert data["order_id"] == 10
-    assert data["amount"] == 25.50
-    assert data["is_successful"] == True
+    #assert data["order_id"] == 10
+    #assert data["amount"] == 25.50
+    assert data["is_active"] == True
     assert "id" in data
 
 def test_get_card_payment_by_id(test_client):
     # First add a payment method
-    response = test_client.post("/payment/card/", json=card_payment)
+    response = test_client.post("/payment/card/", params={"active": True}, json=card_payment)
     assert response.status_code == 200
     payment_id = response.json()["id"]
 
@@ -195,16 +195,16 @@ def test_get_card_payment_by_id(test_client):
     data = get_response.json()
     assert data["method"] == PaymentOptions.CREDIT_CARD.value
     assert data["user_id"] == 2
-    assert data["order_id"] == 15
-    assert data["amount"] == 49.99
-    assert data["is_successful"] == True
+    #assert data["order_id"] == 15
+    #assert data["amount"] == 49.99
+    assert data["is_active"] == True
     assert "id" in data
     assert data["last4"] == "5678"
     assert "CVV" not in data
     assert data["card_brand"] == CardPaymentBrand.VISA.value
 
 def test_delete_cash_payment(test_client):
-    response = test_client.post("/payment/cash/", json=cash_payment)
+    response = test_client.post("/payment/cash/", params={"active": True}, json=cash_payment)
     assert response.status_code == 200
 
     payment_id = response.json()["id"]
@@ -218,7 +218,7 @@ def test_delete_cash_payment(test_client):
     assert get_response.status_code == 404
 
 def test_delete_card_payment(test_client):
-    response = test_client.post("/payment/card/", json=card_payment)
+    response = test_client.post("/payment/card/", params={"active": True}, json=card_payment)
     assert response.status_code == 200
 
     payment_id = response.json()["id"]

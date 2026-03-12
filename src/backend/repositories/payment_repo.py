@@ -32,6 +32,21 @@ class PaymentRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Payment missing id field: {e}")
+        
+    def get_payment_methods_by_user_id(self, user_id: int) -> list[dict]:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                # Getting the list of payments that have the same user_id 
+                list_of_payments = list(filter(lambda p: p['user_id'] == user_id, data), None)
+                return list_of_payments
+                    
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Payment missing user id field: {e}")
 
     def create_payment_method(self, payment_data: dict) -> dict:
         try:
@@ -42,10 +57,7 @@ class PaymentRepository:
                 new_id = max([payment['id'] for payment in data], default=0) + 1
                 payment_data['id'] = new_id
 
-                if(payment_data["method"] == PaymentOptions.CASH.value):
-                    # FOR NOW, accept all cash payments
-                    payment_data['is_successful'] = True
-                else:
+                if(payment_data["method"] != PaymentOptions.CASH.value):
                     # Only retain 4 last digits for best practises
                     payment_data['last4'] = "".join([payment_data['card_digits'][-4], payment_data['card_digits'][-3], payment_data['card_digits'][-2], payment_data['card_digits'][-1]])
                     
@@ -61,10 +73,7 @@ class PaymentRepository:
         except FileNotFoundError:
             # create a new file and store the payment data
             payment_data['id'] = 1
-            if(payment_data["method"] == PaymentOptions.CASH.value):
-                # FOR NOW, accept all cash payments
-                payment_data['is_successful'] = True
-            else:
+            if(payment_data["method"] != PaymentOptions.CASH.value):
                 payment_data['last4'] = "".join([payment_data['card_digits'][-4], payment_data['card_digits'][-3], payment_data['card_digits'][-2], payment_data['card_digits'][-1]])
                     
                 # Removing critical user information (best practise)
@@ -107,3 +116,29 @@ class PaymentRepository:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Payment missing id field: {e}")
+        
+    def switch_active_payment_method(self, user_id: int, payment_id: int):
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                # Updating the user's payments list is_active parameter
+                new_data = []
+                for payment in data:
+                    if(payment["user_id"] == user_id):
+                        if(payment["id"] == payment_id):
+                            payment['is_active'] = True
+                        else:
+                            payment['is_active'] = False
+
+                    new_data.append(payment)
+
+                # Saving changes
+                with open(self.file_path, 'w') as f:
+                    json.dump(new_data, f, indent=4)
+                    
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Payment missing user id field: {e}")

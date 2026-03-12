@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import HTTPException
-from src.backend.models.card_payment import CardPaymentCreate, CardPaymentBrand
+from src.backend.models.card_payment import CardPaymentCreate, CardPaymentBrand #, CardPaymentResponse
 
 '''
 This service will handle all the business logic related to payment, such as validating card input. It will interact with the PaymentController for data consistency.
@@ -11,14 +11,19 @@ class PaymentService:
 
     def __init__(self):
         pass
-    
-    def simulate_payment(self, payment_data: CardPaymentCreate) -> bool:
+
+    # Call this function when updating the status to payment confirmed
+    def simulate_payment(self, payment_data: CardPaymentCreate) -> bool: # # Maybe put this as CardPaymentResponse
+        # Define and validate functions maybe can be called by the controller when creating the payment
         self.validate_payment_logic(payment_data)
         self.define_card_brand(payment_data)
 
+        # Create another validate payment logic but this time taking CardPaymentResponse so it checks if the card is still valid
+
         return self.checking_payment_is_successful(payment_data)
     
-    def checking_payment_is_successful(self, payment: CardPaymentCreate) -> bool:
+    def checking_payment_is_successful(self, payment: CardPaymentCreate) -> bool: # Maybe put this as CardPaymentResponse
+        # Add more restrictions for a card payment to be denied
         if(payment.card_brand in [CardPaymentBrand.MASTER_CARD, CardPaymentBrand.VISA]):
             # FOR NOW, accept all card payments that have a brand
             return True
