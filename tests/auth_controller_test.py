@@ -21,6 +21,7 @@ def setup_database() -> typing.Generator:
     '''
     Makes sure there is only one instance in the database before each test function runs.
     '''
+    global controller
     controller.repo._reinit_database()
     controller.repo.add_user(user_example)
     yield
