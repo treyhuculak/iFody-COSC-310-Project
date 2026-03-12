@@ -28,8 +28,8 @@ def get_order(order_id: int, controller: OrderController = Depends(get_controlle
     return controller.get_order(order_id)
 
 @router.put("/{order_id}/status", response_model=Order)
-def update_order_status(order_id: int, new_status: str, role: str, controller: OrderController = Depends(get_controller)):
-    return controller.update_order_status(order_id, new_status, role)
+def update_order_status(order_id: int, new_status: str, role: str, transaction_is_successful: Optional[bool] = None, controller: OrderController = Depends(get_controller)):
+    return controller.update_order_status(order_id, new_status, role, transaction_is_successful)
 
 @router.delete("/{order_id}/items/{item_id}", response_model=OrderItem)
 def delete_order_item(order_id: int, item_id: int, controller: OrderController = Depends(get_controller)):

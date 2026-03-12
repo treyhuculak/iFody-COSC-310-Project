@@ -8,8 +8,6 @@ class PaymentOptions(Enum):
 
 class PaymentBase(BaseModel):
     user_id: int
-    order_id: int
-    amount: float = Field(..., gt=0)
     method: PaymentOptions
 
 class PaymentCreate(PaymentBase):
@@ -18,4 +16,4 @@ class PaymentCreate(PaymentBase):
 
 class Payment(PaymentBase):
     id: int
-    is_successful: bool
+    is_active: bool
