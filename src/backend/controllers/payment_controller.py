@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from src.backend.repositories.payment_repo import PaymentRepository
 from src.backend.models.payment import PaymentCreate, PaymentOptions
-from src.backend.models.card_payment import CardPaymentCreate, CardPaymentBrand
+from src.backend.models.card_payment import CardPaymentCreate
 from src.backend.services.payment_service import PaymentService
 
 class PaymentController:
@@ -64,3 +64,15 @@ class PaymentController:
     
     def switch_active_payment_method(self, user_id: int, payment_id: int):
         self.payment_repo.switch_active_payment_method(user_id, payment_id)
+
+    def get_active_payment_method_by_user_id(self, user_id):
+        # Retrieving all payment methods for that user
+        list_of_methods = self.get_payment_methods_by_user_id(user_id)
+
+        # Finding the first method that is active
+        active_method = next(filter(lambda p: p.get("is_active") == True, list_of_methods), None)
+
+        if(active_method == None):
+            raise HTTPException(status_code=404, detail=f"No active payment method was found for user id: {user_id}")
+
+        return active_method
