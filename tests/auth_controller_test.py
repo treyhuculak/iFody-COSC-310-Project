@@ -1,6 +1,6 @@
 import pytest, typing
 from fastapi import HTTPException
-from src.backend.controllers.auth_controller import AuthController, AccountExistsException
+from src.backend.controllers.auth_controller import AuthController, AccountExistsException, NotLoggedInException
 from src.backend.repositories.user_repo import UserRepository
 from src.backend.models.user import InvalidEmailError, InvalidPasswordError, Role
 
@@ -91,3 +91,24 @@ def test_login_invalid_password(setup_database) -> None:
     '''
     with pytest.raises(HTTPException):
         controller.login("testcustomer@123.com", "fakePassword")
+
+def test_valid_logout(setup_database) -> None:
+    '''
+    Tests the logout functionality given that a user is currently logged in.
+    '''
+    user_example = controller.login("testcustomer@123.com", "Test@123")
+    assert user_example["is_logged_in"] == True
+    controller.logout()
+    assert user_example["is_logged_in"] == False
+    assert controller.cur_user == None
+
+def test_invalid_logout(setup_database) -> None:
+    '''
+    Tests the logout functionality given that no user is currently logged in.
+    '''
+    with pytest.raises(NotLoggedInException):
+        controller.logout()
+    controller.login("testcustomer@123.com", "Test@123")
+    controller.logout()
+    with pytest.raises(NotLoggedInException):
+        controller.logout()
