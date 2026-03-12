@@ -14,6 +14,8 @@ class RestaurantController:
         - Get a restaurant by ID
         - Get restaurants by owner ID
         - Get restaurants by location
+        - Filter restaurants by cuisine, location, and max delivery fee
+        - Get restaurants by partial name match
         - Get all restaurants
         - Create a restaurant
         - Update a restaurant
@@ -85,6 +87,8 @@ class RestaurantController:
     
     '''
     Menu item operations for a specific restaurant:
+        - Get menu items by partial name match
+        - Filter menu items by max price
         - Add a menu item to a restaurant
         - Update a menu item from a restaurant
         - Delete a menu item from a restaurant
