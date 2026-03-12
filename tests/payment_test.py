@@ -31,15 +31,11 @@ def test_client(tmp_path):
 
 cash_payment = {
     "user_id": 1,
-    #"order_id": 10,
-    #"amount": 25.50,
     "method": PaymentOptions.CASH.value
 }
 
 card_payment = {
     "user_id": 2,
-    #"order_id": 15,
-    #"amount": 49.99,
     "method": PaymentOptions.CREDIT_CARD.value,
     "card_digits": "4234567812345678",
     "expiration_month": 12,
@@ -50,8 +46,6 @@ card_payment = {
 
 card_payment_no_brand = {
     "user_id": 2,
-    #"order_id": 15,
-    #"amount": 49.99,
     "method": PaymentOptions.CREDIT_CARD.value,
     "card_digits": "1234567812345678",
     "expiration_month": 12,
@@ -62,8 +56,6 @@ card_payment_no_brand = {
 
 card_expired = {
   "user_id": 2,
-  #"order_id": 15,
-  #"amount": 49.99,
   "method": "credit_card",
   "card_digits": "5234567812345678",
   "expiration_month": 5,
@@ -74,8 +66,6 @@ card_expired = {
 
 card_invalid_CVV = {
   "user_id": 2,
-  #"order_id": 15,
-  #"amount": 49.99,
   "method": "credit_card",
   "card_digits": "1234567812345678",
   "expiration_month": 12,
@@ -86,8 +76,6 @@ card_invalid_CVV = {
 
 card_with_invalid_digits = {
   "user_id": 2,
-  #"order_id": 15,
-  #"amount": 49.99,
   "method": "credit_card",
   "card_digits": "12345678",
   "expiration_month": 12,
@@ -104,8 +92,6 @@ def test_add_cash_payment(test_client):
 
     assert data["method"] == PaymentOptions.CASH.value
     assert data["user_id"] == 1
-    #assert data["order_id"] == 10
-    #assert data["amount"] == 25.50
     assert data["is_active"] == True
     assert "id" in data
 
@@ -119,8 +105,6 @@ def test_add_card_payment_with_brand(test_client):
 
     assert data["method"] == PaymentOptions.CREDIT_CARD.value
     assert data["user_id"] == 2
-    #assert data["order_id"] == 15
-    #assert data["amount"] == 49.99
     assert data["is_active"] == True
     assert "id" in data
     assert data["last4"] == "5678"
@@ -136,9 +120,6 @@ def test_add_card_payment_without_brand(test_client):
     data = response.json()
 
     assert data["method"] == PaymentOptions.CREDIT_CARD.value
-    #assert data["user_id"] == 2
-    #assert data["order_id"] == 15
-    #assert data["amount"] == 49.99
     assert data["is_active"] == False
     assert "id" in data
     assert data["last4"] == "5678"
@@ -178,8 +159,6 @@ def test_get_cash_payment_by_id(test_client):
     data = get_response.json()
     assert data["method"] == PaymentOptions.CASH.value
     assert data["user_id"] == 1
-    #assert data["order_id"] == 10
-    #assert data["amount"] == 25.50
     assert data["is_active"] == True
     assert "id" in data
 
@@ -195,8 +174,6 @@ def test_get_card_payment_by_id(test_client):
     data = get_response.json()
     assert data["method"] == PaymentOptions.CREDIT_CARD.value
     assert data["user_id"] == 2
-    #assert data["order_id"] == 15
-    #assert data["amount"] == 49.99
     assert data["is_active"] == True
     assert "id" in data
     assert data["last4"] == "5678"
