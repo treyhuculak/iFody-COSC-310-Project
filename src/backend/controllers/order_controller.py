@@ -8,13 +8,18 @@ from src.backend.repositories.order_repo import OrderRepository
 from src.backend.services.order_service import OrderService
 from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
-
+from src.backend.controllers.notification_controller import NotificationController
+from src.backend.models.notification import NotificationCreate, NotificationType
+from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class OrderController:
-    def __init__(self, repo: Optional[OrderRepository] = None) -> None:
+    def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
         self.order_repo = repo or OrderRepository()
+        self.notif_controller = notif_controller or NotificationController()
         self.order_service = OrderService()
-    
+        self.restaurant_repo = RestaurantRepository()
+        
+
     def validate_order_logic(self):
         # For now
         return True
@@ -35,7 +40,17 @@ class OrderController:
             order_data['delivery_fee'] = delivery_fee
             order_data['total_price'] = subtotal + tax + delivery_fee
 
-            return self.order_repo.create_order(order_data)
+            new_order = self.order_repo.create_order(order_data)
+            try:    
+                restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+                if restaurant:
+                    owner_id = restaurant["owner_id"]
+                    manager_notification = NotificationCreate(...)
+                    self.notif_controller.create_notif(manager_notification)
+            except:
+                pass
+            return new_order
+
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
@@ -76,6 +91,47 @@ class OrderController:
         if updated_order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         else:
+            customer_status_map = {
+                OrderStatus.PAYMENT_CONFIRMED: NotificationType.ORDER_CONFIRMED,
+                OrderStatus.PAYMENT_FAILED: NotificationType.PAYMENT_FAILED,
+                OrderStatus.PREPARING_ORDER: NotificationType.ORDER_IN_PROGRESS,
+                OrderStatus.OUT_FOR_DELIVERY: NotificationType.ORDER_IN_TRANSIT,
+                OrderStatus.DELIVERED: NotificationType.ORDER_DELIVERED
+            }
+
+            notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
+
+            #create notification for the customer
+            customer_notification = NotificationCreate(
+                user_id = updated_order["customer_id"],
+                type = notif_type,
+                title = "Order Status Updated",
+                message = f"Your order status is now {status_enum.value}",
+                order_id=order_id,
+                is_read=False
+            )
+            self.notif_controller.create_notif(customer_notification)
+
+            manager_status_map = {
+                OrderStatus.OUT_FOR_DELIVERY: (NotificationType.ORDER_IN_TRANSIT, "Driver Picked Up", f"Order #{order_id} picked up by driver"),
+                OrderStatus.DELIVERED: (NotificationType.ORDER_DELIVERED, "Order has been delivered", f"Order #{order_id} has been delivered")
+            }
+
+            if status_enum in manager_status_map:
+                notif_type, title, message = manager_status_map[status_enum]
+                restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])
+                owner_id = restaurant["owner_id"]
+                manager_notification = NotificationCreate(
+                    user_id = owner_id,
+                    type = notif_type,
+                    title = title,
+                    message = message,
+                    order_id = order_id,
+                    is_read = False
+                )
+                self.notif_controller.create_notif(manager_notification)
+
+            
             return updated_order
         
     '''
@@ -87,8 +143,6 @@ class OrderController:
     '''
     The idea here is that we pass the whole menu item and we create an order item from that menu item (basically so they have the same id - easier to recognize same items that way)
     Inside the repo we assign the item price/subtotal and the order id itself.
-
-    Order item inherited from menu item
     '''
     def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int):
         order = self.get_order(order_id)
