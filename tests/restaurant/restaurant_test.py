@@ -3,6 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.backend.main import app
+from src.backend.models.pagination import PaginatedResponse
 from src.backend.routers.restaurants import get_controller
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.controllers.restaurant_controller import RestaurantController
@@ -38,7 +39,7 @@ new_restaurant = {
 def test_get_all_restaurants(test_client):
     response = test_client.get("/restaurants/")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json(), dict) # Should return a paginated response dict
 
 def test_add_restaurant(test_client):
     # The controller should return the new restaurant dict, which the router translates to a 200 response
@@ -195,9 +196,9 @@ def test_get_restaurants_by_owner(test_client):
     get_response = test_client.get("/restaurants/owner/1")
     assert get_response.status_code == 200
     data = get_response.json()
-    assert isinstance(data, list)
-    assert len(data) == 2
-    for rest in data:
+    assert isinstance(data, dict) # Should return a paginated response dict
+    assert len(data["items"]) == 2
+    for rest in data["items"]:
         assert rest["owner_id"] == 1
 
 def test_get_restaurants_by_location(test_client):
@@ -222,9 +223,9 @@ def test_get_restaurants_by_location(test_client):
     get_response = test_client.get("/restaurants/location/Test%20Location")
     assert get_response.status_code == 200
     data = get_response.json()
-    assert isinstance(data, list)
-    assert len(data) == 2
-    for rest in data:
+    assert isinstance(data, dict) # Should return a paginated response dict
+    assert len(data["items"]) == 2
+    for rest in data["items"]:
         assert rest["location"] == "Test Location"
 
 
@@ -423,9 +424,9 @@ def test_get_menu_items_by_restaurant_id(test_client):
     get_response = test_client.get(f"/restaurants/{restaurant_id}/menu")
     assert get_response.status_code == 200
     data = get_response.json()
-    assert isinstance(data, list)
-    assert len(data) == 1
-    assert data[0]["name"] == new_menu_item["name"]
+    assert isinstance(data, dict) # Should return a paginated response dict
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == new_menu_item["name"]
 
 def test_get_menu_items_by_restaurant_id_not_found(test_client):
     # Try to get menu items for a restaurant that doesn't exist
@@ -444,6 +445,6 @@ def test_get_menu_items_by_restaurant_id_no_items(test_client):
     get_response = test_client.get(f"/restaurants/{restaurant_id}/menu")
     assert get_response.status_code == 200
     data = get_response.json()
-    assert isinstance(data, list)
-    assert len(data) == 0
+    assert isinstance(data, dict) # Should return a paginated response dict
+    assert len(data["items"]) == 0
 
