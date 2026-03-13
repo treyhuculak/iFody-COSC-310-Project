@@ -1,8 +1,7 @@
 import json
-from typing import List, Optional, Dict
+from typing import List, Optional
 from datetime import datetime
 from fastapi import HTTPException
-from src.backend.models.order import OrderCreate
 
 class OrderRepository:
     ORDER_FILE = 'data/orders.json'
@@ -211,7 +210,10 @@ class OrderRepository:
     def get_review_by_order_id(self, order_id: int) -> Optional[dict]:
         order = self.get_order_by_id(order_id)
         if order:
-            return order.get("review", None)
+            if "review" in order:
+                return order["review"]
+            else:
+                raise HTTPException(status_code=404, detail=f"Review for order with id {order_id} not found.")
         else:
             raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
         
@@ -224,6 +226,8 @@ class OrderRepository:
                 # Iterate across all orders
                 for order in data:
                     if order['id'] == order_id:
+                        if "review" in order:
+                            raise HTTPException(status_code=400, detail=f"Order with id {order_id} already has a review.")
                         order["review"] = review_data
                         order["review"]["created_at"] = order["review"]["updated_at"] = datetime.now().isoformat()
                         flag = False
@@ -277,23 +281,20 @@ class OrderRepository:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                flag = True
 
                 # Iterate across all orders
                 for order in data:
                     if order['id'] == order_id:
+                        if "review" not in order:
+                            added_review = self.add_review_to_order(order_id, review_data)
+                            return added_review
                         order["review"].update(review_data)
                         order["review"]["updated_at"] = datetime.now().isoformat()
-                        flag = False
-                        break
+                        with open(self.file_path, 'w') as f:
+                            json.dump(data, f, indent=4)
+                        return order["review"]
                 
-                # Ensure a correct error message appears if order id is not found
-                if flag:
-                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
-                
-                with open(self.file_path, 'w') as f:
-                    json.dump(data, f, indent=4)
-                return review_data
+                raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
