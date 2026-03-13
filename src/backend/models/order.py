@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 from src.backend.models.order_item import OrderItem
 from enum import Enum
+from src.backend.models.review import Review
 
 class OrderStatus(Enum):
     PENDING = "pending"
@@ -45,3 +46,4 @@ class Order(OrderBase):
     total_price: float
     tax: float
     delivery_fee: float
+    review: Optional[Review] = None

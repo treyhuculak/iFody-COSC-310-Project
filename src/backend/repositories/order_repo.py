@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from src.backend.models.order import OrderCreate
 
 class OrderRepository:
-    ORDER_FILE = 'data/order.json'
+    ORDER_FILE = 'data/orders.json'
 
     def __init__(self, file_path: Optional[str] = None) -> None:
         # check if files exist, if not create them with headers
@@ -18,15 +18,12 @@ class OrderRepository:
             with open(self.file_path, 'w') as f:
                 json.dump([], f, indent=4)
         pass
-    
-    def get_order_by_id(self, order_id: int) -> Optional[dict]:
+
+    def _get_all_orders(self) -> List[dict]:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
-                # Getting the first order that matches the provided order_id 
-                order = next(filter(lambda order: order.get("id") == order_id, data), None)
-                return order
-                    
+                return data
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
@@ -34,8 +31,20 @@ class OrderRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
+    def get_order_by_id(self, order_id: int) -> Optional[dict]:
+        orders = self._get_all_orders()
+        order = next(filter(lambda order: order.get("id") == order_id, orders), None)
+        return order
+        
+    def get_all_orders(self) -> List[dict]:
+        return self._get_all_orders()
+    
+    def get_orders_by_user_id(self, user_id: int) -> List[dict]:
+        orders = self._get_all_orders()
+        user_orders = list(filter(lambda order: order.get("user_id") == user_id, orders))
+        return user_orders
 
-    def create_order(self, order_data: OrderCreate) -> dict:
+    def create_order(self, order_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
@@ -190,18 +199,104 @@ class OrderRepository:
             raise HTTPException(status_code=500, detail=f"Order item missing id field: {e}")
         
     def get_order_items_from_order(self, order_id: int) -> List[dict]:
+        order = self.get_order_by_id(order_id)
+        if order:
+            return order.get("order_items", [])
+        else:
+            raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
+        
+
+    # Review Functions
+
+    def get_review_by_order_id(self, order_id: int) -> Optional[dict]:
+        order = self.get_order_by_id(order_id)
+        if order:
+            return order.get("review", None)
+        else:
+            raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
+        
+    def add_review_to_order(self, order_id: int, review_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
+                flag = True
+
+                # Iterate across all orders
                 for order in data:
                     if order['id'] == order_id:
-                        return order.get('order_items', [])
-                raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
-            
+                        order["review"] = review_data
+                        order["review"]["created_at"] = order["review"]["updated_at"] = datetime.now().isoformat()
+                        flag = False
+                        break
+                
+                # Ensure a correct error message appears if order id is not found
+                if flag:
+                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
+                
+                with open(self.file_path, 'w') as f:
+                    json.dump(data, f, indent=4)
+                return review_data
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
         except KeyError as e:
-            raise HTTPException(status_code=500, detail=f"Order item missing id field: {e}")
-                    
+            raise HTTPException(status_code=500, detail=f"Review missing id field: {e}")
+        
+    def delete_review_from_order(self, order_id: int) -> dict:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                flag = True
+                deleted_review = None
+
+                # Iterate across all orders
+                for order in data:
+                    if order['id'] == order_id:
+                        deleted_review = order.pop("review", None)
+                        flag = False
+                        break
+                
+                # Ensure a correct error message appears if order id is not found
+                if flag:
+                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
+                if deleted_review == None:
+                    raise HTTPException(status_code=404, detail=f"Review for order with id {order_id} not found.")
+                
+                with open(self.file_path, 'w') as f:
+                    json.dump(data, f, indent=4)
+                return deleted_review
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Review missing id field: {e}")
+
+    def update_review_from_order(self, order_id: int, review_data: dict) -> dict:
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+                flag = True
+
+                # Iterate across all orders
+                for order in data:
+                    if order['id'] == order_id:
+                        order["review"].update(review_data)
+                        order["review"]["updated_at"] = datetime.now().isoformat()
+                        flag = False
+                        break
+                
+                # Ensure a correct error message appears if order id is not found
+                if flag:
+                    raise HTTPException(status_code=404, detail=f"Order with id {order_id} not found.")
+                
+                with open(self.file_path, 'w') as f:
+                    json.dump(data, f, indent=4)
+                return review_data
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Review missing id field: {e}")
