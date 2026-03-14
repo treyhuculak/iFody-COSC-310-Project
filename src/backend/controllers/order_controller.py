@@ -55,7 +55,7 @@ class OrderController:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            raise HTTPException(status_code=500, detail="An unexpected error occurred while creating the order.")
+            raise HTTPException(status_code=500, detail=str(e))
     
     def get_order(self, order_id: int):
         order = self.order_repo.get_order_by_id(order_id)
