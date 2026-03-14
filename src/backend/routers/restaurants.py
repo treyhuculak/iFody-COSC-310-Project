@@ -5,6 +5,7 @@ from typing import List, Optional
 from src.backend.controllers.restaurant_controller import RestaurantController
 from src.backend.models.restaurant import Restaurant, RestaurantCreate
 from src.backend.models.menu_item import MenuItem, MenuItemCreate
+from src.backend.models.pagination import PaginatedResponse
 
 router = APIRouter(
     prefix="/restaurants",
@@ -19,30 +20,48 @@ def get_user_id_from_auth():
     return 1  # Placeholder for testing purposes
 
 
-@router.get("/owner/{owner_id}", response_model=List[Restaurant])
-def get_restaurants_by_owner(owner_id: int, controller: RestaurantController = Depends(get_controller)):
-    return controller.get_restaurants_by_owner(owner_id)
+@router.get("/owner/{owner_id}", response_model=PaginatedResponse[Restaurant])
+def get_restaurants_by_owner(
+    owner_id: int, 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_owner(owner_id, skip=skip, limit=limit)
 
-@router.get("/location/{location}", response_model=List[Restaurant])
-def get_restaurants_by_location(location: str, controller: RestaurantController = Depends(get_controller)):
-    return controller.get_restaurants_by_location(location)
+@router.get("/location/{location}", response_model=PaginatedResponse[Restaurant])
+def get_restaurants_by_location(
+    location: str, 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_location(location, skip=skip, limit=limit)
 
-@router.get("/filter", response_model=List[Restaurant])
+@router.get("/filter", response_model=PaginatedResponse[Restaurant])
 def filter_restaurants(
     cuisine: str = Query(default=""),
     location: str = Query(default=""),
     max_fee: float = Query(default=0, ge=0),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
     controller: RestaurantController = Depends(get_controller)
 ):
-    return controller.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee)
+    return controller.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee, skip=skip, limit=limit)
 
-@router.get("/search", response_model=List[Restaurant])
-def search_restaurants(name: str = Query(default=""), controller: RestaurantController = Depends(get_controller)):
-    return controller.get_restaurants_by_partial_name(name)
+@router.get("/search", response_model=PaginatedResponse[Restaurant])
+def search_restaurants(
+    name: str = Query(default=""), 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)):
+    return controller.get_restaurants_by_partial_name(name, skip=skip, limit=limit)
 
-@router.get("/", response_model=List[Restaurant])
-def get_all_restaurants(controller: RestaurantController = Depends(get_controller)):
-    return controller.get_all_restaurants()
+@router.get("", response_model=PaginatedResponse[Restaurant])
+def get_all_restaurants(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)
+    ):
+    return controller.get_all_restaurants(skip=skip, limit=limit)
 
 
 @router.get("/{restaurant_id}", response_model=Restaurant)
@@ -51,19 +70,33 @@ def get_restaurant(restaurant_id: int, controller: RestaurantController = Depend
     return restaurant
 
 
-@router.get("/{restaurant_id}/menu", response_model=List[MenuItem])
-def get_all_menu_items_by_restaurant(restaurant_id: int, controller: RestaurantController = Depends(get_controller)):
-    # First verify the restaurant exists
-    menu_items = controller.get_menu_items_by_restaurant_id(restaurant_id)
+@router.get("/{restaurant_id}/menu", response_model=PaginatedResponse[MenuItem])
+def get_all_menu_items_by_restaurant(
+    restaurant_id: int, 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)):
+    menu_items = controller.get_menu_items_by_restaurant_id(restaurant_id, skip=skip, limit=limit)
     return menu_items
 
-@router.get("/{restaurant_id}/menu/search", response_model=List[MenuItem])
-def search_menu_items(restaurant_id: int, name: str = Query(default=""), controller: RestaurantController = Depends(get_controller)):
-    return controller.get_menu_items_by_partial_name(restaurant_id, name)
+@router.get("/{restaurant_id}/menu/search", response_model=PaginatedResponse[MenuItem])
+def search_menu_items(
+    restaurant_id: int, 
+    name: str = Query(default=""), 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)):
+    return controller.get_menu_items_by_partial_name(restaurant_id, name, skip=skip, limit=limit)
 
-@router.get("/{restaurant_id}/menu/filter", response_model=List[MenuItem])
-def filter_menu_items(restaurant_id: int, max_price: float = Query(default=0, gt=0), controller: RestaurantController = Depends(get_controller)):
-    return controller.filter_menu_items(restaurant_id, max_price)
+@router.get("/{restaurant_id}/menu/filter", response_model=PaginatedResponse[MenuItem])
+def filter_menu_items(
+    restaurant_id: int, 
+    max_price: float = Query(default=0, gt=0), 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)
+):
+    return controller.filter_menu_items(restaurant_id, max_price, skip=skip, limit=limit)
 
 @router.get("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
 def get_menu_item_by_id(restaurant_id: int, menu_item_id: int, controller: RestaurantController = Depends(get_controller)):
@@ -74,7 +107,7 @@ def get_menu_item_by_id(restaurant_id: int, menu_item_id: int, controller: Resta
                 return item
     raise HTTPException(status_code=404, detail="Menu item not found")
 
-@router.post("/", response_model=Restaurant)
+@router.post("", response_model=Restaurant)
 def add_restaurant(
     restaurant: RestaurantCreate, 
     controller: RestaurantController = Depends(get_controller),

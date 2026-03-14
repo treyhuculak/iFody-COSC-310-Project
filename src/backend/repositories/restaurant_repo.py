@@ -15,116 +15,117 @@ class RestaurantRepository:
             with open(self.file_path, 'w') as f:
                 json.dump([], f, indent=4)
 
-    def get_restaurant_by_id(self, restaurant_id: int) -> dict:
+    def _paginate(self, results: List[dict], skip: int, limit: int) -> tuple[List[dict], int]:
         '''
-        Gets the restaurant with the specified ID from the JSON file. 
-        Raises a 404 error if not found, or a 500 error if there is an issue with the JSON data.
+        Helper method to paginate a list of results. Returns the paginated results and the total number of items before pagination.
         '''
-        try:
-            with open(self.file_path, 'r') as f:
-                data = json.load(f)
-                for restaurant in data:
-                    if restaurant['id'] == restaurant_id:
-                        return restaurant
-                raise HTTPException(status_code=404, detail=f"Restaurant with id {restaurant_id} not found.")
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        except KeyError as e:
-            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
-
-    def get_restaurants_by_owner(self, owner_id: int) -> List[dict]:
+        total = len(results)
+        paginated_results = results[skip:skip+limit]
+        return paginated_results, total
+    
+    def _get_all_restaurants(self) -> List[dict]:
         '''
-        Gets all restaurants owned by the specified owner ID from the JSON file. 
+        Internal helper method to get all restaurants from the JSON file. 
         Raises a 404 error if the file is not found, or a 500 error if there is an issue with the JSON data.
         '''
-        if owner_id is None or owner_id == 0:
-            raise HTTPException(status_code=400, detail="Invalid owner_id provided.")
         try:
             with open(self.file_path, 'r') as f:
-                data = json.load(f)
-                return [restaurant for restaurant in data if restaurant.get('owner_id',0) == owner_id]
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-
-    def get_restaurants_by_location(self, location: str) -> List[dict]:
-        '''
-        Gets all restaurants in the specified location from the JSON file. 
-        Raises a 404 error if the file is not found, or a 500 error if there is an issue with the JSON data.
-        '''
-        location = location.strip().lower()
-        if not location:
-            raise HTTPException(status_code=400, detail="Invalid location provided.")
-        try:
-            with open(self.file_path, 'r') as f:
-                data = json.load(f)
-                return [restaurant for restaurant in data if restaurant.get('location','').lower().strip() == location]
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-
-    def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0) -> List[dict]:
-        '''
-        Filters restaurants based on the provided criteria (cuisine, location, max delivery fee).
-        If a criterion is not provided (e.g., empty string for cuisine/location or 0 for max_fee), it will not be used as a filter. 
-        Raises a 404 error if the file is not found, or a 500 error if there is an issue with the JSON data.
-        '''
-        cuisine, location = cuisine.strip().lower(), location.strip().lower()
-        try:
-            with open(self.file_path, 'r') as f:
-                data = json.load(f)
-                filtered = []
-                for restaurant in data:
-                    if cuisine and cuisine != restaurant.get('cuisine','').lower().strip():
-                        continue
-                    if location and location != restaurant.get('location','').lower().strip():
-                        continue
-                    if max_fee > 0 and restaurant.get('delivery_fee', float('inf')) > max_fee:
-                        continue
-                    filtered.append(restaurant)
-                return filtered
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-
-    def get_restaurants_by_partial_name(self, name: str) -> List[dict]:
-        '''
-        Gets all restaurants whose names contain the specified substring from the JSON file. 
-        Raises a 404 error if the file is not found, or a 500 error if there is an issue with the JSON data.
-        '''
-        name = name.strip().lower()
-        if name is None or name == "":
-            return self.get_all_restaurants()
-        try:
-            with open(self.file_path, 'r') as f:
-                data = json.load(f)
-                restaurants = []
-                for restaurant in data:
-                    if name in restaurant.get('name', '').lower().strip():
-                        restaurants.append(restaurant)
+                restaurants = json.load(f)
                 return restaurants
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-            
-    def get_all_restaurants(self) -> List[dict]:
+        
+    def _get_menu_items_by_restaurant(self, restaurant_id: int) -> List[dict]:
         '''
-        Gets all restaurants from the JSON file. 
-        Raises a 404 error if the file is not found, or a 500 error if there is an issue with the JSON data.
+        Internal helper method to get all menu items for a specific restaurant from the JSON file. 
+        Raises a 404 error if the restaurant is not found, or a 500 error if there is an issue with the JSON data.
         '''
         try:
-            with open(self.file_path, 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+            restaurant = self.get_restaurant_by_id(restaurant_id)
+            return restaurant.get('menu_items', [])
+        except HTTPException as e:
+            raise e
+
+    def get_restaurant_by_id(self, restaurant_id: int) -> dict:
+        '''
+        Gets the restaurant with the specified ID from the JSON file. 
+        Raises a 404 error if the restaurant is not found, or a 500 error if there is an issue with the JSON data.
+        '''
+        try:
+            restaurants = self._get_all_restaurants()
+            for restaurant in restaurants:
+                if restaurant['id'] == restaurant_id:
+                    return restaurant
+            raise HTTPException(status_code=404, detail=f"Restaurant with id {restaurant_id} not found.")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
+
+    def get_restaurants_by_owner(self, owner_id: int, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets all restaurants owned by the specified owner ID from the JSON file. 
+        Raises a 400 error if the owner_id is invalid (e.g., None or 0).
+        '''
+        if owner_id is None or owner_id == 0:
+            raise HTTPException(status_code=400, detail="Invalid owner_id provided.")
+        restaurants = self._get_all_restaurants()
+        filtered_restaurants = [restaurant for restaurant in restaurants if restaurant.get('owner_id') == owner_id]
+        return self._paginate(filtered_restaurants, skip, limit)
+
+    def get_restaurants_by_location(self, location: str, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets all restaurants in the specified location from the JSON file. 
+        Raises a 400 error if the location is invalid (e.g., empty string or only whitespace).
+        '''
+        location = location.strip().lower()
+        if not location:
+            raise HTTPException(status_code=400, detail="Invalid location provided.")
+        restaurants = self._get_all_restaurants()
+        filtered_restaurants = [restaurant for restaurant in restaurants if restaurant.get('location', '').lower().strip() == location]
+        return self._paginate(filtered_restaurants, skip, limit)
+
+    def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0, 
+                           skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Filters restaurants based on the provided criteria (cuisine, location, max delivery fee).
+        If a criterion is not provided (e.g., empty string for cuisine/location or 0 for max_fee), it will not be used as a filter. 
+        '''
+        cuisine, location = cuisine.strip().lower(), location.strip().lower()
+        restaurants = self._get_all_restaurants()
+        filtered = []
+        for restaurant in restaurants:
+            if cuisine and cuisine != restaurant.get('cuisine','').lower().strip():
+                continue
+            if location and location != restaurant.get('location','').lower().strip():
+                continue
+            if max_fee > 0 and restaurant.get('delivery_fee', float('inf')) > max_fee:
+                continue
+            filtered.append(restaurant)
+        return self._paginate(filtered, skip, limit)
+
+    def get_restaurants_by_partial_name(self, name: str, skip: int = 0, 
+                                        limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets all restaurants whose names contain the specified substring from the JSON file. 
+        '''
+        name = name.strip().lower()
+        if name is None or name == "":
+            r = self._get_all_restaurants()
+            return self._paginate(r, skip, limit)
+        restaurants = self._get_all_restaurants()
+        filtered = []
+        for restaurant in restaurants:
+            if name in restaurant.get('name', '').lower().strip():
+                filtered.append(restaurant)
+        return self._paginate(filtered, skip, limit)
+            
+    def get_all_restaurants(self, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets all restaurants from the JSON file. 
+        '''
+        restaurants = self._get_all_restaurants()
+        return self._paginate(restaurants, skip, limit)
 
     def add_restaurant(self, restaurant_data: dict) -> dict:
         '''
@@ -203,53 +204,36 @@ class RestaurantRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
     
-    def get_menu_items_by_restaurant(self, restaurant_id: int) -> List[dict]:
+    def get_menu_items_by_restaurant(self, restaurant_id: int, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
         '''
         Gets all menu items for the restaurant with the specified ID from the JSON file. 
-        Raises a 404 error if the restaurant or file is not found, or a 500 error if there is an issue with the JSON data.
         '''
-        try:
-            restaurant = self.get_restaurant_by_id(restaurant_id)
-            return restaurant.get('menu_items', [])
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        except KeyError as e:
-            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
+        menu_items = self._get_menu_items_by_restaurant(restaurant_id)
+        return self._paginate(menu_items, skip, limit)
 
-    def get_menu_item_by_partial_name(self, restaurant_id: int, name: str) -> List[dict]:
+    def get_menu_item_by_partial_name(self, restaurant_id: int, name: str, 
+                                      skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
         '''
-        Gets all menu items for the specified restaurant whose names contain the specified substring from the JSON file. 
-        Raises a 404 error if the restaurant or file is not found, or a 500 error if there is an issue with the JSON data.
+        Gets all menu items for the specified restaurant whose names contain the specified substring.
         '''
         name = name.strip().lower()
-        if name is None or name == "":
-            return self.get_menu_items_by_restaurant(restaurant_id)
-        try:
-            menu_items = self.get_menu_items_by_restaurant(restaurant_id)
-            return [item for item in menu_items if name in item.get('name', '').lower().strip()]
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        except KeyError as e:
-            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
+        menu_items = self._get_menu_items_by_restaurant(restaurant_id)
         
-    def filter_menu_items(self, restaurant_id: int, max_price: float) -> List[dict]:
+        if name:
+            filtered_items = [item for item in menu_items if name in item.get('name', '').lower().strip()]
+        else:
+            filtered_items = menu_items
+        
+        return self._paginate(filtered_items, skip, limit)
+        
+    def filter_menu_items(self, restaurant_id: int, max_price: float,
+                          skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
         '''
-        Returns all menu items for the specified restaurant that have a price less than or equal to the specified max_price from the JSON file. 
-        Raises a 404 error if the restaurant or file is not found, or a 500 error if there is an issue with the JSON data.
+        Returns all menu items for the specified restaurant that have a price less than or equal to the specified max_price.
         '''
-        try:
-            menu_items = self.get_menu_items_by_restaurant(restaurant_id)
-            return [item for item in menu_items if item.get('price', float('inf')) <= max_price]
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
-        except KeyError as e:
-            raise HTTPException(status_code=500, detail=f"Restaurant missing id field: {e}")
+        menu_items = self._get_menu_items_by_restaurant(restaurant_id)
+        filtered_items = [item for item in menu_items if item.get('price', float('inf')) <= max_price]
+        return self._paginate(filtered_items, skip, limit)
 
     def add_menu_item_to_restaurant(self, item_data: dict, restaurant_id: int) -> dict:
         '''
