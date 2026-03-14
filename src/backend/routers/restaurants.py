@@ -62,7 +62,7 @@ def search_menu_items(restaurant_id: int, name: str = Query(default=""), control
     return controller.get_menu_items_by_partial_name(restaurant_id, name)
 
 @router.get("/{restaurant_id}/menu/filter", response_model=List[MenuItem])
-def filter_menu_items(restaurant_id: int, max_price: float = Query(..., gt=0), controller: RestaurantController = Depends(get_controller)):
+def filter_menu_items(restaurant_id: int, max_price: float = Query(default=0, gt=0), controller: RestaurantController = Depends(get_controller)):
     return controller.filter_menu_items(restaurant_id, max_price)
 
 @router.get("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
