@@ -58,20 +58,20 @@ def test_filter_restaurants(test_client):
     response = test_client.get("/restaurants/filter?cuisine=Italian")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert data[0]["name"] == "Pizza Place"
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == "Pizza Place"
 
     # Test filtering by location
     response = test_client.get("/restaurants/filter?location=Downtown")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
+    assert len(data["items"]) == 2
 
     # Test filtering by max delivery fee
     response = test_client.get("/restaurants/filter?max_fee=4.00")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
+    assert len(data["items"]) == 2
 
 def test_filter_restaurants_combined(test_client):
     # Add some test restaurants
@@ -102,15 +102,15 @@ def test_filter_restaurants_combined(test_client):
     response = test_client.get("/restaurants/filter?cuisine=Italian&location=Downtown")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert data[0]["name"] == "Pizza Place"
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == "Pizza Place"
 
     # Test filtering by cuisine and max delivery fee
     response = test_client.get("/restaurants/filter?cuisine=American&max_fee=3.00")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert data[0]["name"] == "Burger Joint"
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == "Burger Joint"
 
 def test_filter_restaurants_no_matches(test_client):
     # Add some test restaurants
@@ -135,7 +135,7 @@ def test_filter_restaurants_no_matches(test_client):
     response = test_client.get("/restaurants/filter?cuisine=Mexican")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 0
+    assert len(data["items"]) == 0
 
 '''
 Tests for the menu item filtering functionality.
@@ -178,7 +178,7 @@ def test_filter_menu_items(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/filter?max_price=11.00")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
+    assert len(data["items"]) == 2
 
 def test_filter_menu_items_no_matches(test_client):
     # Add a test restaurant
@@ -205,4 +205,4 @@ def test_filter_menu_items_no_matches(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/filter?max_price=5.00")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 0
+    assert len(data["items"]) == 0

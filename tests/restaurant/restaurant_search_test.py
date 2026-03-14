@@ -55,7 +55,7 @@ def test_search_restaurants_by_partial_name(test_client):
     response = test_client.get("/restaurants/search/?name=P")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 2  # Should find Pizza Palace and Pasta Place
+    assert len(results["items"]) == 2  # Should find Pizza Palace and Pasta Place
 
 def test_search_restaurants_by_partial_name_no_matches(test_client):
     # Add a restaurant to search through
@@ -71,7 +71,7 @@ def test_search_restaurants_by_partial_name_no_matches(test_client):
     response = test_client.get("/restaurants/search/?name=X")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 0  # Should find no matches
+    assert len(results["items"]) == 0  # Should find no matches
 
 def test_search_restaurants_by_partial_name_case_insensitive(test_client):
     # Add a restaurant to search through
@@ -87,7 +87,7 @@ def test_search_restaurants_by_partial_name_case_insensitive(test_client):
     response = test_client.get("/restaurants/search/?name=t")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 1  # Should find Taco Town
+    assert len(results["items"]) == 1  # Should find Taco Town
 
 def test_search_restaurants_by_partial_name_empty_string(test_client):
     # Add some restaurants to search through
@@ -110,7 +110,7 @@ def test_search_restaurants_by_partial_name_empty_string(test_client):
     response = test_client.get("/restaurants/search/?name=")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 2  # Should find both restaurants
+    assert len(results["items"]) == 2  # Should find both restaurants
 
 def test_search_restaurants_by_partial_name_whitespace_handling(test_client):
     # Add a restaurant to search through
@@ -126,7 +126,7 @@ def test_search_restaurants_by_partial_name_whitespace_handling(test_client):
     response = test_client.get("/restaurants/search/?name=  bbq  ")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 1  # Should find BBQ Bistro
+    assert len(results["items"]) == 1  # Should find BBQ Bistro
 
 '''
 Tests for searching menu items by partial name within a specific restaurant.  
@@ -167,7 +167,7 @@ def test_search_menu_items_by_partial_name(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/search/?name=P")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 2  # Should find Pulled Pork Sandwich and Brisket Plate
+    assert len(results["items"]) == 2  # Should find Pulled Pork Sandwich and Brisket Plate
 
 def test_search_menu_items_by_partial_name_no_matches(test_client):
     # Add a restaurant and a menu item to search through
@@ -191,7 +191,7 @@ def test_search_menu_items_by_partial_name_no_matches(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/search/?name=X")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 0  # Should find no matches
+    assert len(results["items"]) == 0  # Should find no matches
 
 def test_search_menu_items_by_partial_name_case_insensitive(test_client):
     # Add a restaurant and a menu item to search through
@@ -215,7 +215,7 @@ def test_search_menu_items_by_partial_name_case_insensitive(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/search/?name=c")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 1  # Should find Chocolate Cake
+    assert len(results["items"]) == 1  # Should find Chocolate Cake
 
 def test_search_menu_items_by_partial_name_empty_string(test_client):
     # Add a restaurant and some menu items to search through
@@ -245,7 +245,7 @@ def test_search_menu_items_by_partial_name_empty_string(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/search/?name=")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 2  # Should find both menu items
+    assert len(results["items"]) == 2  # Should find both menu items
 
 def test_search_menu_items_by_partial_name_nonexistent_restaurant(test_client):
     # Search for menu items in a restaurant that doesn't exist (should return 404)
@@ -281,4 +281,4 @@ def test_search_menu_items_by_partial_name_whitespace_handling(test_client):
     response = test_client.get(f"/restaurants/{restaurant_id}/menu/search/?name=  grilled  ")
     assert response.status_code == 200
     results = response.json()
-    assert len(results) == 2  # Should find both menu items
+    assert len(results["items"]) == 2  # Should find both menu items

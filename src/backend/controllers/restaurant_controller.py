@@ -3,11 +3,25 @@ from typing import Optional
 from fastapi import HTTPException
 from src.backend.models.restaurant import RestaurantCreate, Restaurant
 from src.backend.models.menu_item import MenuItem, MenuItemCreate
+from src.backend.models.pagination import PaginatedResponse
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class RestaurantController:
     def __init__(self, repo: Optional[RestaurantRepository] = None) -> None:
         self.repo = repo or RestaurantRepository()
+
+    def _build_paginated_response(self, items: list, total: int, 
+                                  skip: int, limit: int) -> PaginatedResponse:
+        total_pages = (total + limit - 1) // limit
+        return PaginatedResponse(
+            items=items,
+            total=total,
+            page=(skip // limit) + 1,
+            page_size=limit,
+            total_pages=total_pages,
+            has_next=(skip + limit) < total,
+            has_prev=skip > 0
+        )
 
     '''
     Restaurant operations:
@@ -26,25 +40,32 @@ class RestaurantController:
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
         return Restaurant(**restaurant)
 
-    def get_restaurants_by_owner(self, owner_id: int):
-        owner_restaurants = self.repo.get_restaurants_by_owner(owner_id)
-        return [Restaurant(**restaurant) for restaurant in owner_restaurants]
+    def get_restaurants_by_owner(self, owner_id: int, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        owner_restaurants, total = self.repo.get_restaurants_by_owner(owner_id, skip, limit)
+        response_restaurants = [Restaurant(**r) for r in owner_restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
 
-    def get_restaurants_by_location(self, location: str):
-        location_restaurants = self.repo.get_restaurants_by_location(location)
-        return [Restaurant(**restaurant) for restaurant in location_restaurants]
-    
-    def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0):
-        filtered_restaurants = self.repo.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee)
-        return [Restaurant(**restaurant) for restaurant in filtered_restaurants]
-    
-    def get_restaurants_by_partial_name(self, partial_name: str):
-        matching_restaurants = self.repo.get_restaurants_by_partial_name(partial_name)
-        return [Restaurant(**restaurant) for restaurant in matching_restaurants]
+    def get_restaurants_by_location(self, location: str, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        location_restaurants, total = self.repo.get_restaurants_by_location(location, skip, limit)
+        response_restaurants = [Restaurant(**r) for r in location_restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
 
-    def get_all_restaurants(self):
-        all_restaurants = self.repo.get_all_restaurants()
-        return [Restaurant(**restaurant) for restaurant in all_restaurants]
+    def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0, 
+                           skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        restaurants, total = self.repo.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee, skip=skip, limit=limit)
+        response_restaurants = [Restaurant(**r) for r in restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
+
+    def get_restaurants_by_partial_name(self, partial_name: str, 
+                                        skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        matching_restaurants, total = self.repo.get_restaurants_by_partial_name(partial_name, skip=skip, limit=limit)
+        response_restaurants = [Restaurant(**r) for r in matching_restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
+
+    def get_all_restaurants(self, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        all_restaurants, total = self.repo.get_all_restaurants(skip=skip, limit=limit)
+        response_restaurants = [Restaurant(**r) for r in all_restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
 
     def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1) -> Restaurant:
         restaurant_data = restaurant.model_dump()
@@ -69,9 +90,9 @@ class RestaurantController:
         # Block marking restaurant as available if it has no menu items
         if "is_available" in restaurant_data and restaurant_data["is_available"] == True:
             # Check if the restaurant has menu items before allowing it to be marked as available
-            menu_items = self.repo.get_menu_items_by_restaurant(restaurant_id)
+            menu_items, total = self.repo.get_menu_items_by_restaurant(restaurant_id)
 
-            if not menu_items:
+            if total == 0:
                 raise HTTPException(status_code=400, detail="Cannot mark restaurant as available without menu items.")
         
         updated_restaurant = self.repo.update_restaurant(restaurant_id, restaurant_data)
@@ -81,10 +102,11 @@ class RestaurantController:
         deleted_restaurant = self.repo.delete_restaurant(restaurant_id)
         return Restaurant(**deleted_restaurant)
 
-    def get_menu_items_by_restaurant_id(self, restaurant_id: int):
-        all_menu_items = self.repo.get_menu_items_by_restaurant(restaurant_id)
-        return [MenuItem(**item) for item in all_menu_items]
-    
+    def get_menu_items_by_restaurant_id(self, restaurant_id: int, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        all_menu_items, total = self.repo.get_menu_items_by_restaurant(restaurant_id, skip, limit)
+        response_menu_items = [MenuItem(**item) for item in all_menu_items]
+        return self._build_paginated_response(response_menu_items, total, skip, limit)
+
     '''
     Menu item operations for a specific restaurant:
         - Get menu items by partial name match
@@ -93,13 +115,13 @@ class RestaurantController:
         - Update a menu item from a restaurant
         - Delete a menu item from a restaurant
     '''
-    def get_menu_items_by_partial_name(self, restaurant_id: int, partial_name: str):
-        menu_items = self.repo.get_menu_item_by_partial_name(restaurant_id, partial_name)
-        return [MenuItem(**item) for item in menu_items]
-    
-    def filter_menu_items(self, restaurant_id: int, max_price: float):
-        menu_items = self.repo.filter_menu_items(restaurant_id, max_price)
-        return [MenuItem(**item) for item in menu_items]
+    def get_menu_items_by_partial_name(self, restaurant_id: int, partial_name: str, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        menu_items, total = self.repo.get_menu_item_by_partial_name(restaurant_id, partial_name, skip, limit)
+        return self._build_paginated_response(menu_items, total, skip, limit)
+
+    def filter_menu_items(self, restaurant_id: int, max_price: float, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        menu_items, total = self.repo.filter_menu_items(restaurant_id, max_price, skip, limit)
+        return self._build_paginated_response(menu_items, total, skip, limit)
 
     def add_menu_item_to_restaurant(self, menu_item: MenuItemCreate, restaurant_id: int):
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
