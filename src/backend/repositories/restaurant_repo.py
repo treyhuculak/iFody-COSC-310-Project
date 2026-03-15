@@ -1,11 +1,13 @@
 import json
 from typing import List, Optional
 from fastapi import HTTPException
+from src.backend.repositories.order_repo import OrderRepository
 
 class RestaurantRepository:
     DEFAULT_FILE = 'data/restaurants.json'
 
     def __init__(self, file_path: Optional[str] = None) -> None:
+        self.order_repo = OrderRepository()
         self.file_path = file_path or self.DEFAULT_FILE
         try:
             with open(self.file_path, 'r') as f:
@@ -327,4 +329,13 @@ class RestaurantRepository:
             raise HTTPException(status_code=500, detail=f"Menu item missing id field: {e}")
         
     
-        
+    def get_reviews_by_restaurant_id(self, restaurant_id: int) -> List[dict]:
+        '''
+        Gets all reviews for the specified restaurant by retrieving all orders for that restaurant and extracting the reviews from those orders.
+        '''
+        orders = self.order_repo.get_orders_by_restaurant_id(restaurant_id)
+        reviews = []
+        for order in orders:
+            if "review" in order:
+                reviews.append(order["review"])
+        return reviews

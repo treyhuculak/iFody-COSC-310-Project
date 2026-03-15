@@ -1,5 +1,6 @@
 from typing import Optional
 
+from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.models.order import OrderCreate
 import json
@@ -37,4 +38,3 @@ class OrderService:
         if not restaurant:
             raise ValueError("Restaurant not found")
         return restaurant["delivery_fee"]
-    
