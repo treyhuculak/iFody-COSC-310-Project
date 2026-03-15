@@ -17,18 +17,12 @@ class AdminService:
         '''
         Gets all the orders from all the restaurant instances.
         '''
-        restaurants = self.rest_repo.get_all_restaurants()[0]
-        orders = []
-        for restaurant in restaurants:
-            restaurant_id = restaurant["id"]
-            order = self.order_repo.get_order_by_id(restaurant_id)
-            if order:
-                orders.append(order)
-        return orders
+        return self.order_repo.get_all_orders()
     
     def get_most_popular_restaurant(self) -> Union[dict, None]:
         '''
         Retrieves the restaurant instance with the highest number of orders.
+        If some restaurants have the same number of orders, the restaurant with the lowest id is returned.
         '''
         rests_and_orders = dict()
         orders = self.get_all_orders()

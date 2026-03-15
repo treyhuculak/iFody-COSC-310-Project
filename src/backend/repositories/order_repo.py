@@ -34,8 +34,14 @@ class OrderRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
+    def get_all_orders(self) -> list[dict]:
+        '''
+        Returns a list of all the order instances in the order database.
+        '''
+        with open(self.file_path, 'r') as f:
+            return json.load(f)
 
-    def create_order(self, order_data: OrderCreate) -> dict:
+    def create_order(self, order_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
