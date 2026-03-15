@@ -3,15 +3,13 @@ from src.backend.repositories.order_repo import OrderRepository
 
 class AdminService:
     def __init__(
-            self,
-            rest_repo_file: str = None,
-            order_repo_file: str = None
+            self
         ):
         '''
         Initializes the AdminService class's attributes.
         '''
-        self.rest_repo = RestaurantRepository(rest_repo_file)
-        self.order_repo = OrderRepository(order_repo_file)
+        self.rest_repo = RestaurantRepository()
+        self.order_repo = OrderRepository()
 
     def get_all_orders(self) -> list[dict]:
         '''
@@ -22,7 +20,8 @@ class AdminService:
         for restaurant in restaurants:
             restaurant_id = restaurant["id"]
             order = self.order_repo.get_order_by_id(restaurant_id)
-            orders.append(order)
+            if order:
+                orders.append(order)
         return orders
     
     def get_most_popular_restaurant(self) -> dict | None:
@@ -30,7 +29,10 @@ class AdminService:
         Retrieves the restaurant instance with the highest number of orders.
         '''
         rests_and_orders = dict()
-        for order in self.get_all_orders():
+        orders = self.get_all_orders()
+        if not orders:
+            return None
+        for order in orders:
             if order["restaurant_id"] in rests_and_orders:
                 order["restaurant_id"] += 1
             else:
