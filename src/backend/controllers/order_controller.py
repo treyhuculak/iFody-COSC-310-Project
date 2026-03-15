@@ -192,7 +192,7 @@ class OrderController:
 
             notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
 
-            #create notification for the customer
+            #create notification for the customer based on the mapped statuses above
             customer_notification = NotificationCreate(
                 user_id = updated_order["customer_id"],
                 type = notif_type,
@@ -207,7 +207,8 @@ class OrderController:
                 OrderStatus.OUT_FOR_DELIVERY: (NotificationType.ORDER_IN_TRANSIT, "Driver Picked Up", f"Order #{order_id} picked up by driver"),
                 OrderStatus.DELIVERED: (NotificationType.ORDER_DELIVERED, "Order has been delivered", f"Order #{order_id} has been delivered")
             }
-
+            
+            #create notification for the manager based on the mapped statuses above
             if status_enum in manager_status_map:
                 notif_type, title, message = manager_status_map[status_enum]
                 restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])

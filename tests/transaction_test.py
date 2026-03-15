@@ -10,6 +10,8 @@ from src.backend.repositories.transaction_repo import TransactionRepository
 from src.backend.repositories.payment_repo import PaymentRepository
 from src.backend.controllers.transaction_controller import TransactionController
 from src.backend.controllers.payment_controller import PaymentController
+from src.backend.repositories.notification_repo import NotificationRepository
+from src.backend.controllers.notification_controller import NotificationController
 
 @pytest.fixture
 def test_client(tmp_path):
@@ -20,15 +22,19 @@ def test_client(tmp_path):
     """
     temp_payment_db = tmp_path / "test_payment.json"
     temp_transaction_db = tmp_path / "test_transaction.json"
-
+    temp_notif_db = tmp_path / "test_notifications.json"
+    
+    temp_notif_db.write_text(json.dumps([]))
     temp_payment_db.write_text(json.dumps([]))
     temp_transaction_db.write_text(json.dumps([]))
 
     shared_payment_repo = PaymentRepository(file_path=str(temp_payment_db))
     transaction_repo = TransactionRepository(file_path=str(temp_transaction_db))
+    test_notif_repo = NotificationRepository(file_path=str(temp_notif_db))
 
     payment_controller = PaymentController(repo=shared_payment_repo)
-    transaction_controller = TransactionController(payment_repo=shared_payment_repo, repo=transaction_repo)
+    notification_controller = NotificationController(repo=test_notif_repo)
+    transaction_controller = TransactionController(payment_repo=shared_payment_repo, repo=transaction_repo, notif_controller=notification_controller)
 
     app.dependency_overrides[get_payment_controller] = lambda: payment_controller
     app.dependency_overrides[get_transaction_controller] = lambda: transaction_controller
