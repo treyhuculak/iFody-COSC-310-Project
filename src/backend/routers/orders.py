@@ -5,6 +5,8 @@ from src.backend.models.order import Order, OrderCreate
 from src.backend.models.order_item import OrderItem, OrderItemCreate
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.review import Review, ReviewCreate
+from src.backend.models.user import Role
+from src.backend.utils.auth_dependencies import requires_role
 
 router = APIRouter(
     prefix="/orders",
@@ -15,12 +17,12 @@ def get_controller():
     return OrderController()
 
 @router.post("/", response_model=Order)
-def add_order(order: OrderCreate, controller: OrderController = Depends(get_controller)):
+def add_order(order: OrderCreate, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
     new_order = controller.add_order(order)
     return new_order
 
 @router.delete("/{order_id}", response_model=Order)
-def delete_order(order_id: int, controller: OrderController = Depends(get_controller)):
+def delete_order(order_id: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
     deleted_order = controller.delete_order(order_id)
     return deleted_order
 
@@ -29,16 +31,16 @@ def get_order(order_id: int, controller: OrderController = Depends(get_controlle
     return controller.get_order(order_id)
 
 @router.put("/{order_id}/status", response_model=Order)
-def update_order_status(order_id: int, new_status: str, role: str, controller: OrderController = Depends(get_controller)):
-    return controller.update_order_status(order_id, new_status, role)
+def update_order_status(order_id: int, new_status: str, role: str, transaction_is_successful: Optional[bool] = None, controller: OrderController = Depends(get_controller)):
+    return controller.update_order_status(order_id, new_status, role, transaction_is_successful)
 
 @router.delete("/{order_id}/items/{item_id}", response_model=OrderItem)
-def delete_order_item(order_id: int, item_id: int, controller: OrderController = Depends(get_controller)):
+def delete_order_item(order_id: int, item_id: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
     deleted_item = controller.delete_order_item_from_order(order_id, item_id)
     return deleted_item
 
 @router.post("/{order_id}/items", response_model=OrderItem)
-def add_order_item(order_id: int, order_item: MenuItem, quantity: int, controller: OrderController = Depends(get_controller)):
+def add_order_item(order_id: int, order_item: MenuItem, quantity: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
     new_item = controller.add_order_item_to_order(order_item, order_id, quantity)
     return new_item
 
