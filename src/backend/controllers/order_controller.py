@@ -46,6 +46,7 @@ class OrderController:
             new_order = self.order_repo.create_order(order_data)
 
             #Send manager and customer notifications regarding the new order
+            customer_id = new_order["customer_id"]
             try:    
                 restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
                 restaurant_name = restaurant["name"]
@@ -62,7 +63,6 @@ class OrderController:
                     )
                     self.notif_controller.create_notif(manager_notification)
 
-                    customer_id = new_order["customer_id"]
                     customer_notif = NotificationCreate(
                         user_id = customer_id,
                         type = NotificationType.NEW_ORDER_RECEIVED,
@@ -73,6 +73,15 @@ class OrderController:
                     )
                     self.notif_controller.create_notif(customer_notif)
             except Exception as e:
+                customer_failed_notif = NotificationCreate(
+                    user_id = customer_id,
+                    type = NotificationType.ORDER_FAILED,
+                    title = "Order has Failed",
+                    message = f"Your order has failed, restaurant was not found.",
+                    is_read = False,
+                    order_id = order_id
+                )
+                self.notif_controller.create_notif(customer_failed_notif)
                 print(f"Notification failed. Exception {e}")
                 pass
 
@@ -95,11 +104,56 @@ class OrderController:
             '''
             Ensure no punishment happens, since the order was canceled before the restaurant accepting it
             '''
+            #Manager and Customer Notifications for a successful order cancellation
+            rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
+            owner_id = rest_id["owner_id"]
+            manager_deleted_order_notif = NotificationCreate(
+                user_id = owner_id,
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Order with ID {order_id} has been cancelled by the customer before confirmation",
+                is_read = False,
+                order_id = order_id
+            )
+            self.notif_controller.create_notif(manager_deleted_order_notif)
+            customer_id = order["customer_id"]
+            customer_del_order_notif = NotificationCreate(
+                user_id = customer_id,
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Order {order_id} has been successfully cancelled before confirmation",
+                is_read = False,
+                order_id = order_id
+            )
+            self.notif_controller.create_notif(customer_del_order_notif)
             return self.order_repo.delete_order(order_id)
+        
         elif(order["status"] == "payment confirmed" or order["status"] == "preparing"):
             '''
             Need some kind of punishment for cancelling after restaurant accepted the order
             '''
+            #Manager and Customer Notifications for an unsuccessful order cancellation
+            rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
+            owner_id = rest_id["owner_id"]
+            manager_deleted_order_notif = NotificationCreate(
+                user_id = owner_id,
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Order with ID {order_id} has been cancelled by the customer after confirmation, fees will be applied",
+                is_read = False,
+                order_id = order_id
+            )
+            self.notif_controller.create_notif(manager_deleted_order_notif)
+            customer_id = order["customer_id"]
+            customer_del_order_notif = NotificationCreate(
+                user_id = customer_id,
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Order {order_id} has been cancelled after confirmation, fees will be applied",
+                is_read = False,
+                order_id = order_id
+            )
+            self.notif_controller.create_notif(customer_del_order_notif)
             return self.order_repo.delete_order(order_id)
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be cancelled")
@@ -168,7 +222,6 @@ class OrderController:
                 )
                 self.notif_controller.create_notif(manager_notification)
 
-            
             return updated_order
         
     '''
