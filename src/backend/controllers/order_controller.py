@@ -2,16 +2,18 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from src.backend.models.order import Order, OrderCreate
-from src.backend.models.order_item import OrderItem, OrderItemCreate
-from src.backend.repositories.order_repo import OrderRepository
-from src.backend.services.order_service import OrderService
-from src.backend.models.order import OrderStatus
+from src.backend.models.order import Order, OrderCreate, OrderStatus
 from src.backend.models.menu_item import MenuItem
-from src.backend.controllers.notification_controller import NotificationController
+from src.backend.models.order_item import OrderItem, OrderItemCreate
 from src.backend.models.notification import NotificationCreate, NotificationType
-from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.models.payment_transaction import PaymentTransaction 
+
+from src.backend.repositories.order_repo import OrderRepository
+from src.backend.repositories.restaurant_repo import RestaurantRepository
+
+from src.backend.services.order_service import OrderService
+
+from src.backend.controllers.notification_controller import NotificationController
 
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
@@ -42,14 +44,38 @@ class OrderController:
             order_data['total_price'] = subtotal + tax + delivery_fee
 
             new_order = self.order_repo.create_order(order_data)
+
+            #Send manager and customer notifications regarding the new order
             try:    
                 restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+                restaurant_name = restaurant["name"]
+                order_id = new_order["id"]
                 if restaurant:
                     owner_id = restaurant["owner_id"]
-                    manager_notification = NotificationCreate(...)
+                    manager_notification = NotificationCreate(
+                        user_id= owner_id,
+                        type= NotificationType.NEW_ORDER_RECEIVED,
+                        title= "New Order Received",
+                        message= f"A new order with id {order_id} has been received.",
+                        is_read = False,
+                        order_id = order_id
+                    )
                     self.notif_controller.create_notif(manager_notification)
-            except:
+
+                    customer_id = new_order["customer_id"]
+                    customer_notif = NotificationCreate(
+                        user_id = customer_id,
+                        type = NotificationType.NEW_ORDER_RECEIVED,
+                        title = "Order Confirmed",
+                        message = f"Your order at {restaurant_name} has been received, and is awaiting payment",
+                        is_read = False,
+                        order_id = new_order["id"]
+                    )
+                    self.notif_controller.create_notif(customer_notif)
+            except Exception as e:
+                print(f"Notification failed. Exception {e}")
                 pass
+
             return new_order
 
         except ValueError as e:
