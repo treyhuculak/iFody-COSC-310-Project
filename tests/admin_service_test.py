@@ -62,6 +62,10 @@ def test_nonempty_get_all_orders(setup_admin_service_with_draft_order_db) -> Non
     assert len(admin_service.get_all_orders()) == 2
 
 def test_nonempty_get_most_popular_restaurant(setup_admin_service_with_draft_order_db) -> None:
+    '''
+    Tests the get_most_popular_restaurant function after creating orders in the draft database.
+    It also tests the case where there are multiple restaurants with the same number of orders.
+    '''
     admin_service.order_repo.create_order(
         {
             "customer_id": 1,
