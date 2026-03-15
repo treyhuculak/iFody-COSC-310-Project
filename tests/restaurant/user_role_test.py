@@ -95,7 +95,7 @@ def test_print_user_1(test_client):
     assert user is not None
 
 def test_print_user_2(test_client):
-    user = auth_dependencies.repo.get_user_by_id(1)
+    user = auth_dependencies.repo.get_user_by_id(2)
     assert user is not None
 
 def test_missing_header_cannot_add_restaurant(test_client):
