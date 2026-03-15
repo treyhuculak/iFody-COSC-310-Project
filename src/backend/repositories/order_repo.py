@@ -1,8 +1,7 @@
 import json
-from typing import List, Optional, Dict
+from typing import List, Optional
 from datetime import datetime
 from fastapi import HTTPException
-from src.backend.models.order import OrderCreate
 
 class OrderRepository:
     ORDER_FILE = 'data/order.json'
