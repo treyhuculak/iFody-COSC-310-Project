@@ -5,6 +5,7 @@ from typing import List, Optional
 from src.backend.controllers.restaurant_controller import RestaurantController
 from src.backend.models.restaurant import Restaurant, RestaurantCreate
 from src.backend.models.menu_item import MenuItem, MenuItemCreate
+from src.backend.models.pagination import PaginatedResponse
 from src.backend.models.user import Role
 from src.backend.models.pagination import PaginatedResponse
 from src.backend.utils.auth_dependencies import requires_role
