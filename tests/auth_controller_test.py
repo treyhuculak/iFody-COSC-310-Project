@@ -73,7 +73,7 @@ def test_valid_login(setup_database) -> None:
         "username": "TestCustomer",
         "email": "testcustomer@123.com",
         "password": "Test@123",
-        "role": "Customer",
+        "role": "customer",
         "is_logged_in": True,
         "is_blocked": False
     }
