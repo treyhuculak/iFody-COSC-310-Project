@@ -11,6 +11,7 @@ from src.backend.models.menu_item import MenuItem
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
+from src.backend.models.payment_transaction import PaymentTransaction 
 
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
@@ -77,16 +78,26 @@ class OrderController:
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be cancelled")
     
-    def update_order_status(self, order_id: int, new_status: str, role: str):
+    def update_order_status(self, order_id: int, new_status: str, role: str, transaction_is_successful: Optional[bool] = None):
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
+        
+        # Getting order using order id
+        order = self.get_order(order_id)
+
+        # Updating status according to if transaction is accepted or not
+        if(order['status'] == OrderStatus.AWAITING_PAYMENT.value):
+            if(transaction_is_successful != None and transaction_is_successful):
+                new_status = OrderStatus.PAYMENT_CONFIRMED
+            else:
+                new_status = OrderStatus.PAYMENT_FAILED
         
         # Convert string to OrderStatus enum
         try:
             status_enum = OrderStatus(new_status)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
-        
+
         updated_order = self.order_repo.update_order_status(order_id, status_enum.value)
         if updated_order is None:
             raise HTTPException(status_code=404, detail="Order not found")
@@ -143,8 +154,6 @@ class OrderController:
     '''
     The idea here is that we pass the whole menu item and we create an order item from that menu item (basically so they have the same id - easier to recognize same items that way)
     Inside the repo we assign the item price/subtotal and the order id itself.
-
-    Order item inherited from menu item
     '''
     def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int):
         order = self.get_order(order_id)
