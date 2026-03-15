@@ -8,6 +8,15 @@
             "role": "Customer",
             "is_logged_in": false,
             "is_blocked": false
+        },
+        {
+            "id": 2,
+            "username": "TestOwner",
+            "email": "testowner@123.com",
+            "password": "Test@123",
+            "role": "Restaurant Owner",
+            "is_logged_in": false,
+            "is_blocked": false
         }
     ]
 }
