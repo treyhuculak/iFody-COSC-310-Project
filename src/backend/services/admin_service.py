@@ -1,7 +1,5 @@
-from src.backend.models.user import Role
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.repositories.order_repo import OrderRepository
-import json
 
 class AdminService:
     def __init__(
