@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Header, Query
 from typing import Optional
 from src.backend.controllers.restaurant_controller import RestaurantController
 from src.backend.models.restaurant import Restaurant, RestaurantCreate
@@ -16,9 +16,8 @@ router = APIRouter(
 def get_controller():
     return RestaurantController()
 
-def get_user_id_from_auth():
-    # TODO: Implement authentication and extract user ID from the token/session
-    return 1  # Placeholder for testing purposes
+def get_user_id_from_auth(x_user_id: int = Header(..., alias="X-User-Id")):
+    return x_user_id
 
 
 @router.get("/owner/{owner_id}", response_model=PaginatedResponse[Restaurant])
@@ -143,7 +142,7 @@ def add_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER))
 ):
-    new_item = controller.add_menu_item_to_restaurant(menu_item=menu_item, restaurant_id=restaurant_id)
+    new_item = controller.add_menu_item_to_restaurant(menu_item=menu_item, restaurant_id=restaurant_id, current_user["id"])
     return new_item
 
 
@@ -168,7 +167,7 @@ def delete_restaurant(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER))
 ):
-    deleted_rest = controller.delete_restaurant(restaurant_id=restaurant_id)
+    deleted_rest = controller.delete_restaurant(restaurant_id=restaurant_id, current_user["id"])
     return deleted_rest
 
 
@@ -179,7 +178,7 @@ def delete_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER))
 ):
-    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id)
+    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, current_user["id"])
     return deleted_item
 
 @router.put("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)

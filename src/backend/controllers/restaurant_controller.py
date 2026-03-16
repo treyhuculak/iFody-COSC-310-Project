@@ -98,7 +98,11 @@ class RestaurantController:
         updated_restaurant = self.repo.update_restaurant(restaurant_id, restaurant_data)
         return Restaurant(**updated_restaurant)
 
-    def delete_restaurant(self, restaurant_id: int):
+    def delete_restaurant(self, restaurant_id: int, user_id: int):
+        restaurant = self.repo.get_restaurant_by_id(restaurant_id)
+        if restaurant.get("owner_id") != user_id:
+            raise HTTPException(status_code=403, detail="You can only delete your own restaurant.")
+        
         deleted_restaurant = self.repo.delete_restaurant(restaurant_id)
         return Restaurant(**deleted_restaurant)
 
@@ -130,8 +134,11 @@ class RestaurantController:
         menu_items, total = self.repo.filter_menu_items(restaurant_id, max_price, skip, limit)
         return self._build_paginated_response(menu_items, total, skip, limit)
 
-    def add_menu_item_to_restaurant(self, menu_item: MenuItemCreate, restaurant_id: int):
+    def add_menu_item_to_restaurant(self, menu_item: MenuItemCreate, restaurant_id: int, user_id: int):
         restaurant = self.repo.get_restaurant_by_id(restaurant_id)
+        if restaurant.get("owner_id") != user_id:
+            raise HTTPException(status_code=403, detail="You can only modify menu items for your own restaurant")
+        
         if isinstance(restaurant, dict) and "error" in restaurant:
             raise HTTPException(status_code=404, detail=restaurant["error"])
         
@@ -154,7 +161,12 @@ class RestaurantController:
         updated_item = self.repo.update_menu_item_from_restaurant(restaurant_id, menu_item_id, menu_item_data)
         return MenuItem(**updated_item)
 
-    def delete_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int):
+    def delete_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int, user_id: int):
+        restaurant = self.repo.get_restaurant_by_id(restaurant_id)
+
+        if restaurant.get("owner_id") != user_id:
+            raise HTTPException(status_code=403, detail="You can only modify menu items for your own restaurant")
+
         deleted_item = self.repo.delete_menu_item_from_restaurant(restaurant_id, menu_item_id)
         return MenuItem(**deleted_item) 
     
