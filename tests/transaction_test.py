@@ -246,3 +246,4 @@ def test_get_all_transactions_by_user_id(test_client):
     assert data[0]["id"] == transaction_id_1
     assert data[1]["id"] == transaction_id_2
 
+
