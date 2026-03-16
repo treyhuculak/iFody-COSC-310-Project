@@ -2,8 +2,8 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from src.backend.models.order import Order, OrderCreate
-from src.backend.models.order_item import OrderItem, OrderItemCreate
+from src.backend.models.order import OrderCreate
+from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.services.order_service import OrderService
 from src.backend.models.order import OrderStatus
@@ -11,7 +11,6 @@ from src.backend.models.menu_item import MenuItem
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
-from src.backend.models.payment_transaction import PaymentTransaction 
 
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
@@ -66,12 +65,12 @@ class OrderController:
         
     def delete_order(self, order_id: int):
         order = self.get_order(order_id)
-        if (order["status"] == "pending" or order["status"] == "awaiting payment"):
+        if (order["status"] == OrderStatus.PENDING.value or order["status"] == OrderStatus.AWAITING_PAYMENT.value or order["status"] == OrderStatus.PAYMENT_FAILED.value):
             '''
             Ensure no punishment happens, since the order was canceled before the restaurant accepting it
             '''
             return self.order_repo.delete_order(order_id)
-        elif(order["status"] == "payment confirmed" or order["status"] == "preparing"):
+        elif(order["status"] == OrderStatus.PAYMENT_CONFIRMED.value or order["status"] == OrderStatus.PREPARING_ORDER.value):
             '''
             Need some kind of punishment for cancelling after restaurant accepted the order
             '''
@@ -159,7 +158,7 @@ class OrderController:
     def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int):
         order = self.get_order(order_id)
         # Checking if order should be able to be modified or not
-        if not (order["status"] == "out for delivery" or order["status"] == "delivered"):
+        if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
 
             # Creating order item based on menu item
             order_item = OrderItemCreate(item_id=menu_item.id, quantity=quantity)
@@ -177,7 +176,7 @@ class OrderController:
         order = self.get_order(order_id)
 
         # Checking if order should be able to be modified or not
-        if not (order["status"] == "out for delivery" or order["status"] == "delivered"):
+        if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
             deleted_item = self.order_repo.delete_order_item_from_order(order_id, order_item_id)
             return deleted_item 
         else:

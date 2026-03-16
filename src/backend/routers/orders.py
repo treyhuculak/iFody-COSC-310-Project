@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from src.backend.controllers.order_controller import OrderController
 from src.backend.models.order import Order, OrderCreate
-from src.backend.models.order_item import OrderItem, OrderItemCreate
+from src.backend.models.order_item import OrderItem
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.user import Role
 from src.backend.utils.auth_dependencies import requires_role

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 from src.backend.models.order_item import OrderItem
 from enum import Enum
