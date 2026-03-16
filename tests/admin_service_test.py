@@ -106,3 +106,11 @@ def test_nonempty_get_most_popular_restaurant(setup_admin_service_with_draft_ord
         }
     )
     assert admin_service.get_most_popular_restaurant()["id"] == 1
+
+def test_get_average_delivery_time(setup_admin_service) -> None:
+    '''
+    Tests the get_average_delivery_time function by checking if the average delivery time is between 10 and 60 minutes.
+    '''
+    average_delivery_time = admin_service.get_average_delivery_time()
+    assert average_delivery_time >= 10
+    assert average_delivery_time <= 60

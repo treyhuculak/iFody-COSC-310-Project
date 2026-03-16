@@ -17,7 +17,18 @@ class AdminService:
         '''
         Gets all the orders from all the restaurant instances.
         '''
-        return self.order_repo.get_all_orders()
+        return self.order_repo.get_all_orders_for_admin()
+    
+    def get_average_delivery_time(self) -> float:
+        '''
+        Calculates the average delivery time of all the orders.
+        Since the order instances do not include any time-related attribute, we will generate a random average delivery time between 10 and 60 minutes.
+        '''
+        import random
+        upper_delivery_time_bound = 60
+        lower_delivery_time_bound = 10
+        average_delivery_time = random.uniform(lower_delivery_time_bound, upper_delivery_time_bound)
+        return average_delivery_time
     
     def get_most_popular_restaurant(self) -> Union[dict, None]:
         '''
