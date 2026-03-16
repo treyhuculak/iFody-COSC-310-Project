@@ -1,5 +1,5 @@
 from typing import Optional
-
+from datetime import datetime
 from fastapi import HTTPException
 
 from src.backend.models.order import Order, OrderCreate
@@ -8,6 +8,7 @@ from src.backend.repositories.order_repo import OrderRepository
 from src.backend.services.order_service import OrderService
 from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
+from src.backend.models.review import Review, ReviewCreate
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
@@ -185,6 +186,28 @@ class OrderController:
     def get_order_items_by_order_id(self, order_id: int):
         all_order_items = self.order_repo.get_order_items_from_order(order_id)
         return all_order_items
-        
+    
+    # Review functionality
+
+    def get_review_by_order_id(self, order_id: int):
+        review = self.order_repo.get_review_by_order_id(order_id)
+        if review is None:
+            raise HTTPException(status_code=404, detail="Review not found for this order")
+        return review
+    
+    def add_review_to_order(self, order_id: int, review: ReviewCreate) -> Review:
+        review_data = review.model_dump()
+        added_review = self.order_repo.add_review_to_order(order_id, review_data)
+        return Review(**added_review)
+    
+    def delete_review_from_order(self, order_id: int) -> Review:
+        deleted_review = self.order_repo.delete_review_from_order(order_id)
+        return Review(**deleted_review)
+    
+    def update_review_from_order(self, order_id: int, review: ReviewCreate) -> Review:
+        review_data = review.model_dump()
+        updated_review = self.order_repo.update_review_from_order(order_id, review_data)
+        return Review(**updated_review)
+
 
 
