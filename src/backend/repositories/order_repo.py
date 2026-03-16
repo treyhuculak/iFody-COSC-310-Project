@@ -1,8 +1,7 @@
 import json
-from typing import List, Optional, Dict
+from typing import List, Optional
 from datetime import datetime
 from fastapi import HTTPException
-from src.backend.models.order import OrderCreate
 
 class OrderRepository:
     ORDER_FILE = 'data/order.json'
@@ -34,8 +33,14 @@ class OrderRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
+    def get_all_orders_for_admin(self) -> list[dict]:
+        '''
+        Returns a list of all the order instances for the admin instances to view.
+        '''
+        with open(self.file_path, 'r') as f:
+            return json.load(f)
 
-    def create_order(self, order_data: OrderCreate) -> dict:
+    def create_order(self, order_data: dict) -> dict:
         try:
             with open(self.file_path, 'r') as f:
                 data = json.load(f)
