@@ -1,20 +1,29 @@
 from src.backend.models.order import OrderCreate
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.repositories.order_repo import OrderRepository
+from src.backend.repositories.user_repo import UserRepository
 from src.backend.services.order_service import OrderService
 from typing import Union
 
 class AdminService:
     def __init__(
             self,
-            draft_order_db: str = None
+            draft_order_db: str = None,
+            draft_user_db: str = None
         ):
         '''
         Initializes the AdminService class's attributes.
         '''
         self.rest_repo = RestaurantRepository()
         self.order_repo = OrderRepository(draft_order_db) if draft_order_db else OrderRepository()
+        self.user_repo = UserRepository(draft_user_db) if draft_user_db else UserRepository()
         self.order_service = OrderService()
+
+    def delete_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for del_user that deletes a user based on the username.
+        '''
+        return self.user_repo.del_user(username)
 
     def get_all_orders(self) -> list[dict]:
         '''
