@@ -30,6 +30,13 @@ class OrderRepository:
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Order missing id field: {e}")
     
+    def get_all_orders_for_admin(self) -> list[dict]:
+        '''
+        Returns a list of all the order instances for the admin instances to view.
+        '''
+        with open(self.file_path, 'r') as f:
+            return json.load(f)
+          
     def get_order_by_id(self, order_id: int) -> Optional[dict]:
         orders = self._get_all_orders()
         order = next(filter(lambda order: order.get("id") == order_id, orders), None)
