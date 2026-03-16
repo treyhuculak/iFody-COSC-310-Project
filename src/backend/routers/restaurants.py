@@ -156,6 +156,7 @@ def update_restaurant(
     delivery_fee: Optional[float] = Query(default=None, ge=0),
     is_available: Optional[bool] = None,
     controller: RestaurantController = Depends(get_controller),
+    current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER)),
 ):
     updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location, is_available=is_available)
     return updated_rest

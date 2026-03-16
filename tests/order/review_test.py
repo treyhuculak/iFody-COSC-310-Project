@@ -5,7 +5,9 @@ from fastapi.testclient import TestClient
 from src.backend.main import app
 from src.backend.controllers.order_controller import OrderController
 from src.backend.repositories.order_repo import OrderRepository
+from src.backend.repositories.user_repo import UserRepository
 from src.backend.routers.orders import get_controller
+import src.backend.utils.auth_dependencies as auth_dependencies
 
 
 @pytest.fixture
@@ -16,6 +18,7 @@ def test_client(tmp_path):
     order-creation validation behavior.
     """
     temp_db = tmp_path / "test_orders.json"
+    temp_users = tmp_path / "test_users.json"
     seeded_orders = [
         {
             "id": 1,
@@ -32,14 +35,58 @@ def test_client(tmp_path):
         }
     ]
     temp_db.write_text(json.dumps(seeded_orders), encoding="utf-8")
+    temp_users.write_text(
+        json.dumps(
+            {
+                "Users": [
+                    {
+                        "id": 1,
+                        "username": "CustomerUser",
+                        "email": "customer@test.com",
+                        "password": "Test@123",
+                        "role": "customer",
+                        "is_logged_in": False,
+                        "is_blocked": False,
+                    },
+                    {
+                        "id": 2,
+                        "username": "OwnerUser",
+                        "email": "owner@test.com",
+                        "password": "Test@123",
+                        "role": "restaurant owner",
+                        "is_logged_in": False,
+                        "is_blocked": False,
+                    },
+                    {
+                        "id": 3,
+                        "username": "AdminUser",
+                        "email": "admin@test.com",
+                        "password": "Test@123",
+                        "role": "administrator",
+                        "is_logged_in": False,
+                        "is_blocked": False,
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
 
     test_repo = OrderRepository(file_path=str(temp_db))
     test_controller = OrderController(repo=test_repo)
+    test_user_repo = UserRepository(file=str(temp_users))
+
+    original_user_repo = auth_dependencies.repo
+    auth_dependencies.repo = test_user_repo
+
     app.dependency_overrides[get_controller] = lambda: test_controller
 
     with TestClient(app) as client:
+        # Default to authenticated customer for happy-path tests.
+        client.headers.update({"X-User-Id": "1"})
         yield client
 
+    auth_dependencies.repo = original_user_repo
     app.dependency_overrides.clear()
 
 
@@ -233,3 +280,61 @@ def test_timestamps_are_updated_on_review_update(test_client):
     assert updated_review["updated_at"] != created_review["updated_at"]
     assert updated_review["created_at"] == created_review["created_at"]
     assert updated_review["updated_at"] > created_review["created_at"]
+
+
+def test_owner_role_cannot_add_review(test_client):
+    review_data = {
+        "rating": 4,
+        "title": "Owner denied",
+        "comment": "This should be denied for non-customer role.",
+    }
+
+    response = test_client.post("/orders/1/review", json=review_data, headers={"X-User-Id": "2"})
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Access denied for this role"
+
+
+def test_owner_role_cannot_update_review(test_client):
+    review_data = {
+        "rating": 4,
+        "title": "Good food",
+        "comment": "The food was good.",
+    }
+    create_response = test_client.post("/orders/1/review", json=review_data)
+    assert create_response.status_code == 200
+
+    updated_review_data = {
+        "rating": 5,
+        "title": "Owner tries update",
+        "comment": "This should fail because owner is not customer.",
+    }
+    response = test_client.put("/orders/1/review", json=updated_review_data, headers={"X-User-Id": "2"})
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Access denied for this role"
+
+
+def test_owner_role_cannot_delete_review(test_client):
+    review_data = {
+        "rating": 4,
+        "title": "Good food",
+        "comment": "The food was good.",
+    }
+    create_response = test_client.post("/orders/1/review", json=review_data)
+    assert create_response.status_code == 200
+
+    response = test_client.delete("/orders/1/review", headers={"X-User-Id": "2"})
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Access denied for this role"
+
+
+def test_admin_role_can_delete_review(test_client):
+    review_data = {
+        "rating": 4,
+        "title": "Good food",
+        "comment": "The food was good.",
+    }
+    create_response = test_client.post("/orders/1/review", json=review_data)
+    assert create_response.status_code == 200
+
+    response = test_client.delete("/orders/1/review", headers={"X-User-Id": "3"})
+    assert response.status_code == 200
