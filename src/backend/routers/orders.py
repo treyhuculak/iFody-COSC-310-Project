@@ -62,16 +62,16 @@ def get_review_by_order_id(order_id: int, controller: OrderController = Depends(
     return controller.get_review_by_order_id(order_id)
 
 @router.post("/{order_id}/review", response_model=Review)
-def add_review_to_order(order_id: int, review: ReviewCreate, controller: OrderController = Depends(get_controller)):
+def add_review_to_order(order_id: int, review: ReviewCreate, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
     added_review = controller.add_review_to_order(order_id=order_id, review=review)
     return added_review
 
 @router.delete("/{order_id}/review", response_model=Review)
-def delete_review_from_order(order_id: int, controller: OrderController = Depends(get_controller)):
+def delete_review_from_order(order_id: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER, Role.ADMIN))):
     deleted_review = controller.delete_review_from_order(order_id)
     return deleted_review
 
 @router.put("/{order_id}/review", response_model=Review)
-def update_review_from_order(order_id: int, review: ReviewCreate, controller: OrderController = Depends(get_controller)):
+def update_review_from_order(order_id: int, review: ReviewCreate, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
     updated_review = controller.update_review_from_order(order_id, review)
     return updated_review

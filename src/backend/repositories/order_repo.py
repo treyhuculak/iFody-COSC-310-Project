@@ -38,10 +38,15 @@ class OrderRepository:
     def get_all_orders(self) -> List[dict]:
         return self._get_all_orders()
     
-    def get_orders_by_user_id(self, user_id: int) -> List[dict]:
+    def get_orders_by_customer_id(self, customer_id: int) -> List[dict]:
         orders = self._get_all_orders()
-        user_orders = list(filter(lambda order: order.get("user_id") == user_id, orders))
-        return user_orders
+        customer_orders = list(filter(lambda order: order.get("customer_id") == customer_id, orders))
+        return customer_orders
+    
+    def get_orders_by_restaurant_id(self, restaurant_id: int) -> List[dict]:
+        orders = self._get_all_orders()
+        restaurant_orders = list(filter(lambda order: order.get("restaurant_id") == restaurant_id, orders))
+        return restaurant_orders
 
     def create_order(self, order_data: dict) -> dict:
         try:

@@ -4,7 +4,7 @@ from datetime import datetime
 
 class ReviewBase(BaseModel):
     rating: int = Field(..., ge=1, le=5)  # Rating must be between 1 and 5
-    title: str = Field(..., min_length=1)  # Title must not be empty
+    title: str = Field(..., min_length=1, max_length=50)  # Title must not be empty
     comment: Optional[str] = Field(default=None, max_length=500)  # Optional comment with max length of 500 characters
 
 class ReviewCreate(ReviewBase):

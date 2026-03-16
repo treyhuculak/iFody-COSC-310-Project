@@ -56,9 +56,9 @@ class RestaurantController:
         response_restaurants = [Restaurant(**r) for r in restaurants]
         return self._build_paginated_response(response_restaurants, total, skip, limit)
 
-    def get_restaurants_by_partial_name(self, partial_name: str, 
+    def get_restaurants_by_partial_name(self, name: str, 
                                         skip: int = 0, limit: int = 10) -> PaginatedResponse:
-        matching_restaurants, total = self.repo.get_restaurants_by_partial_name(partial_name, skip=skip, limit=limit)
+        matching_restaurants, total = self.repo.get_restaurants_by_partial_name(name, skip=skip, limit=limit)
         response_restaurants = [Restaurant(**r) for r in matching_restaurants]
         return self._build_paginated_response(response_restaurants, total, skip, limit)
 
@@ -115,8 +115,15 @@ class RestaurantController:
         - Update a menu item from a restaurant
         - Delete a menu item from a restaurant
     '''
-    def get_menu_items_by_partial_name(self, restaurant_id: int, partial_name: str, skip: int = 0, limit: int = 10) -> PaginatedResponse:
-        menu_items, total = self.repo.get_menu_item_by_partial_name(restaurant_id, partial_name, skip, limit)
+    def get_menu_item_by_id(self, restaurant_id: int, menu_item_id: int, skip: int = 0, limit: int = 100) -> MenuItem:
+        menu_items, total = self.repo.get_menu_items_by_restaurant(restaurant_id, skip, limit)
+        for item in menu_items:
+            if isinstance(item, dict) and item.get("id") == menu_item_id:
+                return MenuItem(**item)
+        raise HTTPException(status_code=404, detail="Menu item not found")
+
+    def get_menu_items_by_partial_name(self, restaurant_id: int, name: str, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        menu_items, total = self.repo.get_menu_item_by_partial_name(restaurant_id, name, skip, limit)
         return self._build_paginated_response(menu_items, total, skip, limit)
 
     def filter_menu_items(self, restaurant_id: int, max_price: float, skip: int = 0, limit: int = 10) -> PaginatedResponse:
@@ -150,3 +157,19 @@ class RestaurantController:
     def delete_menu_item_from_restaurant(self, restaurant_id: int, menu_item_id: int):
         deleted_item = self.repo.delete_menu_item_from_restaurant(restaurant_id, menu_item_id)
         return MenuItem(**deleted_item) 
+    
+
+    def get_reviews_by_restaurant_id(self, restaurant_id: int, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        reviews = self.repo.get_reviews_by_restaurant_id(restaurant_id)
+        total = len(reviews)
+        paginated_reviews = reviews[skip:skip + limit]
+        return self._build_paginated_response(paginated_reviews, total, skip, limit)
+    
+
+    def calculate_restaurant_rating(self, restaurant_id: int) -> float:
+        reviews = self.repo.get_reviews_by_restaurant_id(restaurant_id)
+        if not reviews:
+            return 0.0  # No reviews means a rating of 0
+        total_rating = sum(review.get("rating", 0) for review in reviews)
+        average_rating = total_rating / len(reviews)
+        return round(average_rating, 1)
