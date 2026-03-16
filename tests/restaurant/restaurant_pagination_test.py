@@ -147,3 +147,13 @@ def test_get_all_restaurants_endpoint_pagination(test_client):
 def test_get_all_restaurants_endpoint_rejects_invalid_limit(test_client):
     response = test_client.get("/restaurants?skip=0&limit=0")
     assert response.status_code == 422
+
+
+def test_get_all_restaurants_endpoint_rejects_negative_skip(test_client):
+    response = test_client.get("/restaurants?skip=-1&limit=10")
+    assert response.status_code == 422
+
+
+def test_get_all_restaurants_endpoint_rejects_excessive_limit(test_client):
+    response = test_client.get("/restaurants?skip=0&limit=101")
+    assert response.status_code == 422

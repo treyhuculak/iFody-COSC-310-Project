@@ -67,7 +67,7 @@ class RestaurantController:
         response_restaurants = [Restaurant(**r) for r in all_restaurants]
         return self._build_paginated_response(response_restaurants, total, skip, limit)
 
-    def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int = 1) -> Restaurant:
+    def add_restaurant(self, restaurant: RestaurantCreate, owner_id: int) -> Restaurant:
         restaurant_data = restaurant.model_dump()
         # Always use the authenticated owner's ID; ignore any owner_id from the request body
         restaurant_data['owner_id'] = owner_id
