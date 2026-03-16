@@ -6,6 +6,8 @@ from src.backend.main import app
 from src.backend.routers.restaurants import get_controller
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.controllers.restaurant_controller import RestaurantController
+from src.backend.repositories.user_repo import UserRepository
+import src.backend.utils.auth_dependencies as auth_dependencies
 
 
 @pytest.fixture
@@ -18,14 +20,33 @@ def test_client(tmp_path):
     temp_db = tmp_path / "test_restaurants.json"
     temp_db.write_text(json.dumps([]))
 
+    temp_user_db = tmp_path / "test_users.json"
+    temp_user_db.write_text(json.dumps({
+        "Users": [
+            {
+                "id": 1,
+                "username": "Testowner",
+                "email": "testowner@example.com",
+                "password": "Test@123",
+                "role": "restaurant owner",
+                "is_logged_in": False,
+                "is_blocked": False
+            }
+        ]}))
+
     test_repo = RestaurantRepository(file_path=str(temp_db))
+    test_user_repo = UserRepository(file=str(temp_user_db))
     test_controller = RestaurantController(repo=test_repo)
 
     app.dependency_overrides[get_controller] = lambda: test_controller
 
+    original_repo = auth_dependencies.repo
+    auth_dependencies.repo = test_user_repo
     with TestClient(app) as client:
+        client.headers.update({"X-User-Id": "1"})
         yield client
 
+    auth_dependencies.repo = original_repo
     app.dependency_overrides.clear()
 
 

@@ -10,12 +10,20 @@ class AccountExistsException(Exception):
     """
     pass
 
+class NotLoggedInException(Exception):
+    '''
+    Raise it when the user attempts to log out but no account is logged in.
+    '''
+    pass
+
 class AuthController:
     def __init__(self, repo: Optional[UserRepository] = None) -> None:
         '''
         Initializes the AuthController class with the necessary fields.
+        A self.cur_user variable is added to keep track of the potentially logged-in user account.
         '''
         self.repo = repo or UserRepository()
+        self.cur_user = None
 
     def register(self, username: str, email: str, password: str, role: Role):
         '''
@@ -42,6 +50,18 @@ class AuthController:
         if user_info == None:
             raise HTTPException(status_code = 404, detail = "The account is not found.")
         if password == user_info['password']:
-              return user_info
+            user_info["is_logged_in"] = True
+            self.cur_user = user_info
+            return self.cur_user
         else:
             raise HTTPException(status_code = 400, detail = "The password is incorrect.")
+        
+    def logout(self) -> None:
+        '''
+        Logs out the user and updates the is_logged_in field in the dictionary.
+        '''
+        if self.cur_user:
+            self.cur_user["is_logged_in"] = False
+            self.cur_user = None
+        else:
+            raise NotLoggedInException("Please sign in to the account first.")
