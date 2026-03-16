@@ -46,7 +46,6 @@ class UserRepository:
                     return user
             else:
                 return None
-
     
     def get_all_users(self) -> list[dict]:
         '''

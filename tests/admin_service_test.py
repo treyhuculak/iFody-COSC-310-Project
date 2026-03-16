@@ -4,14 +4,6 @@ import pytest, typing
 admin_service = None
 
 @pytest.fixture
-def setup_admin_service() -> None:
-    '''
-    Initializes variable admin_service using the __init__ function of the AdminService class.
-    '''
-    global admin_service
-    admin_service = AdminService()
-
-@pytest.fixture
 def setup_admin_service_with_draft_order_db() -> typing.Generator:
     '''
     Initializes variable admin_service and sets up a draft database for orders.
@@ -22,13 +14,13 @@ def setup_admin_service_with_draft_order_db() -> typing.Generator:
     import os
     os.remove(os.getcwd() + "/data/draft_order_db.json")
 
-def test_empty_get_all_orders(setup_admin_service) -> None:
+def test_empty_get_all_orders(setup_admin_service_with_draft_order_db) -> None:
     '''
     Tests the get_all_orders function when there are no orders in the database.
     '''
     assert admin_service.get_all_orders() == []
 
-def test_empty_get_most_popular_restaurant(setup_admin_service) -> None:
+def test_empty_get_most_popular_restaurant(setup_admin_service_with_draft_order_db) -> None:
     '''
     Tests the get_most_popular_restaurant function when there are no orders in the database.
     '''
@@ -106,7 +98,7 @@ def test_nonempty_get_most_popular_restaurant(setup_admin_service_with_draft_ord
     )
     assert admin_service.get_most_popular_restaurant()["id"] == 1
 
-def test_get_average_delivery_time(setup_admin_service) -> None:
+def test_get_average_delivery_time(setup_admin_service_with_draft_order_db) -> None:
     '''
     Tests the get_average_delivery_time function by checking if the average delivery time is between 10 and 60 minutes.
     '''
