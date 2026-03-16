@@ -30,12 +30,22 @@ def test_client(tmp_path):
     app.dependency_overrides.clear()
 
 cash_payment = {
-    "user_id": 1,
+    "user_id": 2,
     "method": PaymentOptions.CASH.value
 }
 
 card_payment = {
     "user_id": 2,
+    "method": PaymentOptions.CREDIT_CARD.value,
+    "card_digits": "4234567812345678",
+    "expiration_month": 12,
+    "expiration_year": 2028,
+    "CVV": "123",
+    "name_on_card": "Umberto De Luca"
+}
+
+card_payment_2 = {
+    "user_id": 1,
     "method": PaymentOptions.CREDIT_CARD.value,
     "card_digits": "4234567812345678",
     "expiration_month": 12,
@@ -91,7 +101,7 @@ def test_add_cash_payment(test_client):
     data = response.json()
 
     assert data["method"] == PaymentOptions.CASH.value
-    assert data["user_id"] == 1
+    assert data["user_id"] == 2
     assert data["is_active"] == True
     assert "id" in data
 
@@ -158,7 +168,7 @@ def test_get_cash_payment_by_id(test_client):
     assert get_response.status_code == 200
     data = get_response.json()
     assert data["method"] == PaymentOptions.CASH.value
-    assert data["user_id"] == 1
+    assert data["user_id"] == 2
     assert data["is_active"] == True
     assert "id" in data
 
@@ -207,3 +217,107 @@ def test_delete_card_payment(test_client):
     # After deletion, trying to get the payment method should return a 404
     get_response = test_client.get(f"/payment/card/{payment_id}")
     assert get_response.status_code == 404
+
+def test_get_payment_methods_by_user_id(test_client):
+    # First add payment methods
+    response1 = test_client.post("/payment/cash/", params={"active": False}, json=cash_payment)
+    assert response1.status_code == 200
+    payment1_id = response1.json()["id"]
+
+    response2 = test_client.post("/payment/card/", params={"active": True}, json=card_payment)
+    assert response2.status_code == 200
+    payment2_id = response2.json()["id"]
+
+    response3 = test_client.post("/payment/card/", params={"active": False}, json=card_payment_no_brand)
+    assert response3.status_code == 200
+    payment3_id = response3.json()["id"]
+
+    response4 = test_client.post("/payment/card/", params={"active": True}, json=card_payment_2)
+    assert response4.status_code == 200
+    payment4_id = response4.json()["id"]
+
+    # All responses (not counting response 4 since it is suppose to have a different user id) suppose to have the same user_id
+    user_id = response1.json()["user_id"]
+
+    # Now try to retrieve payment methods
+    get_response = test_client.get(f"/payment/{user_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert len(data) == 3
+    assert data[0]["id"] == payment1_id
+    assert data[1]["id"] == payment2_id
+    assert data[2]["id"] == payment3_id
+
+    # Ensuring payment methods from different users do not appear here
+    ids = [payment["id"] for payment in data]
+    assert payment4_id not in ids
+
+def test_get_active_cash_payment_method(test_client):
+    # First add payment methods
+    response1 = test_client.post("/payment/cash/", params={"active": True}, json=cash_payment)
+    assert response1.status_code == 200
+    payment1_id = response1.json()["id"]
+
+    response2 = test_client.post("/payment/card/", params={"active": False}, json=card_payment)
+    assert response2.status_code == 200
+
+    # All responses suppose to have the same user_id
+    user_id = response1.json()["user_id"]
+
+    # Now try to retrieve the active payment method
+    get_response = test_client.get(f"/payment/active/{user_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["method"] == PaymentOptions.CASH.value
+    assert data["user_id"] == 2
+    assert data["is_active"] == True
+    assert data["id"] == payment1_id
+
+def test_get_active_card_payment_method(test_client):
+    # First add payment methods
+    response1 = test_client.post("/payment/cash/", params={"active": False}, json=cash_payment)
+    assert response1.status_code == 200
+
+    response2 = test_client.post("/payment/card/", params={"active": True}, json=card_payment)
+    assert response2.status_code == 200
+    payment2_id = response2.json()["id"]
+
+    # All responses suppose to have the same user_id
+    user_id = response1.json()["user_id"]
+
+    # Now try to retrieve the active payment method
+    get_response = test_client.get(f"/payment/active/{user_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["method"] == PaymentOptions.CREDIT_CARD.value
+    assert data["user_id"] == 2
+    assert data["is_active"] == True
+    assert data["card_brand"] == CardPaymentBrand.VISA.value
+    assert data["id"] == payment2_id
+
+def test_switch_active_payment_method(test_client):
+    # First add payment methods
+    response1 = test_client.post("/payment/cash/", params={"active": True}, json=cash_payment)
+    assert response1.status_code == 200
+
+    response2 = test_client.post("/payment/card/", params={"active": False}, json=card_payment)
+    assert response2.status_code == 200
+    payment2_id = response2.json()["id"]
+
+    # All responses suppose to have the same user_id
+    user_id = response1.json()["user_id"]
+
+    # Switch active payment method
+    update_response = test_client.put(f"/payment/active/{user_id}/{payment2_id}")
+    assert update_response.status_code == 200
+
+    # Now try to retrieve the active payment method
+    get_response = test_client.get(f"/payment/active/{user_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["method"] == PaymentOptions.CREDIT_CARD.value
+    assert data["user_id"] == 2
+    assert data["is_active"] == True
+    assert data["id"] == payment2_id
+    
+

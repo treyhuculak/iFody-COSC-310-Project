@@ -18,11 +18,6 @@ class OrderController:
         self.notif_controller = notif_controller or NotificationController()
         self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
-        
-
-    def validate_order_logic(self):
-        # For now
-        return True
 
     def add_order(self, order: OrderCreate):
         try:
