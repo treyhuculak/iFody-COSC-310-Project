@@ -41,6 +41,8 @@ new_order_3 = {
 def test_add_order(test_client):
     # The controller should return the new order dict, which the router translates to a 200 response
     response = test_client.post("/orders/", json=new_order) 
+    print(response.status_code)
+    print(response.json())
     assert response.status_code == 200
     data = response.json()
     assert data["customer_id"] == 1

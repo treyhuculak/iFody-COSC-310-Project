@@ -42,6 +42,7 @@ class OrderController:
             order_data['total_price'] = subtotal + tax + delivery_fee
 
             new_order = self.order_repo.create_order(order_data)
+            
             try:    
                 restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
                 if restaurant:
