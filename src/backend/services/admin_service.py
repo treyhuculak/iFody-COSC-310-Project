@@ -1,5 +1,6 @@
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.repositories.order_repo import OrderRepository
+from src.backend.services.order_service import OrderService
 from typing import Union
 
 class AdminService:
@@ -12,12 +13,26 @@ class AdminService:
         '''
         self.rest_repo = RestaurantRepository()
         self.order_repo = OrderRepository(draft_order_db) if draft_order_db else OrderRepository()
+        self.order_service = OrderService()
 
     def get_all_orders(self) -> list[dict]:
         '''
         Gets all the orders from all the restaurant instances.
         '''
         return self.order_repo.get_all_orders_for_admin()
+    
+    def get_gross_revenue_by_restaurant_id(self, restaurant_id: int) -> float:
+        '''
+        Returns the total revenue of the restaurant before deducting costs, based on the restaurant id.
+        '''
+        orders = self.get_all_orders()
+        gross_revenue = 0
+        matched_orders = [order for order in orders if order["restaurant_id"] == restaurant_id]
+        for order in matched_orders:
+            total_price_before_tax = self.order_service.calculate_order_subtotal(order)
+            tax_required = self.order_service.calculate_tax(order, total_price_before_tax)
+            gross_revenue += total_price_before_tax + tax_required
+        return gross_revenue
     
     def get_average_delivery_time(self) -> float:
         '''
