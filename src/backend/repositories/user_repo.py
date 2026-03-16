@@ -37,13 +37,14 @@ class UserRepository:
         '''
         Deletes a User instance from the database based on the given username.
         '''
-        with open(self.file) as file:
+        with open(self.file, "r") as file:
             users = json.load(file)['Users']
             for user in users:
                 if user['username'] == username:
-                    users.remove(user)
-                    json.dump({"Users": users}, file, indent = 4)
-                    return user
+                    with open(self.file, "w") as file:
+                        users.remove(user)
+                        json.dump({"Users": users}, file, indent = 4)
+                        return user
             else:
                 return None
     
