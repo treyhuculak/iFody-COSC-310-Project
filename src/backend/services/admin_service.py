@@ -1,3 +1,4 @@
+from src.backend.models.order import OrderCreate
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.services.order_service import OrderService
@@ -29,8 +30,8 @@ class AdminService:
         gross_revenue = 0
         matched_orders = [order for order in orders if order["restaurant_id"] == restaurant_id]
         for order in matched_orders:
-            total_price_before_tax = self.order_service.calculate_order_subtotal(order)
-            tax_required = self.order_service.calculate_tax(order, total_price_before_tax)
+            total_price_before_tax = self.order_service.calculate_order_subtotal(OrderCreate(**order))
+            tax_required = self.order_service.calculate_tax(OrderCreate(**order), order_subtotal = total_price_before_tax)
             gross_revenue += total_price_before_tax + tax_required
         return gross_revenue
     

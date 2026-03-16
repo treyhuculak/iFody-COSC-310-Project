@@ -1,4 +1,3 @@
-from src.backend.models.order import OrderCreate
 from src.backend.services.admin_service import AdminService
 import pytest, typing
 
@@ -114,3 +113,31 @@ def test_get_average_delivery_time(setup_admin_service) -> None:
     average_delivery_time = admin_service.get_average_delivery_time()
     assert average_delivery_time >= 10
     assert average_delivery_time <= 60
+
+def test_get_gross_revenue_by_restaurant_id(setup_admin_service_with_draft_order_db) -> None:
+    '''
+    Tests the get_gross_revenue_by_restaurant_id function with different orders.
+    '''
+    admin_service.order_repo.create_order(
+        {
+            "customer_id": 1,
+            "restaurant_id": 1,
+            "status": "pending",
+            "location": "BC",
+            "order_items": []
+        }
+    )
+    assert admin_service.get_gross_revenue_by_restaurant_id(1) == 0
+    admin_service.order_repo.create_order(
+        {
+            "customer_id": 2,
+            "restaurant_id": 1,
+            "status": "pending",
+            "location": "BC",
+            "order_items": [
+                {"item_id": 101, "quantity": 2, "price_at_purchase": 5.0}
+            ]
+        }
+    )
+    wished_revenue = float('%.1f' % (5 * 2 * (1 + 0.12)))
+    assert admin_service.get_gross_revenue_by_restaurant_id(1) == wished_revenue
