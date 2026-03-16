@@ -142,7 +142,7 @@ def add_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER))
 ):
-    new_item = controller.add_menu_item_to_restaurant(menu_item=menu_item, restaurant_id=restaurant_id, current_user["id"])
+    new_item = controller.add_menu_item_to_restaurant(menu_item=menu_item, restaurant_id=restaurant_id, user_id=current_user["id"])
     return new_item
 
 
@@ -167,7 +167,7 @@ def delete_restaurant(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER))
 ):
-    deleted_rest = controller.delete_restaurant(restaurant_id=restaurant_id, current_user["id"])
+    deleted_rest = controller.delete_restaurant(restaurant_id=restaurant_id, user_id=current_user["id"])
     return deleted_rest
 
 
@@ -178,7 +178,7 @@ def delete_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER))
 ):
-    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, current_user["id"])
+    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, user_id=current_user["id"])
     return deleted_item
 
 @router.put("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
