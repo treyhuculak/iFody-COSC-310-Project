@@ -15,6 +15,12 @@ from src.backend.services.order_service import OrderService
 
 from src.backend.controllers.notification_controller import NotificationController
 
+class RestaurantNotFound(Exception):
+    """
+    Raise it when the account is already in the database for the register function.
+    """
+    pass
+
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
         self.order_repo = repo or OrderRepository()
@@ -47,48 +53,36 @@ class OrderController:
 
             #Send manager and customer notifications regarding the new order
             customer_id = new_order["customer_id"]
-            try:    
-                restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
-                restaurant_name = restaurant["name"]
-                order_id = new_order["id"]
-                if restaurant:
-                    owner_id = restaurant["owner_id"]
-                    manager_notification = NotificationCreate(
-                        user_id= owner_id,
-                        type= NotificationType.NEW_ORDER_RECEIVED,
-                        title= "New Order Received",
-                        message= f"A new order with id {order_id} has been received.",
-                        is_read = False,
-                        order_id = order_id
-                    )
-                    self.notif_controller.create_notif(manager_notification)
-
-                    customer_notif = NotificationCreate(
-                        user_id = customer_id,
-                        type = NotificationType.NEW_ORDER_RECEIVED,
-                        title = "Order Confirmed",
-                        message = f"Your order at {restaurant_name} has been received, and is awaiting payment",
-                        is_read = False,
-                        order_id = new_order["id"]
-                    )
-                    self.notif_controller.create_notif(customer_notif)
-            except Exception as e:
-                customer_failed_notif = NotificationCreate(
-                    user_id = customer_id,
-                    type = NotificationType.ORDER_FAILED,
-                    title = "Order has Failed",
-                    message = f"Your order has failed, restaurant was not found.",
+            restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+            restaurant_name = restaurant["name"]
+            order_id = new_order["id"]
+            if restaurant:
+                owner_id = restaurant["owner_id"]
+                manager_notification = NotificationCreate(
+                    user_id= owner_id,
+                    type= NotificationType.NEW_ORDER_RECEIVED,
+                    title= "New Order Received",
+                    message= f"A new order with id {order_id} has been received.",
                     is_read = False,
                     order_id = order_id
                 )
-                self.notif_controller.create_notif(customer_failed_notif)
-                print(f"Notification failed. Exception {e}")
-                pass
+                self.notif_controller.create_notif(manager_notification)
+
+                customer_notif = NotificationCreate(
+                    user_id = customer_id,
+                    type = NotificationType.NEW_ORDER_RECEIVED,
+                    title = "Order Confirmed",
+                    message = f"Your order at {restaurant_name} has been received, and is awaiting payment",
+                    is_read = False,
+                    order_id = new_order["id"]
+                )
+                self.notif_controller.create_notif(customer_notif)
 
             return new_order
-
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     
@@ -248,6 +242,17 @@ class OrderController:
             # Note: Basic field validation (e.g., quantity > 0) is handled by the OrderItemCreate Pydantic model.
             order_item_data = order_item.model_dump()
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
+            customer_id = order["customer_id"]
+            item_name = menu_item.name
+            added_item_notif = NotificationCreate(
+                user_id= customer_id,
+                type = NotificationType.NEW_ITEM_ADDED,
+                title = "New Item Added",
+                message = f"{item_name} has been added to your cart",
+                order_id = order_id,
+                is_read = False
+            )
+            self.notif_controller.create_notif(added_item_notif)
             return added_item
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be modified")

@@ -68,6 +68,8 @@ def test_client(tmp_path):
     }]))
     test_user_repo = UserRepository(file=str(temp_user_db))
 
+    
+
     app.dependency_overrides[get_controller] = lambda: test_controller #tells fastAPI to use test controller instead of real controller
     original_repo = auth_dependencies.repo #saves the real repository before replacing it
     auth_dependencies.repo = test_user_repo # swaps in the temp user repo for auth
@@ -89,7 +91,9 @@ def test_add_order_notifications(test_client):
         "restaurant_id": 1,
         "status": OrderStatus.PENDING.value,
         "location": OrderLocation.BRITISH_COLUMBIA.value,
-        "order_items": []
+        "order_items": [
+            {"item_id": 101, "quantity": 2, "price_at_purchase": 5.0}
+        ]
     }
     response = client.post("/orders/", json=new_order)
     assert response.status_code == 200
@@ -98,22 +102,92 @@ def test_add_order_notifications(test_client):
     assert notifications[0]["user_id"] == 2  #manager notif
     assert notifications[1]["user_id"] == 1  #customer notif (success)
 
-#Still not working, will fix this in my next pr
-# def test_add_order_notif_exception(test_client):
-#     client, temp_notif_db = test_client
-#     new_order = {
-#         "customer_id": 1,
-#         "restaurant_id": 999,
-#         "status": OrderStatus.PENDING.value,
-#         "location": OrderLocation.BRITISH_COLUMBIA.value,
-#         "order_items": [
-#             {"item_id": 101, "quantity": 2, "price_at_purchase": 5.0}
-#         ]
-#     }
-#     response = client.post("/orders/", json=new_order)
-#     notifications = json.loads(temp_notif_db.read_text())
-#     print(response.json())
-#     assert response.status_code == 200
-#     assert len(notifications) == 1
-#     assert notifications[0] ["user_id"] == 1 #customer notif (failed)
-#     assert notifications["type"] == NotificationType.ORDER_FAILED.value
+    order_id = response.json()["id"]
+
+def test_delete_notifications_pendingstatus(test_client):
+    client, temp_notif_db = test_client
+    new_order = {
+        "customer_id": 1,
+        "restaurant_id": 1,
+        "status": OrderStatus.PENDING.value,
+        "location": OrderLocation.BRITISH_COLUMBIA.value,
+        "order_items": [{
+            "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
+        }]
+    }
+    response = client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+
+    # Delete order
+    delete_response = client.delete(f"/orders/{order_id}")
+    assert delete_response.status_code == 200
+    notifications = json.loads(temp_notif_db.read_text())
+    assert len(notifications) == 4
+    assert notifications[2] ["user_id"] == 2
+    assert notifications[2] ["type"] == NotificationType.ORDER_CANCELLED.value
+    assert notifications[2] ["is_read"] == False
+    assert notifications[3] ["user_id"] == 1
+    assert notifications[3] ["type"] == NotificationType.ORDER_CANCELLED.value
+    assert notifications[3] ["is_read"] == False
+
+    
+
+def test_delete_notifications_preparingstatus(test_client):
+    client, temp_notif_db = test_client
+
+    new_order = {
+        "customer_id": 1,
+        "restaurant_id": 1,
+        "status": OrderStatus.PREPARING_ORDER.value,
+        "location": OrderLocation.BRITISH_COLUMBIA.value,
+        "order_items": [{
+            "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
+        }]
+    }
+    response = client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+    delete_response = client.delete(f"/orders/{order_id}")
+    assert delete_response.status_code == 200
+    notifications = json.loads(temp_notif_db.read_text())
+    assert len(notifications) == 4
+    assert notifications[2] ["user_id"] == 2
+    assert notifications[2] ["type"] == NotificationType.ORDER_CANCELLED.value
+    assert notifications[2] ["is_read"] == False
+    assert notifications[3] ["user_id"] == 1
+    assert notifications[3] ["type"] == NotificationType.ORDER_CANCELLED.value
+    assert notifications[3] ["is_read"] == False
+
+def test_notification_update_order_status(test_client):
+    client, temp_notif_db = test_client
+    new_order = {
+        "customer_id": 1,
+        "restaurant_id": 1,
+        "status": OrderStatus.PREPARING_ORDER.value,
+        "location": OrderLocation.BRITISH_COLUMBIA.value,
+        "order_items": [{
+            "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
+        }]
+    }
+    response = client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+
+    update_response = client.put(f"/orders/{order_id}/status",
+        params={
+            "new_status": OrderStatus.OUT_FOR_DELIVERY.value,
+            "role": "manager"
+        }
+    )
+    assert update_response.status_code == 200
+    notifications = json.loads(temp_notif_db.read_text())
+    assert len(notifications) == 4
+    assert notifications[2] ["user_id"] == 1
+    assert notifications[2] ["type"] == NotificationType.ORDER_IN_TRANSIT.value
+    assert notifications[2] ["is_read"] == False
+    assert notifications[3] ["user_id"] == 2
+    assert notifications[3] ["type"] == NotificationType.ORDER_IN_TRANSIT.value
+    assert notifications[3] ["is_read"] == False
+
+    
