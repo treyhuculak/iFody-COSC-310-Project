@@ -191,3 +191,34 @@ def test_notification_update_order_status(test_client):
     assert notifications[3] ["is_read"] == False
 
     
+def test_notification_new_item_added(test_client):
+    client, temp_notif_db = test_client
+    new_order = {
+        "customer_id": 1, 
+        "restaurant_id": 1,
+        "status": OrderStatus.PREPARING_ORDER.value,
+        "location": OrderLocation.BRITISH_COLUMBIA.value,
+        "order_items": [{
+            "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
+        }]
+    }
+    response = client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+
+    add_item_response = client.post(f"/orders/{order_id}/items",
+        params = {"quantity": 2},
+        json = {
+            "id": 101,
+            "name": "Test Item",
+            "description": "A test item",
+            "price": 5.0
+        }
+    )
+
+    assert add_item_response.status_code == 200
+    notifications = json.loads(temp_notif_db.read_text())
+    assert len(notifications) == 3
+    assert notifications[2] ["user_id"] == 1
+    assert notifications[2] ["type"] == NotificationType.NEW_ITEM_ADDED.value
+    assert notifications[2] ["is_read"] == False
