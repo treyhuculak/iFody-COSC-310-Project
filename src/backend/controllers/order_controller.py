@@ -244,7 +244,10 @@ class OrderController:
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
             customer_id = order["customer_id"]
             item_name = menu_item.name
-            added_item_notif = NotificationCreate(
+            restaurant_id = order["restaurant_id"]
+            restaurant = self.restaurant_repo.get_restaurant_by_id(restaurant_id)
+            owner_id = restaurant["owner_id"]
+            added_item_customer_notif = NotificationCreate(
                 user_id= customer_id,
                 type = NotificationType.NEW_ITEM_ADDED,
                 title = "New Item Added",
@@ -252,7 +255,17 @@ class OrderController:
                 order_id = order_id,
                 is_read = False
             )
-            self.notif_controller.create_notif(added_item_notif)
+            self.notif_controller.create_notif(added_item_customer_notif)
+            added_item_manager_notif = NotificationCreate(
+                user_id = owner_id,
+                type = NotificationType.NEW_ITEM_ADDED,
+                title = "New Item Added",
+                message = f"Customer has added {item_name} to order #{order_id}",
+                order_id = order_id,
+                is_read = False
+            )
+            self.notif_controller.create_notif(added_item_manager_notif)
+            
             return added_item
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be modified")

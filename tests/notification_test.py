@@ -218,7 +218,10 @@ def test_notification_new_item_added(test_client):
 
     assert add_item_response.status_code == 200
     notifications = json.loads(temp_notif_db.read_text())
-    assert len(notifications) == 3
+    assert len(notifications) == 4
     assert notifications[2] ["user_id"] == 1
     assert notifications[2] ["type"] == NotificationType.NEW_ITEM_ADDED.value
     assert notifications[2] ["is_read"] == False
+    assert notifications[3] ["user_id"] == 2
+    assert notifications[3] ["type"] == NotificationType.NEW_ITEM_ADDED.value
+    assert notifications[3] ["is_read"] == False
