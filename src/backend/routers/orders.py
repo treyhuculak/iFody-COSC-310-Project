@@ -51,10 +51,11 @@ def get_all_order_items(order_id: int, controller: OrderController = Depends(get
 @router.get("/{order_id}/items/{item_id}", response_model=OrderItem)
 def get_order_item_by_id(order_id: int, item_id: int, controller: OrderController = Depends(get_controller)):
     order_items = controller.get_order_items_by_order_id(order_id)
-    if isinstance(order_items, list):
-        for item in order_items:
-            if isinstance(item, dict) and item.get("item_id") == item_id:
-                return item
+    
+    for item in order_items:
+        if(item.get("item_id") == item_id):
+            return item
+        
     raise HTTPException(status_code=404, detail="Order item not found")
 
 @router.get("/{order_id}/review", response_model=Optional[Review])
