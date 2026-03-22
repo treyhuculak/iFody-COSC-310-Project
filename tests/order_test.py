@@ -3,8 +3,6 @@ import pytest
 from fastapi.testclient import TestClient
 from src.backend.main import app
 from src.backend.routers.orders import get_controller
-from src.backend.repositories.order_repo import OrderRepository
-from src.backend.controllers.order_controller import OrderController
 from src.backend.models.order import OrderStatus, OrderLocation
 
 
@@ -41,6 +39,8 @@ new_order_3 = {
 def test_add_order(test_client):
     # The controller should return the new order dict, which the router translates to a 200 response
     response = test_client.post("/orders/", json=new_order) 
+    print(response.status_code)
+    print(response.json())
     assert response.status_code == 200
     data = response.json()
     assert data["customer_id"] == 1
