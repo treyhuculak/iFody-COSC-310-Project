@@ -24,7 +24,7 @@ def test_delete_user_with_invalid_username(setup_admin_service_with_temp_db) -> 
 
 def test_delete_user_with_valid_username(setup_admin_service_with_temp_db) -> None:
     '''
-    Tests the delete_user function by calling it with valid usernames.
+    Tests the delete_user function by calling it with a valid username.
     '''
     user_example = {
         "id": 1,
@@ -37,6 +37,77 @@ def test_delete_user_with_valid_username(setup_admin_service_with_temp_db) -> No
     }
     admin_service.user_repo.add_user(user_example)
     assert admin_service.delete_user('TestCustomer') == user_example
+
+def test_block_user_with_invalid_username(setup_admin_service_with_temp_db) -> None:
+    '''
+    Tests the block_user function by calling it with invalid usernames.
+    '''
+    assert admin_service.block_user("") == None
+    assert admin_service.block_user("FakeUsername") == None
+
+def test_block_user_with_valid_username(setup_admin_service_with_temp_db) -> None:
+    '''
+    Tests the block_user function by calling it with a valid username.
+    '''
+    user_example = {
+        "id": 1,
+        "username": "TestCustomer",
+        "email": "testcustomer@123.com",
+        "password": "Test@123",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": False
+    }
+    admin_service.user_repo.add_user(user_example)
+    blocked = admin_service.block_user(user_example["username"])
+    assert blocked != None
+    assert blocked == {
+        "id": 1,
+        "username": "TestCustomer",
+        "email": "testcustomer@123.com",
+        "password": "Test@123",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": True
+    }
+
+def test_unblock_user_with_invalid_username(setup_admin_service_with_temp_db) -> None:
+    '''
+    Tests the unblock_user function by calling it with invalid usernames.
+    '''
+    user_example = {
+        "id": 1,
+        "username": "TestCustomer",
+        "email": "testcustomer@123.com",
+        "password": "Test@123",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": False
+    }
+    admin_service.user_repo.add_user(user_example)
+    admin_service.block_user(user_example["username"])
+    assert admin_service.block_user("") == None
+    assert admin_service.block_user("FakeUsername") == None
+    assert admin_service.user_repo.get_user_by_username(user_example["username"])["is_blocked"]
+
+def test_unblock_user_with_valid_username(setup_admin_service_with_temp_db) -> None:
+    '''
+    Tests the unblock_user function by calling it with a valid username.
+    '''
+    user_example = {
+        "id": 1,
+        "username": "TestCustomer",
+        "email": "testcustomer@123.com",
+        "password": "Test@123",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": False
+    }
+    admin_service.user_repo.add_user(user_example)
+    admin_service.block_user(user_example["username"])
+    unblocked = admin_service.unblock_user(user_example["username"])
+    assert not unblocked["is_blocked"]
+    assert not admin_service.user_repo.get_user_by_username(user_example["username"])["is_blocked"]
 
 def test_empty_get_all_orders(setup_admin_service_with_temp_db) -> None:
     '''

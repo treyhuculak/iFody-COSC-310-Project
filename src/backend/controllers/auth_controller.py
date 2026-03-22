@@ -82,6 +82,30 @@ class AuthController:
         else:
             raise HTTPException(status_code = 401, detail = "Only logged-in administrators can delete accounts.")
         
+    def block_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for block_user that allows only administrators to block a user by username.
+        '''
+        if self.cur_user:
+            if self.cur_user["role"] == Role.ADMIN.value:
+                return self.service.block_user(username)
+            else:
+                raise HTTPException(status_code = 403, detail = "Only administrators can block accounts.")
+        else:
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators can block accounts.")
+        
+    def unblock_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for unblock_user that allows only administrators to unblock a user by username.
+        '''
+        if self.cur_user:
+            if self.cur_user["role"] == Role.ADMIN.value:
+                return self.service.unblock_user(username)
+            else:
+                raise HTTPException(status_code = 403, detail = "Only administrators can unblock accounts.")
+        else:
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators can unblock accounts.")
+
     def get_all_orders(self) -> list[dict]:
         '''
         A wrapper function for get_all_orders that allows only administrators and restaurant owners to access all the orders.
