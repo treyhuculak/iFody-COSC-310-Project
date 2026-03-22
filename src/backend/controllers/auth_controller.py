@@ -94,4 +94,38 @@ class AuthController:
         else:
             raise HTTPException(status_code = 401, detail = "Only logged-in administrators or restaurant owners can access all the orders.")
         
-    
+    def get_gross_revenue_by_restaurant_id(self, restaurant_id: int) -> float:
+        '''
+        A wrapper function for get_gross_revenue_by_restaurant_id that allows only administrators and restaurant owners to check the gross revenue of the restaurant.
+        '''
+        if self.cur_user:
+            if self.cur_user["role"] in (Role.ADMIN.value, Role.RESTAURANT_OWNER.value):
+                return self.service.get_gross_revenue_by_restaurant_id(restaurant_id)
+            else:
+                raise HTTPException(status_code = 403, detail = "Only administrators or restaurant owners can check the gross revenue of the restaurant.")
+        else:
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators or restaurant owners can check the gross revenue of the restaurant.")
+        
+    def get_average_delivery_time(self) -> float:
+        '''
+        A wrapper function for get_average_delivery_time that allows only administrators and restaurant owners to check the average delivery time.
+        '''
+        if self.cur_user:
+            if self.cur_user["role"] in (Role.ADMIN.value, Role.RESTAURANT_OWNER.value):
+                return self.service.get_average_delivery_time()
+            else:
+                raise HTTPException(status_code = 403, detail = "Only administrators or restaurant owners can check the average delivery time.")
+        else:
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators or restaurant owners can check the average delivery time.")
+        
+    def get_most_popular_restaurant(self) -> Union[dict, None]:
+        '''
+        A wrapper function for get_most_popular_restaurant that allows only administrators to check the most popular restaurant.
+        '''
+        if self.cur_user:
+            if self.cur_user["role"] == Role.ADMIN.value:
+                return self.service.get_most_popular_restaurant()
+            else:
+                raise HTTPException(status_code = 403, detail = "Only administrators can check the most popular restaurant.")
+        else:
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators can check the most popular restaurant.")
