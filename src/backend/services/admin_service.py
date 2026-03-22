@@ -24,6 +24,8 @@ class AdminService:
         A wrapper function for del_user that deletes a user based on the username.
         '''
         return self.user_repo.del_user(username)
+    
+    def block_user(self, username: str) -> Union[dict, None]: pass
 
     def get_all_orders(self) -> list[dict]:
         '''
