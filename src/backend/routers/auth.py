@@ -61,7 +61,7 @@ def login_user(data: LoginRequest, controller: AuthController = Depends(get_cont
 def block_user(username: str, controller: AuthController = Depends(get_controller)):
     '''
     A wrapper function for the block_user method.
-    Called by the router which passes the username variable to it.
+    Blocks the user account according to the username.
     '''
     blocked = controller.block_user(username)
     return blocked
@@ -70,7 +70,24 @@ def block_user(username: str, controller: AuthController = Depends(get_controlle
 def unblock_user(username: str, controller: AuthController = Depends(get_controller)):
     '''
     A wrapper function for the unblock_user method.
-    Called by the router which passes the username variable to it.
+    Unblocks the user account according to the username.
     '''
     unblocked = controller.unblock_user(username)
     return unblocked
+
+@router.delete("/register/{username}")
+def delete_user(username: str, controller: AuthController = Depends(get_controller)):
+    '''
+    A wrapper function for the delete_user method.
+    Deletes the user account according to the username.
+    '''
+    deleted = controller.delete_user(username)
+    return deleted
+
+@router.get("/statistics/order")
+def get_all_orders(controller: AuthController = Depends(get_controller)):
+    '''
+    A wrapper function for the get_all_orders method.
+    Gets all the orders when requested by an administrator.
+    '''
+    return controller.get_all_orders()

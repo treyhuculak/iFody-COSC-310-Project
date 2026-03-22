@@ -108,15 +108,15 @@ class AuthController:
 
     def get_all_orders(self) -> list[dict]:
         '''
-        A wrapper function for get_all_orders that allows only administrators and restaurant owners to access all the orders.
+        A wrapper function for get_all_orders that allows only administrators to access all the orders.
         '''
         if self.cur_user:
-            if self.cur_user["role"] in (Role.ADMIN.value, Role.RESTAURANT_OWNER.value):
+            if self.cur_user["role"] == Role.ADMIN.value:
                 return self.service.get_all_orders()
             else:
-                raise HTTPException(status_code = 403, detail = "Only administrators or restaurant owners can access all the orders.")
+                raise HTTPException(status_code = 403, detail = "Only administrators can access all the orders.")
         else:
-            raise HTTPException(status_code = 401, detail = "Only logged-in administrators or restaurant owners can access all the orders.")
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators can access all the orders.")
         
     def get_gross_revenue_by_restaurant_id(self, restaurant_id: int) -> float:
         '''
