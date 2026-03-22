@@ -3,7 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.backend.main import app
-from src.backend.routers.payment import get_controller
+from src.backend.routers.payments import get_controller
 from src.backend.models.payment import PaymentOptions
 from src.backend.models.card_payment import CardPaymentBrand
 from src.backend.repositories.payment_repo import PaymentRepository
