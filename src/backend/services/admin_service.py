@@ -29,7 +29,7 @@ class AdminService:
         '''
         Gets all the orders from all the restaurant instances.
         '''
-        return self.order_repo.get_all_orders_for_admin()
+        return self.order_repo.get_all_orders()
     
     def get_gross_revenue_by_restaurant_id(self, restaurant_id: int) -> float:
         '''
