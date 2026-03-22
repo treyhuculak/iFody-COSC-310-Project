@@ -35,6 +35,15 @@ def test_client(tmp_path):
                         "role": "customer", 
                         "is_logged_in": False,
                         "is_blocked": False
+                    },
+                    {
+                        "id": 3,
+                        "username": "DraftRestaurantOwner",
+                        "email": "DraftRestaurantOwner@123.com",
+                        "password": "Tecu@248",
+                        "role": "restaurant owner", 
+                        "is_logged_in": False,
+                        "is_blocked": False
                     }
                 ]
             }
@@ -64,14 +73,26 @@ def test_client(tmp_path):
                     "restaurant_id": 1,
                     "status": "pending",
                     "location": "BC",
-                    "order_items": []
+                    "order_items": [
+                        {
+                            "item_id": 101,
+                            "quantity": 2,
+                            "price_at_purchase": 5.0
+                        }
+                    ]
                 },
                 {
                     "customer_id": 4,
                     "restaurant_id": 2,
                     "status": "pending",
                     "location": "BC",
-                    "order_items": []
+                    "order_items": [
+                        {
+                            "item_id": 101,
+                            "quantity": 8,
+                            "price_at_purchase": 2.5
+                        }
+                    ]
                 }
             ]
         )
@@ -173,7 +194,7 @@ def test_delete_user_valid_username(test_client):
             "password": "Drad@246"
         }
     )
-    response = test_client.delete("/auth/register/TestCustomer")
+    response = test_client.delete("/auth/register/%s" % "TestCustomer")
     assert response.status_code == 200
     assert response.json() != None
     assert response.json() == {
@@ -200,7 +221,7 @@ def test_delete_user_invalid_username(test_client):
     response = test_client.delete("/auth/register/%s" % "")
     assert response.status_code == 405
     assert "Method Not Allowed" in response.json().values()
-    response = test_client.delete("/auth/register/1234")
+    response = test_client.delete("/auth/register/%s" % "1234")
     assert response.status_code == 200
     assert response.json() == None
 
@@ -238,13 +259,79 @@ def test_get_all_orders(test_client):
             "restaurant_id": 1,
             "status": "pending",
             "location": "BC",
-            "order_items": []
+            "order_items": [
+                {
+                    "item_id": 101,
+                    "quantity": 2,
+                    "price_at_purchase": 5.0
+                }
+            ]
         },
         {
             "customer_id": 4,
             "restaurant_id": 2,
             "status": "pending",
             "location": "BC",
-            "order_items": []
+            "order_items": [
+                {
+                    "item_id": 101,
+                    "quantity": 8,
+                    "price_at_purchase": 2.5
+                }
+            ]
         }
     ]
+
+def test_get_all_orders_by_restaurant_owner(test_client):
+    '''
+    Tests the get_all_orders function by letting a restaurant owner call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftRestaurantOwner@123.com",
+            "password": "Tecu@248"
+        }
+    )
+    response = test_client.get("/auth/statistics/order")
+    assert response.status_code == 403
+    assert response.json() != None
+    assert "Only administrators can access all the orders." in response.json().values()
+
+def test_get_gross_revenue_by_restaurant_id(test_client):
+    '''
+    Tests the get_gross_revenue_by_restaurant_id function by letting an administrator call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftAdministrator@123.com",
+            "password": "Drad@246"
+        }
+    )
+    response = test_client.get("/auth/statistics/gross_revenue/%d" % 1)
+    assert response.status_code == 200
+    assert response.json() != None
+    matched_revenue = 11.2
+    assert response.json() == matched_revenue
+    response = test_client.get("/auth/statistics/gross_revenue/%d" % 2)
+    assert response.status_code == 200
+    assert response.json() != None
+    matched_revenue = 22.4
+    assert response.json() == matched_revenue
+
+def test_get_gross_revenue_by_restaurant_id_restaurant_owner(test_client):
+    '''
+    Tests the get_gross_revenue_by_restaurant_id function by letting a restaurant_owner call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftRestaurantOwner@123.com",
+            "password": "Tecu@248"
+        }
+    )
+    response = test_client.get("/auth/statistics/gross_revenue/%d" % 1)
+    assert response.status_code == 403
+    assert response.json() != None
+    assert "Only administrators can check the gross revenue of the restaurant." in response.json().values()

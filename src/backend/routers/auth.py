@@ -91,3 +91,11 @@ def get_all_orders(controller: AuthController = Depends(get_controller)):
     Gets all the orders when requested by an administrator.
     '''
     return controller.get_all_orders()
+
+@router.get("/statistics/gross_revenue/{restaurant_id}")
+def get_gross_revenue_by_restaurant_id(restaurant_id: int, controller: AuthController = Depends(get_controller)):
+    '''
+    A wrapper function for the get_gross_revenue_by_restaurant_id method.
+    Gets the gross revenue of a restaurant based on the given restaurant_id value.
+    '''
+    return controller.get_gross_revenue_by_restaurant_id(restaurant_id)
