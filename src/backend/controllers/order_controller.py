@@ -158,8 +158,6 @@ class OrderController:
 
             # Creating order item based on menu item
             order_item = OrderItemCreate(item_id=menu_item.id, quantity=quantity)
-            if isinstance(order, dict) and "error" in order:
-                raise HTTPException(status_code=404, detail=order["error"])
             
             # Note: Basic field validation (e.g., quantity > 0) is handled by the OrderItemCreate Pydantic model.
             order_item_data = order_item.model_dump()
