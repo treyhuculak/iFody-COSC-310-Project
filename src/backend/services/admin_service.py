@@ -25,7 +25,17 @@ class AdminService:
         '''
         return self.user_repo.del_user(username)
     
-    def block_user(self, username: str) -> Union[dict, None]: pass
+    def block_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for ban_user that blocks a user based on the username.
+        '''
+        return self.user_repo.ban_user(username)
+    
+    def unblock_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for unban_user that unblocks a user based on the username.
+        '''
+        return self.user_repo.unban_user(username)
 
     def get_all_orders(self) -> list[dict]:
         '''
