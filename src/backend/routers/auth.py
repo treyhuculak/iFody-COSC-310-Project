@@ -10,6 +10,9 @@ router = APIRouter(
 )
 
 def get_controller():
+    '''
+    Returns the AuthController instance for use with router operations.
+    '''
     return AuthController()
 
 '''
