@@ -322,7 +322,7 @@ def test_get_gross_revenue_by_restaurant_id(test_client):
 
 def test_get_gross_revenue_by_restaurant_id_restaurant_owner(test_client):
     '''
-    Tests the get_gross_revenue_by_restaurant_id function by letting a restaurant_owner call it.
+    Tests the get_gross_revenue_by_restaurant_id function by letting a restaurant owner call it.
     '''
     test_client.post(
         "/auth/login/",
@@ -335,3 +335,71 @@ def test_get_gross_revenue_by_restaurant_id_restaurant_owner(test_client):
     assert response.status_code == 403
     assert response.json() != None
     assert "Only administrators can check the gross revenue of the restaurant." in response.json().values()
+    response = test_client.get("/auth/statistics/gross_revenue/%d" % 2)
+    assert response.status_code == 403
+    assert response.json() != None
+    assert "Only administrators can check the gross revenue of the restaurant." in response.json().values()
+
+def test_get_average_delivery_time(test_client):
+    '''
+    Tests the get_average_delivery_time function by letting an administrator call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftAdministrator@123.com",
+            "password": "Drad@246"
+        }
+    )
+    response = test_client.get("/auth/statistics/average_delivery_time")
+    assert response.status_code == 200
+    assert response.json() != None
+    assert 10 <= response.json() <= 60
+
+def test_get_average_delivery_time_restaurant_owner(test_client):
+    '''
+    Tests the get_average_delivery_time function by letting a restaurant owner call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftRestaurantOwner@123.com",
+            "password": "Tecu@248"
+        }
+    )
+    response = test_client.get("/auth/statistics/average_delivery_time")
+    assert response.status_code == 403
+    assert response.json() != None
+    assert "Only administrators can check the average delivery time." in response.json().values()
+
+def test_get_most_popular_restaurant(test_client):
+    '''
+    Tests the get_most_popular_restaurant function by letting an administrator call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftAdministrator@123.com",
+            "password": "Drad@246"
+        }
+    )
+    response = test_client.get("/auth/statistics/most_popular_restaurant")
+    assert response.status_code == 200
+    assert response.json() != None
+    assert response.json()["id"] == 1
+
+def test_get_most_popular_restaurant_restaurant_owner(test_client):
+    '''
+    Tests the get_most_popular_restaurant function by letting a restaurant owner call it.
+    '''
+    test_client.post(
+        "/auth/login/",
+        json = {
+            "email": "DraftRestaurantOwner@123.com",
+            "password": "Tecu@248"
+        }
+    )
+    response = test_client.get("/auth/statistics/most_popular_restaurant")
+    assert response.status_code == 403
+    assert response.json() != None
+    assert "Only administrators can check the most popular restaurant." in response.json().values()

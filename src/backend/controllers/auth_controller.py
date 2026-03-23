@@ -132,15 +132,15 @@ class AuthController:
         
     def get_average_delivery_time(self) -> float:
         '''
-        A wrapper function for get_average_delivery_time that allows only administrators and restaurant owners to check the average delivery time.
+        A wrapper function for get_average_delivery_time that allows only administrators to check the average delivery time.
         '''
         if self.cur_user:
-            if self.cur_user["role"] in (Role.ADMIN.value, Role.RESTAURANT_OWNER.value):
+            if self.cur_user["role"] == Role.ADMIN.value:
                 return self.service.get_average_delivery_time()
             else:
-                raise HTTPException(status_code = 403, detail = "Only administrators or restaurant owners can check the average delivery time.")
+                raise HTTPException(status_code = 403, detail = "Only administrators can check the average delivery time.")
         else:
-            raise HTTPException(status_code = 401, detail = "Only logged-in administrators or restaurant owners can check the average delivery time.")
+            raise HTTPException(status_code = 401, detail = "Only logged-in administrators can check the average delivery time.")
         
     def get_most_popular_restaurant(self) -> Union[dict, None]:
         '''

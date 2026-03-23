@@ -99,3 +99,19 @@ def get_gross_revenue_by_restaurant_id(restaurant_id: int, controller: AuthContr
     Gets the gross revenue of a restaurant based on the given restaurant_id value.
     '''
     return controller.get_gross_revenue_by_restaurant_id(restaurant_id)
+
+@router.get("/statistics/average_delivery_time")
+def get_average_delivery_time(controller: AuthController = Depends(get_controller)):
+    '''
+    A wrapper function for the get_average_delivery_time method.
+    Gets the average delivery time for all the restaurant orders.
+    '''
+    return controller.get_average_delivery_time()
+
+@router.get("/statistics/most_popular_restaurant")
+def get_most_popular_restaurant(controller: AuthController = Depends(get_controller)):
+    '''
+    A wrapper function for the get_most_popular_restaurant method.
+    Gets the most popular restaurant based on the number of orders, using the lowest restaurant_id value.
+    '''
+    return controller.get_most_popular_restaurant()
