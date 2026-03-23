@@ -2,26 +2,16 @@ from typing import Optional
 from datetime import datetime
 from fastapi import HTTPException
 
-from src.backend.models.order import Order, OrderCreate, OrderStatus
-from src.backend.models.menu_item import MenuItem
-from src.backend.models.order_item import OrderItem, OrderItemCreate
-from src.backend.models.notification import NotificationCreate, NotificationType
-from src.backend.models.payment_transaction import PaymentTransaction 
-
+from src.backend.models.order import OrderCreate
+from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
-from src.backend.repositories.restaurant_repo import RestaurantRepository
-
 from src.backend.services.order_service import OrderService
 from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.review import Review, ReviewCreate
 from src.backend.controllers.notification_controller import NotificationController
-
-class RestaurantNotFound(Exception):
-    """
-    Raise it when the account is already in the database for the register function.
-    """
-    pass
+from src.backend.models.notification import NotificationCreate, NotificationType
+from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
@@ -29,11 +19,6 @@ class OrderController:
         self.notif_controller = notif_controller or NotificationController()
         self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
-        
-
-    def validate_order_logic(self):
-        # For now
-        return True
 
     def add_order(self, order: OrderCreate):
         try:
@@ -52,39 +37,19 @@ class OrderController:
             order_data['total_price'] = subtotal + tax + delivery_fee
 
             new_order = self.order_repo.create_order(order_data)
-
-            #Send manager and customer notifications regarding the new order
-            customer_id = new_order["customer_id"]
-            restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
-            restaurant_name = restaurant["name"]
-            order_id = new_order["id"]
-            if restaurant:
-                owner_id = restaurant["owner_id"]
-                manager_notification = NotificationCreate(
-                    user_id= owner_id,
-                    type= NotificationType.NEW_ORDER_RECEIVED,
-                    title= "New Order Received",
-                    message= f"A new order with id {order_id} has been received.",
-                    is_read = False,
-                    order_id = order_id
-                )
-                self.notif_controller.create_notif(manager_notification)
-
-                customer_notif = NotificationCreate(
-                    user_id = customer_id,
-                    type = NotificationType.NEW_ORDER_RECEIVED,
-                    title = "Order Confirmed",
-                    message = f"Your order at {restaurant_name} has been received, and is awaiting payment",
-                    is_read = False,
-                    order_id = new_order["id"]
-                )
-                self.notif_controller.create_notif(customer_notif)
-
+            
+            try:    
+                restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
+                if restaurant:
+                    owner_id = restaurant["owner_id"]
+                    manager_notification = NotificationCreate(...)
+                    self.notif_controller.create_notif(manager_notification)
+            except:
+                pass
             return new_order
+
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        except HTTPException:
-            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     
@@ -96,60 +61,15 @@ class OrderController:
         
     def delete_order(self, order_id: int):
         order = self.get_order(order_id)
-        if (order["status"] == "pending" or order["status"] == "awaiting payment"):
+        if (order["status"] == OrderStatus.PENDING.value or order["status"] == OrderStatus.AWAITING_PAYMENT.value or order["status"] == OrderStatus.PAYMENT_FAILED.value):
             '''
             Ensure no punishment happens, since the order was canceled before the restaurant accepting it
             '''
-            #Manager and Customer Notifications for a successful order cancellation
-            rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
-            owner_id = rest_id["owner_id"]
-            manager_deleted_order_notif = NotificationCreate(
-                user_id = owner_id,
-                type = NotificationType.ORDER_CANCELLED,
-                title = "Order Cancelled",
-                message = f"Order with ID {order_id} has been cancelled by the customer before confirmation",
-                is_read = False,
-                order_id = order_id
-            )
-            self.notif_controller.create_notif(manager_deleted_order_notif)
-            customer_id = order["customer_id"]
-            customer_del_order_notif = NotificationCreate(
-                user_id = customer_id,
-                type = NotificationType.ORDER_CANCELLED,
-                title = "Order Cancelled",
-                message = f"Order {order_id} has been successfully cancelled before confirmation",
-                is_read = False,
-                order_id = order_id
-            )
-            self.notif_controller.create_notif(customer_del_order_notif)
             return self.order_repo.delete_order(order_id)
-        
-        elif(order["status"] == "payment confirmed" or order["status"] == "preparing"):
+        elif(order["status"] == OrderStatus.PAYMENT_CONFIRMED.value or order["status"] == OrderStatus.PREPARING_ORDER.value):
             '''
             Need some kind of punishment for cancelling after restaurant accepted the order
             '''
-            #Manager and Customer Notifications for an unsuccessful order cancellation
-            rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
-            owner_id = rest_id["owner_id"]
-            manager_deleted_order_notif = NotificationCreate(
-                user_id = owner_id,
-                type = NotificationType.ORDER_CANCELLED,
-                title = "Order Cancelled",
-                message = f"Order with ID {order_id} has been cancelled by the customer after confirmation, fees will be applied",
-                is_read = False,
-                order_id = order_id
-            )
-            self.notif_controller.create_notif(manager_deleted_order_notif)
-            customer_id = order["customer_id"]
-            customer_del_order_notif = NotificationCreate(
-                user_id = customer_id,
-                type = NotificationType.ORDER_CANCELLED,
-                title = "Order Cancelled",
-                message = f"Order {order_id} has been cancelled after confirmation, fees will be applied",
-                is_read = False,
-                order_id = order_id
-            )
-            self.notif_controller.create_notif(customer_del_order_notif)
             return self.order_repo.delete_order(order_id)
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be cancelled")
@@ -188,7 +108,7 @@ class OrderController:
 
             notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
 
-            #create notification for the customer based on the mapped statuses above
+            #create notification for the customer
             customer_notification = NotificationCreate(
                 user_id = updated_order["customer_id"],
                 type = notif_type,
@@ -203,8 +123,7 @@ class OrderController:
                 OrderStatus.OUT_FOR_DELIVERY: (NotificationType.ORDER_IN_TRANSIT, "Driver Picked Up", f"Order #{order_id} picked up by driver"),
                 OrderStatus.DELIVERED: (NotificationType.ORDER_DELIVERED, "Order has been delivered", f"Order #{order_id} has been delivered")
             }
-            
-            #create notification for the manager based on the mapped statuses above
+
             if status_enum in manager_status_map:
                 notif_type, title, message = manager_status_map[status_enum]
                 restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])
@@ -219,6 +138,7 @@ class OrderController:
                 )
                 self.notif_controller.create_notif(manager_notification)
 
+            
             return updated_order
         
     '''
@@ -234,40 +154,14 @@ class OrderController:
     def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int):
         order = self.get_order(order_id)
         # Checking if order should be able to be modified or not
-        if not (order["status"] == "out for delivery" or order["status"] == "delivered"):
+        if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
 
             # Creating order item based on menu item
             order_item = OrderItemCreate(item_id=menu_item.id, quantity=quantity)
-            if isinstance(order, dict) and "error" in order:
-                raise HTTPException(status_code=404, detail=order["error"])
             
             # Note: Basic field validation (e.g., quantity > 0) is handled by the OrderItemCreate Pydantic model.
             order_item_data = order_item.model_dump()
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
-            customer_id = order["customer_id"]
-            item_name = menu_item.name
-            restaurant_id = order["restaurant_id"]
-            restaurant = self.restaurant_repo.get_restaurant_by_id(restaurant_id)
-            owner_id = restaurant["owner_id"]
-            added_item_customer_notif = NotificationCreate(
-                user_id= customer_id,
-                type = NotificationType.NEW_ITEM_ADDED,
-                title = "New Item Added",
-                message = f"{item_name} has been added to your cart",
-                order_id = order_id,
-                is_read = False
-            )
-            self.notif_controller.create_notif(added_item_customer_notif)
-            added_item_manager_notif = NotificationCreate(
-                user_id = owner_id,
-                type = NotificationType.NEW_ITEM_ADDED,
-                title = "New Item Added",
-                message = f"Customer has added {item_name} to order #{order_id}",
-                order_id = order_id,
-                is_read = False
-            )
-            self.notif_controller.create_notif(added_item_manager_notif)
-            
             return added_item
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be modified")
@@ -276,7 +170,7 @@ class OrderController:
         order = self.get_order(order_id)
 
         # Checking if order should be able to be modified or not
-        if not (order["status"] == "out for delivery" or order["status"] == "delivered"):
+        if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
             deleted_item = self.order_repo.delete_order_item_from_order(order_id, order_item_id)
             return deleted_item 
         else:
@@ -307,6 +201,5 @@ class OrderController:
         review_data = review.model_dump()
         updated_review = self.order_repo.update_review_from_order(order_id, review_data)
         return Review(**updated_review)
-
 
 
