@@ -137,7 +137,6 @@ class OrderController:
                     is_read = False
                 )
                 self.notif_controller.create_notif(manager_notification)
-
             
             return updated_order
         
@@ -201,5 +200,3 @@ class OrderController:
         review_data = review.model_dump()
         updated_review = self.order_repo.update_review_from_order(order_id, review_data)
         return Review(**updated_review)
-
-
