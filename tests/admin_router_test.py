@@ -10,7 +10,7 @@ from src.backend.utils import auth_dependencies
 @pytest.fixture
 def test_client(tmp_path):
     """
-    Provides a TestClient backed by a temporary JSON file instead of the real data/order.json.
+    Provides a TestClient backed by a temporary JSON file instead of the real database.
     The temporary file is automatically deleted after each test so the production database is never touched.
     """
     temp_user_database = tmp_path / "temp_user_database.json"
