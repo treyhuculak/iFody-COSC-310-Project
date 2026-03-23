@@ -12,6 +12,8 @@ class NotificationType(Enum):
     NEW_ORDER_RECEIVED = "new order received"
     ORDER_FAILED = "order has failed to complete"
     NEW_ITEM_ADDED = "new item has been added to order"
+    BLOCKED_ACCOUNT = "your account has been blocked"
+    UNLBOCKED_ACCOUNT = "your account is now unblocked"
 
 class NotificationBase(BaseModel):
     user_id: int

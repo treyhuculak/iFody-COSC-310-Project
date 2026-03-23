@@ -15,12 +15,6 @@ from src.backend.services.order_service import OrderService
 
 from src.backend.controllers.notification_controller import NotificationController
 
-class RestaurantNotFound(Exception):
-    """
-    Raise it when the account is already in the database for the register function.
-    """
-    pass
-
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
         self.order_repo = repo or OrderRepository()
@@ -242,20 +236,10 @@ class OrderController:
             # Note: Basic field validation (e.g., quantity > 0) is handled by the OrderItemCreate Pydantic model.
             order_item_data = order_item.model_dump()
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
-            customer_id = order["customer_id"]
             item_name = menu_item.name
             restaurant_id = order["restaurant_id"]
             restaurant = self.restaurant_repo.get_restaurant_by_id(restaurant_id)
             owner_id = restaurant["owner_id"]
-            added_item_customer_notif = NotificationCreate(
-                user_id= customer_id,
-                type = NotificationType.NEW_ITEM_ADDED,
-                title = "New Item Added",
-                message = f"{item_name} has been added to your cart",
-                order_id = order_id,
-                is_read = False
-            )
-            self.notif_controller.create_notif(added_item_customer_notif)
             added_item_manager_notif = NotificationCreate(
                 user_id = owner_id,
                 type = NotificationType.NEW_ITEM_ADDED,
