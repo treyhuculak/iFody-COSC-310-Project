@@ -12,3 +12,4 @@ class PaymentTransactionCreate(PaymentTransactionBase):
 class PaymentTransaction(PaymentTransactionBase):
     id: int
     is_successful: bool
+    user_id: int

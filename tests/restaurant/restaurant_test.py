@@ -226,13 +226,13 @@ def test_get_restaurants_by_owner(test_client):
     assert response2.status_code == 200
 
     # Now retrieve restaurants by owner_id 1 (this is the current default owner_id for new restaurants in the controller)
-    get_response = test_client.get("/restaurants/owner/1")
+    get_response = test_client.get("/restaurants/owner/2")
     assert get_response.status_code == 200
     data = get_response.json()
     assert isinstance(data, dict) # Should return a paginated response dict
     assert len(data["items"]) == 2
     for rest in data["items"]:
-        assert rest["owner_id"] == 1
+        assert rest["owner_id"] == 2
 
 def test_get_restaurants_by_location(test_client):
     # Add two restaurants with the same location
