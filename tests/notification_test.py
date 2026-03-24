@@ -132,16 +132,16 @@ def test_client(tmp_path):
 
     
 
-    app.dependency_overrides[get_controller] = lambda: test_controller #tells fastAPI to use test controller instead of real controller
-    original_repo = auth_dependencies.repo #saves the real repository before replacing it
-    auth_dependencies.repo = test_user_repo # swaps in the temp user repo for auth
+    app.dependency_overrides[get_controller] = lambda: test_controller
+    original_repo = auth_dependencies.repo
+    auth_dependencies.repo = test_user_repo
 
-    client = TestClient(app) #simulates HTTP requests
-    client.headers.update({"X-User-Id": "1"}) #Adds header defining User's Id to 1 for auth
+    client = TestClient(app)
+    client.headers.update({"X-User-Id": "1"})
 
     yield client, temp_notif_db, transaction_controller, test_payment_controller
 
-    #restores everything after test finishes
+
     auth_dependencies.repo = original_repo
     app.dependency_overrides.clear()
 
@@ -161,8 +161,8 @@ def test_add_order_notifications(test_client):
     assert response.status_code == 200
     notifications = json.loads(temp_notif_db.read_text())
     assert len(notifications) == 2
-    assert notifications[0]["user_id"] == 2  #manager notif
-    assert notifications[1]["user_id"] == 1  #customer notif (success)
+    assert notifications[0]["user_id"] == 2 
+    assert notifications[1]["user_id"] == 1
 
     order_id = response.json()["id"]
 
@@ -181,7 +181,6 @@ def test_delete_notifications_pendingstatus(test_client):
     assert response.status_code == 200
     order_id = response.json()["id"]
 
-    # Delete order
     delete_response = client.delete(f"/orders/{order_id}")
     assert delete_response.status_code == 200
     notifications = json.loads(temp_notif_db.read_text())

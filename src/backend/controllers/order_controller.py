@@ -16,7 +16,12 @@ from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 class OrderController:
-    def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
+    def __init__(
+            self, 
+            repo: Optional[OrderRepository] = None, 
+            notif_controller: Optional[NotificationController] = None
+        ) -> None:
+
         self.order_repo = repo or OrderRepository()
         self.notif_controller = notif_controller or NotificationController()
         self.order_service = OrderService()
@@ -66,18 +71,8 @@ class OrderController:
                     order_id = new_order["id"]
                 )
                 self.notif_controller.create_notif(customer_notif)
-
-            
-            try:    
-                restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
-                if restaurant:
-                    owner_id = restaurant["owner_id"]
-                    manager_notification = NotificationCreate(...)
-                    self.notif_controller.create_notif(manager_notification)
-            except:
-                pass
             return new_order
-
+            
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:

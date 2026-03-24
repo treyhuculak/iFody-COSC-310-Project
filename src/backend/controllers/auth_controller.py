@@ -45,7 +45,13 @@ class AuthController:
         emails = [user["email"] for user in users]
         if (username in usernames) or (email in emails):
             raise AccountExistsException("The account already exists. Try logging in to the account.")
-        new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
+        new_user = UserSave(
+            id = 1,
+            username = username,
+            email = email, 
+            password = password, 
+            role = role
+        )
         user_dict = new_user.model_dump()
         if hasattr(user_dict['role'], 'value'):
             user_dict['role'] = user_dict['role'].value
@@ -93,8 +99,12 @@ class AuthController:
         '''
         if self.cur_user:
             if self.cur_user["role"] == Role.ADMIN.value:
+                blocked_customer = self.repo.get_user_by_username(username)
+                if blocked_customer == None:
+                    return None
+                blocked_customer_id = blocked_customer["id"]
                 blocked_notif = NotificationCreate(
-                    user_id = self.cur_user["id"],
+                    user_id = blocked_customer_id,
                     type = NotificationType.BLOCKED_ACCOUNT,
                     title = "Account has been blocked",
                     message = "Your account has been blocked by the administrator",
@@ -113,10 +123,13 @@ class AuthController:
         '''
         if self.cur_user:
             if self.cur_user["role"] == Role.ADMIN.value:
-                user_id = self.cur_user["id"]
+                unblocked_customer = self.repo.get_user_by_username(username)
+                if unblocked_customer == None:
+                    return None
+                unblocked_customer_id = unblocked_customer["id"]
                 unblocked_notif = NotificationCreate(
-                    user_id = user_id,
-                    type = NotificationType.UNLBOCKED_ACCOUNT,
+                    user_id = unblocked_customer_id,
+                    type = NotificationType.UNBLOCKED_ACCOUNT,
                     title = "Account has been unblocked",
                     message = f"Your account has been unblocked by the administrator",
                     is_read = False,

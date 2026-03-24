@@ -12,7 +12,13 @@ from src.backend.controllers.notification_controller import NotificationControll
 from src.backend.repositories.notification_repo import NotificationRepository
 
 class TransactionController:
-    def __init__(self, payment_repo: Optional[PaymentRepository] = None, repo: Optional[TransactionRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
+    def __init__(
+            self, 
+            payment_repo: Optional[PaymentRepository] = None, 
+            repo: Optional[TransactionRepository] = None, 
+            notif_controller: Optional[NotificationController] = None
+        ) -> None:
+        
         self.payment_repo = payment_repo or PaymentRepository()
         self.transaction_repo = repo or TransactionRepository()
         self.notif_controller = notif_controller or NotificationController()
