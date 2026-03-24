@@ -47,6 +47,40 @@ class UserRepository:
                         return user
             else:
                 return None
+            
+    def ban_user(self, username: str = "") -> dict | None:
+        '''
+        Bans a User instance from the database based on the given username.
+        '''
+        with open(self.file, "r") as file:
+            users = json.load(file)['Users']
+            length = len(users)
+            for i in range(length):
+                if users[i]['username'] == username:
+                    users[i]["is_blocked"] = True
+                    banned = users[i]
+                    with open(self.file, "w") as file:
+                        json.dump({"Users": users}, file, indent = 4)
+                        return banned
+            else:
+                return None
+            
+    def unban_user(self, username: str = "") -> dict | None:
+        '''
+        Unbans a User instance from the database based on the given username.
+        '''
+        with open(self.file, "r") as file:
+            users = json.load(file)['Users']
+            length = len(users)
+            for i in range(length):
+                if users[i]['username'] == username:
+                    users[i]["is_blocked"] = False
+                    banned = users[i]
+                    with open(self.file, "w") as file:
+                        json.dump({"Users": users}, file, indent = 4)
+                        return banned
+            else:
+                return None
     
     def get_all_users(self) -> list[dict]:
         '''

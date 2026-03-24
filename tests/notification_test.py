@@ -6,6 +6,7 @@ from src.backend.models.notification import NotificationType
 from src.backend.models.payment import PaymentOptions
 from src.backend.models.payment_transaction import PaymentTransactionCreate
 from src.backend.models.card_payment import CardPaymentBrand
+from src.backend.models.user import Role
 from src.backend.controllers.order_controller import OrderController
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.controllers.transaction_controller import TransactionController
@@ -74,7 +75,7 @@ def test_client(tmp_path):
                 "username": "TestCustomer",
                 "email": "testcustomer@123.com",
                 "password": "Test@123",
-                "role": "customer", 
+                "role": Role.CUSTOMER.value, 
                 "is_logged_in": False,
                 "is_blocked": False
             },
@@ -83,7 +84,16 @@ def test_client(tmp_path):
                 "username": "TestOwner",
                 "email": "testowner@123.com",
                 "password": "Test@123",
-                "role": "restaurant owner",
+                "role": Role.RESTAURANT_OWNER.value,
+                "is_logged_in": False,
+                "is_blocked": False
+            },
+            {
+                "id": 3,
+                "username": "TestAdmin",
+                "email": "testadmin@123.com",
+                "password": "Test@123",
+                "role": Role.ADMIN.value,
                 "is_logged_in": False,
                 "is_blocked": False
             }
@@ -108,8 +118,16 @@ def test_client(tmp_path):
 
     test_notif_controller = NotificationController(repo=test_notif_repo)
     test_payment_controller = PaymentController(repo=test_payment_repo)
-    transaction_controller = TransactionController(payment_repo=test_payment_repo, repo=test_transaction_repo, notif_controller=test_notif_controller)
-    test_controller = OrderController(repo=test_repo, notif_controller=test_notif_controller)
+    
+    transaction_controller = TransactionController(
+        payment_repo=test_payment_repo, 
+        repo=test_transaction_repo, 
+        notif_controller=test_notif_controller
+    )
+    test_controller = OrderController(
+        repo=test_repo, 
+        notif_controller=test_notif_controller
+    )
     test_controller.restaurant_repo = test_restaurant_repo
 
     
@@ -121,7 +139,7 @@ def test_client(tmp_path):
     client = TestClient(app) #simulates HTTP requests
     client.headers.update({"X-User-Id": "1"}) #Adds header defining User's Id to 1 for auth
 
-    yield client, temp_notif_db, transaction_controller, test_payment_controller
+    yield client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller
 
     #restores everything after test finishes
     auth_dependencies.repo = original_repo
@@ -129,7 +147,7 @@ def test_client(tmp_path):
 
 
 def test_add_order_notifications(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1,
         "restaurant_id": 1,
@@ -149,7 +167,7 @@ def test_add_order_notifications(test_client):
     order_id = response.json()["id"]
 
 def test_delete_notifications_pendingstatus(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1,
         "restaurant_id": 1,
@@ -178,7 +196,7 @@ def test_delete_notifications_pendingstatus(test_client):
     
 
 def test_delete_notifications_preparingstatus(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
 
     new_order = {
         "customer_id": 1,
@@ -204,7 +222,7 @@ def test_delete_notifications_preparingstatus(test_client):
     assert notifications[3] ["is_read"] == False
 
 def test_notification_update_order_status(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1,
         "restaurant_id": 1,
@@ -236,7 +254,7 @@ def test_notification_update_order_status(test_client):
 
     
 def test_notification_new_item_added(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -268,7 +286,7 @@ def test_notification_new_item_added(test_client):
     assert notifications[2] ["is_read"] == False
 
 def test_successful_cash_transaction_notif(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -299,7 +317,7 @@ def test_successful_cash_transaction_notif(test_client):
 
 
 def test_successful_card_transaction_notif(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -329,7 +347,7 @@ def test_successful_card_transaction_notif(test_client):
     assert notifications[2] ["message"] == "Your card payment for order 1 was successful"
 
 def test_unsuccessful_cash_transaction_notif(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -354,6 +372,3 @@ def test_unsuccessful_cash_transaction_notif(test_client):
     assert notifications[2] ["user_id"] == 1
     assert notifications[2] ["type"] == NotificationType.PAYMENT_FAILED.value
     assert notifications[2] ["is_read"] == False
-
-
-    

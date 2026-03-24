@@ -1,5 +1,6 @@
 from enum import Enum
 from datetime import datetime 
+from typing import Optional
 from pydantic import BaseModel
 
 class NotificationType(Enum):
@@ -21,7 +22,7 @@ class NotificationBase(BaseModel):
     title: str
     message: str
     is_read: bool = False
-    order_id: int
+    order_id: Optional[int] = None
 
 class NotificationCreate(NotificationBase):
     pass
