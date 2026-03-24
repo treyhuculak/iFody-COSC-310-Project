@@ -23,7 +23,7 @@ def add_order(order: OrderCreate, controller: OrderController = Depends(get_cont
 
 @router.delete("/{order_id}", response_model=Order)
 def delete_order(order_id: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER, Role.ADMIN))):
-    deleted_order = controller.delete_order(order_id, current_user["id"])
+    deleted_order = controller.delete_order(order_id, current_user["id"], current_user["role"])
     return deleted_order
 
 @router.get("/{order_id}", response_model=Order)
@@ -36,12 +36,12 @@ def update_order_status(order_id: int, new_status: str, role: str, transaction_i
 
 @router.delete("/{order_id}/items/{item_id}", response_model=OrderItem)
 def delete_order_item(order_id: int, item_id: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER, Role.ADMIN))):
-    deleted_item = controller.delete_order_item_from_order(order_id, item_id, current_user["id"])
+    deleted_item = controller.delete_order_item_from_order(order_id, item_id, current_user["id"], current_user["role"])
     return deleted_item
 
 @router.post("/{order_id}/items", response_model=OrderItem)
 def add_order_item(order_id: int, order_item: MenuItem, quantity: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER, Role.ADMIN))):
-    new_item = controller.add_order_item_to_order(order_item, order_id, quantity, current_user["id"])
+    new_item = controller.add_order_item_to_order(order_item, order_id, quantity, current_user["id"], current_user["role"])
     return new_item
 
 @router.get("/{order_id}/items", response_model=List[OrderItem])

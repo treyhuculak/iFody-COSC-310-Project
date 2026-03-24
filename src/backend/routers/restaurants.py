@@ -142,7 +142,7 @@ def add_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER, Role.ADMIN))
 ):
-    new_item = controller.add_menu_item_to_restaurant(menu_item=menu_item, restaurant_id=restaurant_id, user_id=current_user["id"])
+    new_item = controller.add_menu_item_to_restaurant(menu_item=menu_item, restaurant_id=restaurant_id, user_id=current_user["id"], user_role=current_user["role"])
     return new_item
 
 
@@ -157,7 +157,7 @@ def update_restaurant(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER, Role.ADMIN)),
 ):
-    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location, is_available=is_available)
+    updated_rest = controller.update_restaurant(restaurant_id=restaurant_id, name=name, cuisine=cuisine, delivery_fee=delivery_fee, location=location, is_available=is_available, user_id=current_user["id"], user_role=current_user["role"])
     return updated_rest
 
 
@@ -167,7 +167,7 @@ def delete_restaurant(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER, Role.ADMIN))
 ):
-    deleted_rest = controller.delete_restaurant(restaurant_id=restaurant_id, user_id=current_user["id"])
+    deleted_rest = controller.delete_restaurant(restaurant_id=restaurant_id, user_id=current_user["id"], user_role=current_user["role"])
     return deleted_rest
 
 
@@ -178,7 +178,7 @@ def delete_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER, Role.ADMIN))
 ):
-    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, user_id=current_user["id"])
+    deleted_item = controller.delete_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, user_id=current_user["id"], user_role=current_user["role"])
     return deleted_item
 
 @router.put("/{restaurant_id}/menu/{menu_item_id}", response_model=MenuItem)
@@ -191,5 +191,5 @@ def update_menu_item(
     controller: RestaurantController = Depends(get_controller),
     current_user: dict = Depends(requires_role(Role.RESTAURANT_OWNER, Role.ADMIN))
 ):
-    updated_item = controller.update_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, name=name, description=description, price=price)
+    updated_item = controller.update_menu_item_from_restaurant(restaurant_id=restaurant_id, menu_item_id=menu_item_id, name=name, description=description, price=price, user_id=current_user["id"], user_role=current_user["role"])
     return updated_item
