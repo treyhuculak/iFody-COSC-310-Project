@@ -41,6 +41,33 @@ def test_add_user_with_correct_id_value(setup_user_db) -> None:
     assert user_example_2["id"] == 2
     assert len(repo.get_all_users()) == 2
 
+def test_del_user_with_invalid_username(setup_user_db) -> None:
+    '''
+    Tests the del_user function using invalid usernames.
+    '''
+    repo.del_user("")
+    assert len(repo.get_all_users()) == 1
+    repo.del_user("")
+    assert len(repo.get_all_users()) == 1
+
+def test_del_user_with_valid_username(setup_user_db) -> None:
+    assert len(repo.get_all_users()) == 1
+    repo.del_user("TestCustomer")
+    assert len(repo.get_all_users()) == 0
+    user_example_2 = {
+        "id": 1,
+        "username": "TestCustomerNum2",
+        "email": "testcustomernum2@123.com",
+        "password": "Test@12345",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": False
+    }
+    repo.add_user(user_example_2)
+    assert len(repo.get_all_users()) == 1
+    repo.del_user("TestCustomerNum2")
+    assert len(repo.get_all_users()) == 0
+
 def test_get_all_users(setup_user_db) -> None:
     '''
     Tests the get_all_users function.

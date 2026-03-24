@@ -32,6 +32,21 @@ class UserRepository:
             users.append(user)
         with open(self.file, "w") as file:
             json.dump({"Users": users}, file, indent = 4)
+
+    def del_user(self, username: str = "") -> dict | None:
+        '''
+        Deletes a User instance from the database based on the given username.
+        '''
+        with open(self.file, "r") as file:
+            users = json.load(file)['Users']
+            for user in users:
+                if user['username'] == username:
+                    with open(self.file, "w") as file:
+                        users.remove(user)
+                        json.dump({"Users": users}, file, indent = 4)
+                        return user
+            else:
+                return None
     
     def get_all_users(self) -> list[dict]:
         '''
@@ -41,7 +56,7 @@ class UserRepository:
             users = json.load(file)['Users']
             return users
     
-    def get_user_by_id(self, id: int) -> dict:
+    def get_user_by_id(self, id: int) -> dict | None:
         '''
         Returns the Admin/Customer/RestaurantOwner instance according to the id.
         '''
@@ -53,7 +68,7 @@ class UserRepository:
             else:
                 return None
     
-    def get_user_by_username(self, username: str) -> dict:
+    def get_user_by_username(self, username: str) -> dict | None:
         '''
         Returns the Admin/Customer/RestaurantOwner instance according to the username.
         '''
@@ -65,7 +80,7 @@ class UserRepository:
             else:
                 return None
     
-    def get_user_by_email(self, email: str) -> dict:
+    def get_user_by_email(self, email: str) -> dict | None:
         '''
         Returns the Admin/Customer/RestaurantOwner instance according to the email.
         '''

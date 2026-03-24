@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from src.backend.controllers.order_controller import OrderController
 from src.backend.models.order import Order, OrderCreate
-from src.backend.models.order_item import OrderItem, OrderItemCreate
+from src.backend.models.order_item import OrderItem
 from src.backend.models.menu_item import MenuItem
+from src.backend.models.review import Review, ReviewCreate
 from src.backend.models.user import Role
 from src.backend.utils.auth_dependencies import requires_role
 
@@ -50,8 +51,28 @@ def get_all_order_items(order_id: int, controller: OrderController = Depends(get
 @router.get("/{order_id}/items/{item_id}", response_model=OrderItem)
 def get_order_item_by_id(order_id: int, item_id: int, controller: OrderController = Depends(get_controller)):
     order_items = controller.get_order_items_by_order_id(order_id)
-    if isinstance(order_items, list):
-        for item in order_items:
-            if isinstance(item, dict) and item.get("item_id") == item_id:
-                return item
+    
+    for item in order_items:
+        if(item.get("item_id") == item_id):
+            return item
+        
     raise HTTPException(status_code=404, detail="Order item not found")
+
+@router.get("/{order_id}/review", response_model=Optional[Review])
+def get_review_by_order_id(order_id: int, controller: OrderController = Depends(get_controller)):
+    return controller.get_review_by_order_id(order_id)
+
+@router.post("/{order_id}/review", response_model=Review)
+def add_review_to_order(order_id: int, review: ReviewCreate, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
+    added_review = controller.add_review_to_order(order_id=order_id, review=review)
+    return added_review
+
+@router.delete("/{order_id}/review", response_model=Review)
+def delete_review_from_order(order_id: int, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER, Role.ADMIN))):
+    deleted_review = controller.delete_review_from_order(order_id)
+    return deleted_review
+
+@router.put("/{order_id}/review", response_model=Review)
+def update_review_from_order(order_id: int, review: ReviewCreate, controller: OrderController = Depends(get_controller), current_user: dict = Depends(requires_role(Role.CUSTOMER))):
+    updated_review = controller.update_review_from_order(order_id, review)
+    return updated_review

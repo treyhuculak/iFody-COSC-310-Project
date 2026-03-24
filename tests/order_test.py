@@ -3,8 +3,6 @@ import pytest
 from fastapi.testclient import TestClient
 from src.backend.main import app
 from src.backend.routers.orders import get_controller
-from src.backend.repositories.order_repo import OrderRepository
-from src.backend.controllers.order_controller import OrderController
 from src.backend.models.order import OrderStatus, OrderLocation
 
 
@@ -24,13 +22,23 @@ new_order_2 = {
     "status": OrderStatus.PREPARING_ORDER.value,
     "location": OrderLocation.BRITISH_COLUMBIA.value,
     "order_items": [
-        {"item_id": 101, "quantity": 2, "price_at_purchase": 5.0}
+        {"item_id": 101, "quantity": 2, "price_at_purchase": 5.0},
+        {"item_id": 102, "quantity": 1, "price_at_purchase": 6.0}
     ]
 }
 
 new_order_3 = {
     "customer_id": 1,
     "restaurant_id": 2,
+    "status": OrderStatus.OUT_FOR_DELIVERY.value,
+    "location": OrderLocation.BRITISH_COLUMBIA.value,
+    "order_items": [
+        {"item_id": 101, "quantity": 2, "price_at_purchase": 5.0}
+    ]
+}
+
+invalid_order = {
+    "customer_id": 1,
     "status": OrderStatus.OUT_FOR_DELIVERY.value,
     "location": OrderLocation.BRITISH_COLUMBIA.value,
     "order_items": [
@@ -46,6 +54,12 @@ def test_add_order(test_client):
     assert data["customer_id"] == 1
     assert len(data["order_items"]) == 1
     assert data["order_items"][0]["item_id"] == 101
+
+
+def test_add_invalid_order(test_client):
+    # The controller should return an error dict, which the router translates to a 422 response due to Pydantic validation failure
+    response = test_client.post("/orders/", json=invalid_order) 
+    assert response.status_code == 422
 
 def test_delete_order(test_client):
     response = test_client.post("/orders/", json=new_order)
@@ -87,6 +101,31 @@ def test_delete_order_out_for_delivery(test_client):
     delete_response = test_client.delete(f"/orders/{order_id}")
     assert delete_response.status_code == 403
 
+def test_get_order(test_client):
+    response = test_client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+
+    order_id = response.json()["id"]
+
+    # Fetching the order from the DB
+    get_response = test_client.get(f"/orders/{order_id}")
+    assert get_response.status_code == 200
+
+    data = get_response.json()
+    assert data["customer_id"] == 1
+    assert len(data["order_items"]) == 1
+    assert data["order_items"][0]["item_id"] == 101
+
+def test_non_existing_order(test_client):
+    response = test_client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+
+    order_id = 999
+
+    # Fetching the order from the DB
+    get_response = test_client.get(f"/orders/{order_id}")
+    assert get_response.status_code == 404
+
     '''
     Order item tests:
     '''
@@ -98,8 +137,39 @@ menu_item = {
         "id": 0
     }
 
+invalid_menu_item = {
+        "name": "Test Menu Item"
+    }
+
+
+def test_get_order_item_by_order_item_id(test_client):
+    # First add an order with an order item to ensure there is something to retrieve
+    response = test_client.post("/orders/", json=new_order_2)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+    item_id = response.json()["order_items"][0]["item_id"]
+
+    # Now try to retrieve order item for that order based on item_id
+    get_response = test_client.get(f"/orders/{order_id}/items/{item_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["item_id"] == item_id
+    assert data["quantity"] == 2
+    assert data["price_at_purchase"] == 5.0
+
+def test_get_order_item_by_invalid_order_item_id(test_client):
+    # First add an order with an order item to ensure there is something to retrieve
+    response = test_client.post("/orders/", json=new_order_2)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+    item_id = 999
+
+    # Now try to retrieve order item for that order based on item_id
+    get_response = test_client.get(f"/orders/{order_id}/items/{item_id}")
+    assert get_response.status_code == 404
+
 def test_get_order_items_by_order_id(test_client):
-    # First add an order and an order item to ensure there is something to retrieve
+    # First add an order with order items to ensure there is something to retrieve
     response = test_client.post("/orders/", json=new_order_2)
     assert response.status_code == 200
     order_id = response.json()["id"]
@@ -109,8 +179,19 @@ def test_get_order_items_by_order_id(test_client):
     assert get_response.status_code == 200
     data = get_response.json()
     assert isinstance(data, list)
-    assert len(data) == 1
+    assert len(data) == 2
     assert data[0]["item_id"] == 101
+    assert data[1]["item_id"] == 102
+
+def test_get_order_items_by_invalid_order_id(test_client):
+    # First add an order with order items to ensure there is something to retrieve
+    response = test_client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = 999
+
+    # Now try to retrieve order items for that order, should give 404 since no order id == 999 should be found
+    get_response = test_client.get(f"/orders/{order_id}/items")
+    assert get_response.status_code == 404
 
 def test_add_order_item_to_order(test_client):
     # First add an order to ensure there is something to add an order item to
@@ -133,6 +214,26 @@ def test_add_order_item_to_order(test_client):
     assert order_data["order_items"][1]["quantity"] == 2
     assert order_data["order_items"][1]["price_at_purchase"] == menu_item["price"]
 
+def test_add_order_item_to_invalid_order(test_client):
+    # First add an order to ensure there is something to add an order item to
+    response = test_client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = 999
+
+    # It should receive a 404 since no order should exist with order id == 999
+    add_response = test_client.post(f"/orders/{order_id}/items", params={"quantity": 1}, json=menu_item)
+    assert add_response.status_code == 404
+
+def test_add_invalid_order_item_to_order(test_client):
+    # First add an order to ensure there is something to add an order item to
+    response = test_client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+
+    # The controller should return an error dict, which the router translates to a 422 response due to Pydantic validation failure
+    add_response = test_client.post(f"/orders/{order_id}/items", params={"quantity": 1}, json=invalid_menu_item)
+    assert add_response.status_code == 422
+
 def test_delete_order_item_from_order(test_client):
     # First add an order and an order item to ensure there is something to delete
     response = test_client.post("/orders/", json=new_order)
@@ -151,6 +252,19 @@ def test_delete_order_item_from_order(test_client):
     get_response = test_client.get(f"/orders/{order_id}/items/{item_id}")
     assert get_response.status_code == 404
 
+def test_delete_invalid_order_item_id_from_order(test_client):
+    # First add an order and an order item to ensure there is something to delete
+    response = test_client.post("/orders/", json=new_order)
+    assert response.status_code == 200
+    order_id = response.json()["id"]
+
+    item_id = 999
+
+    # Should give 404 since no order item with that id exists in order
+    delete_response = test_client.delete(f"/orders/{order_id}/items/{item_id}")
+    assert delete_response.status_code == 404
+
+# Equivalent of testing adding and deleting items to an existing order 
 def test_update_order_item_from_order(test_client):
     # First add an order and an order item to ensure there is something to update
     response = test_client.post("/orders/", json=new_order)
@@ -185,6 +299,7 @@ def test_update_order_item_from_order(test_client):
     assert deleted_data["item_id"] == menu_item["id"]
     assert deleted_data["quantity"] == 1
 
+# Equivalent of testing deleting items to an out for delivery order 
 def test_update_order_item_from_order_out_for_delivery(test_client):
     # First add an order and an order item to ensure there is something to update
     response = test_client.post("/orders/", json=new_order_3)

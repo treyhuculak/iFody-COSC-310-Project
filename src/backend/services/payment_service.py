@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from fastapi import HTTPException
-from src.backend.models.card_payment import CardPaymentCreate, CardPaymentBrand, CardPaymentResponse
+from src.backend.models.card_payment import CardPaymentCreate, CardPaymentBrand
 
 '''
 This service will handle all the business logic related to payment, such as validating card input. It will interact with the PaymentController for data consistency.
