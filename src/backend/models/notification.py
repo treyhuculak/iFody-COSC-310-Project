@@ -10,6 +10,8 @@ class NotificationType(Enum):
     PAYMENT_FAILED = "payment failed"
     ORDER_IN_PROGRESS = "order in progress"
     NEW_ORDER_RECEIVED = "new order received"
+    ORDER_FAILED = "order has failed to complete"
+    NEW_ITEM_ADDED = "new item has been added to order"
 
 class NotificationBase(BaseModel):
     user_id: int

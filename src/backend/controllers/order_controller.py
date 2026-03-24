@@ -14,7 +14,6 @@ from src.backend.controllers.notification_controller import NotificationControll
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
-
 class OrderController:
     def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
         self.order_repo = repo or OrderRepository()
@@ -143,7 +142,6 @@ class OrderController:
                     is_read = False
                 )
                 self.notif_controller.create_notif(manager_notification)
-
             
             return updated_order
         
@@ -214,6 +212,3 @@ class OrderController:
         review_data = review.model_dump()
         updated_review = self.order_repo.update_review_from_order(order_id, review_data)
         return Review(**updated_review)
-
-
-
