@@ -139,7 +139,7 @@ def test_client(tmp_path):
     client = TestClient(app) #simulates HTTP requests
     client.headers.update({"X-User-Id": "1"}) #Adds header defining User's Id to 1 for auth
 
-    yield client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller
+    yield client, temp_notif_db, transaction_controller, test_payment_controller
 
     #restores everything after test finishes
     auth_dependencies.repo = original_repo
@@ -147,7 +147,7 @@ def test_client(tmp_path):
 
 
 def test_add_order_notifications(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1,
         "restaurant_id": 1,
@@ -167,7 +167,7 @@ def test_add_order_notifications(test_client):
     order_id = response.json()["id"]
 
 def test_delete_notifications_pendingstatus(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1,
         "restaurant_id": 1,
@@ -196,7 +196,7 @@ def test_delete_notifications_pendingstatus(test_client):
     
 
 def test_delete_notifications_preparingstatus(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
 
     new_order = {
         "customer_id": 1,
@@ -222,7 +222,7 @@ def test_delete_notifications_preparingstatus(test_client):
     assert notifications[3] ["is_read"] == False
 
 def test_notification_update_order_status(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1,
         "restaurant_id": 1,
@@ -254,7 +254,7 @@ def test_notification_update_order_status(test_client):
 
     
 def test_notification_new_item_added(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -286,7 +286,7 @@ def test_notification_new_item_added(test_client):
     assert notifications[2] ["is_read"] == False
 
 def test_successful_cash_transaction_notif(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -317,7 +317,7 @@ def test_successful_cash_transaction_notif(test_client):
 
 
 def test_successful_card_transaction_notif(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -346,8 +346,8 @@ def test_successful_card_transaction_notif(test_client):
     assert notifications[2] ["is_read"] == False
     assert notifications[2] ["message"] == "Your card payment for order 1 was successful"
 
-def test_unsuccessful_cash_transaction_notif(test_client):
-    client, temp_notif_db, transaction_controller, test_payment_controller, test_auth_controller = test_client
+def test_unsuccessful_transaction_notif(test_client):
+    client, temp_notif_db, transaction_controller, test_payment_controller = test_client
     new_order = {
         "customer_id": 1, 
         "restaurant_id": 1,
@@ -372,3 +372,4 @@ def test_unsuccessful_cash_transaction_notif(test_client):
     assert notifications[2] ["user_id"] == 1
     assert notifications[2] ["type"] == NotificationType.PAYMENT_FAILED.value
     assert notifications[2] ["is_read"] == False
+    assert notifications[2] ["message"] == "Your payment for order 1 has been declined"
