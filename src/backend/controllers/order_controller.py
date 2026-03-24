@@ -91,7 +91,7 @@ class OrderController:
                 new_status = OrderStatus.PAYMENT_FAILED
         # Since new_status is Out_for_delivery
         elif(order['status'] == OrderStatus.PREPARING_ORDER.value):
-            delivery = DeliveryCreate(order_id)
+            delivery = DeliveryCreate(order_id=order_id)
             self.delivery_controller.create_delivery(delivery)
         # Since new_status is Delivered
         elif(order['status'] == OrderStatus.OUT_FOR_DELIVERY.value):
