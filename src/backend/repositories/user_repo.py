@@ -48,9 +48,9 @@ class UserRepository:
             else:
                 return None
             
-    def ban_user(self, username: str = "") -> dict | None:
+    def block_user(self, username: str = "") -> dict | None:
         '''
-        Bans a User instance from the database based on the given username.
+        Blocks a User instance from the database based on the given username.
         '''
         with open(self.file, "r") as file:
             users = json.load(file)['Users']
@@ -58,16 +58,16 @@ class UserRepository:
             for i in range(length):
                 if users[i]['username'] == username:
                     users[i]["is_blocked"] = True
-                    banned = users[i]
+                    blocked = users[i]
                     with open(self.file, "w") as file:
                         json.dump({"Users": users}, file, indent = 4)
-                        return banned
+                        return blocked
             else:
                 return None
             
-    def unban_user(self, username: str = "") -> dict | None:
+    def unblock_user(self, username: str = "") -> dict | None:
         '''
-        Unbans a User instance from the database based on the given username.
+        Unblocks a User instance from the database based on the given username.
         '''
         with open(self.file, "r") as file:
             users = json.load(file)['Users']
@@ -75,10 +75,10 @@ class UserRepository:
             for i in range(length):
                 if users[i]['username'] == username:
                     users[i]["is_blocked"] = False
-                    banned = users[i]
+                    unblocked = users[i]
                     with open(self.file, "w") as file:
                         json.dump({"Users": users}, file, indent = 4)
-                        return banned
+                        return unblocked
             else:
                 return None
     

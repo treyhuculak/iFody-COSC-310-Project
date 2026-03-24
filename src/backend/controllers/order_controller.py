@@ -11,6 +11,7 @@ from src.backend.services.order_service import OrderService
 from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.review import Review, ReviewCreate
+from src.backend.models.user import Role
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
@@ -84,8 +85,12 @@ class OrderController:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
         
-    def delete_order(self, order_id: int):
+    def delete_order(self, order_id: int, user_id: int, user_role: Role):
         order = self.get_order(order_id)
+
+        if(order["customer_id"] != user_id and user_role != Role.ADMIN):
+            raise HTTPException(status_code=403, detail="You can only cancel your own orders")
+
         if (order["status"] == OrderStatus.PENDING.value or order["status"] == OrderStatus.AWAITING_PAYMENT.value or order["status"] == OrderStatus.PAYMENT_FAILED.value):
             rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
             owner_id = rest_id["owner_id"]
@@ -212,8 +217,11 @@ class OrderController:
     The idea here is that we pass the whole menu item and we create an order item from that menu item (basically so they have the same id - easier to recognize same items that way)
     Inside the repo we assign the item price/subtotal and the order id itself.
     '''
-    def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int):
+    def add_order_item_to_order(self, menu_item: MenuItem, order_id: int, quantity: int, user_id: int, user_role: Role):
         order = self.get_order(order_id)
+
+        if (order["customer_id"] != user_id and user_role != Role.ADMIN):
+            raise HTTPException(status_code=403, detail="You can only modify your own orders")
         # Checking if order should be able to be modified or not
         if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
 
@@ -241,9 +249,13 @@ class OrderController:
         else:
             raise HTTPException(status_code=403, detail="Order already heading to you, it cannot be modified")
         
-    def delete_order_item_from_order(self, order_id: int, order_item_id: int):
+    def delete_order_item_from_order(self, order_id: int, order_item_id: int, user_id: int, user_role: Role):
         order = self.get_order(order_id)
 
+        # Check if user owns the order
+        if(order["customer_id"] != user_id and user_role != Role.ADMIN):
+            raise HTTPException(status_code=403, detail="You can only modify your own orders")
+        
         # Checking if order should be able to be modified or not
         if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
             deleted_item = self.order_repo.delete_order_item_from_order(order_id, order_item_id)

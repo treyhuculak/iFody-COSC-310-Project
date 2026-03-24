@@ -71,21 +71,21 @@ def test_del_user_with_valid_username(setup_user_db) -> None:
     repo.del_user("TestCustomerNum2")
     assert len(repo.get_all_users()) == 0
 
-def test_ban_user_with_invalid_username(setup_user_db) -> None:
+def test_block_user_with_invalid_username(setup_user_db) -> None:
     '''
-    Tests the ban_user function using invalid usernames.
+    Tests the block_user function using invalid usernames.
     '''
-    assert repo.ban_user("") == None
-    assert repo.ban_user("GuguGaga") == None
+    assert repo.block_user("") == None
+    assert repo.block_user("GuguGaga") == None
 
-def test_ban_user_with_valid_username(setup_user_db) -> None:
+def test_block_user_with_valid_username(setup_user_db) -> None:
     '''
-    Tests the ban_user function using a valid username.
+    Tests the block_user function using a valid username.
     '''
-    banned = repo.ban_user(user_example["username"])
-    assert banned != None
-    assert banned["is_blocked"]
-    assert banned == {
+    blocked = repo.block_user(user_example["username"])
+    assert blocked != None
+    assert blocked["is_blocked"]
+    assert blocked == {
         "id": 1,
         "username": "TestCustomer",
         "email": "testcustomer@123.com",
@@ -95,22 +95,22 @@ def test_ban_user_with_valid_username(setup_user_db) -> None:
         "is_blocked": True
     }
 
-def test_unban_user_with_invalid_username(setup_user_db) -> None:
+def test_unblock_user_with_invalid_username(setup_user_db) -> None:
     '''
-    Tests the unban_user function using invalid usernames.
+    Tests the unblock_user function using invalid usernames.
     '''
-    banned = repo.ban_user(user_example["username"])
-    repo.unban_user("")
-    assert banned["is_blocked"]
-    repo.unban_user("123456")
-    assert banned["is_blocked"]
+    blocked = repo.block_user(user_example["username"])
+    repo.unblock_user("")
+    assert blocked["is_blocked"]
+    repo.unblock_user("123456")
+    assert blocked["is_blocked"]
 
-def test_unban_user_with_valid_username(setup_user_db) -> None:
+def test_unblock_user_with_valid_username(setup_user_db) -> None:
     '''
-    Tests the unban_user function using a valid username.
+    Tests the unblock_user function using a valid username.
     '''
-    banned = repo.ban_user(user_example["username"])
-    assert banned["is_blocked"]
+    blocked = repo.block_user(user_example["username"])
+    assert blocked["is_blocked"]
     assert repo.get_all_users() == [
         {
             "id": 1,
@@ -122,8 +122,8 @@ def test_unban_user_with_valid_username(setup_user_db) -> None:
             "is_blocked": True
         }
     ]
-    unbanned = repo.unban_user(user_example["username"])
-    assert not unbanned["is_blocked"]
+    unblocked = repo.unblock_user(user_example["username"])
+    assert not unblocked["is_blocked"]
     assert repo.get_all_users() == [
         {
             "id": 1,

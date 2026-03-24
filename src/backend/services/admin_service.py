@@ -29,13 +29,13 @@ class AdminService:
         '''
         A wrapper function for ban_user that blocks a user based on the username.
         '''
-        return self.user_repo.ban_user(username)
+        return self.user_repo.block_user(username)
     
     def unblock_user(self, username: str) -> Union[dict, None]:
         '''
         A wrapper function for unban_user that unblocks a user based on the username.
         '''
-        return self.user_repo.unban_user(username)
+        return self.user_repo.unblock_user(username)
 
     def get_all_orders(self) -> list[dict]:
         '''
