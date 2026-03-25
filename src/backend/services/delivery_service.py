@@ -12,8 +12,8 @@ class DeliveryService:
 
     def assign_delivery_driver(self, delivery_data: dict) -> bool:
         flag = True
-        estimated_delivery_tume_str = delivery_data["estimated_delivery_time"]
-        edt = datetime.fromisoformat(estimated_delivery_tume_str)
+        estimated_delivery_time_str = delivery_data["estimated_delivery_time"]
+        edt = datetime.fromisoformat(estimated_delivery_time_str)
         if(edt > datetime.now() + timedelta(minutes = 60)):
             flag = False
         else:

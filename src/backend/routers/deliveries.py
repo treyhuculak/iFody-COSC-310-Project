@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Optional
+from fastapi import APIRouter, Depends
 from src.backend.controllers.delivery_controller import DeliveryController
 from src.backend.models.delivery import DeliveryCreate, Delivery
 

@@ -1,5 +1,4 @@
 from typing import Optional
-from datetime import datetime
 from fastapi import HTTPException
 
 from src.backend.models.delivery import DeliveryCreate
@@ -17,8 +16,8 @@ class DeliveryController:
         try:
             # Now serialize the delivery data for storage
             delivery_data = delivery.model_dump()
-            #order = self.order_repo.get_order_by_id(delivery_data["order_id"])
-            delivery_data["estimated_delivery_time"] = self.delivery_service.calculate_estimated_delivery_time("BC")#order["location"])
+            order = self.order_repo.get_order_by_id(delivery_data["order_id"])
+            delivery_data["estimated_delivery_time"] = self.delivery_service.calculate_estimated_delivery_time(order["location"])
             self.delivery_service.assign_delivery_driver(delivery_data)
 
             new_delivery = self.delivery_repo.create_delivery(delivery_data)
@@ -27,7 +26,7 @@ class DeliveryController:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            raise HTTPException(status_code=403, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e))
         
     def get_delivery(self, delivery_id: int):
         delivery = self.delivery_repo.get_delivery_by_id(delivery_id)

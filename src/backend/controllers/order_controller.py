@@ -141,25 +141,19 @@ class OrderController:
     def update_order_status(self, order_id: int, new_status: str, role: str, transaction_is_successful: Optional[bool] = None):
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
-        
-        # Getting order using order id
-        order = self.get_order(order_id)
-        delivery = DeliveryCreate(order_id=order_id)
-        self.delivery_controller.create_delivery(delivery)
 
         # Updating status according to if transaction is accepted or not
-        if(order['status'] == OrderStatus.AWAITING_PAYMENT.value):
+        if(new_status == OrderStatus.AWAITING_PAYMENT.value):
             if(transaction_is_successful != None and transaction_is_successful):
                 new_status = OrderStatus.PAYMENT_CONFIRMED
             else:
-                new_status = OrderStatus.PAYMENT_FAILED
-                
+                new_status = OrderStatus.PAYMENT_FAILED              
         # Since new_status is Out_for_delivery
-        elif(order['status'] == OrderStatus.PREPARING_ORDER.value):
+        elif(new_status == OrderStatus.OUT_FOR_DELIVERY.value):
             delivery = DeliveryCreate(order_id=order_id)
             self.delivery_controller.create_delivery(delivery)
         # Since new_status is Delivered
-        elif(order['status'] == OrderStatus.OUT_FOR_DELIVERY.value):
+        elif(new_status == OrderStatus.DELIVERED.value):
             delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
             self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now().isoformat())
             
@@ -237,9 +231,9 @@ class OrderController:
             # Creating order item based on menu item
             order_item = OrderItemCreate(item_id=menu_item.id, quantity=quantity)
             
-            # Note: Basic field validation (e.g., quantity > 0) is handled by the OrderItemCreate Pydantic model.
             order_item_data = order_item.model_dump()
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
+
             item_name = menu_item.name
             restaurant_id = order["restaurant_id"]
             restaurant = self.restaurant_repo.get_restaurant_by_id(restaurant_id)

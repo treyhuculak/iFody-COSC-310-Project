@@ -44,12 +44,12 @@ def test_client(tmp_path):
         "estimated_delivery_time": (datetime.now() + timedelta(minutes = 30)).isoformat(),
     }]))
 
-    shared_order_repo = OrderRepository(file_path=str(temp_order_db))
+    order_repo = OrderRepository(file_path=str(temp_order_db))
     delivery_repo = DeliveryRepository(file_path=str(temp_delivery_db))
 
-    delivery_controller = DeliveryController(order_repo=shared_order_repo, repo=delivery_repo)
-    order_controller = OrderController(repo=shared_order_repo, delivery_controller=delivery_controller)
+    delivery_controller = DeliveryController(repo=delivery_repo, order_repo=order_repo)
 
+    order_controller = OrderController(repo=order_repo, delivery_controller=delivery_controller)
 
     app.dependency_overrides[get_order_controller] = lambda: order_controller
     app.dependency_overrides[get_delivery_controller] = lambda: delivery_controller
@@ -94,14 +94,14 @@ def test_create_delivery(test_client):
     response = test_client.post("/deliveries/", json=delivery_payload)
     assert response.status_code == 200
 
-def test_delete_cash_payment_with_invalid_id(test_client):
+def test_delete_delivery_with_invalid_id(test_client):
     delivery_id = 999
 
     # Delete delivery should give 404 since no delivery exists with that delivery id
     delete_response = test_client.delete(f"/deliveries/{delivery_id}")
     assert delete_response.status_code == 404
 
-def test_delete_card_payment(test_client):
+def test_delete_delivery(test_client):
     delivery_id = 1
 
     # Delete delivery
@@ -185,8 +185,10 @@ def test_assign_delivery_driver_does_not_assign_when_over_60_minutes():
     assert "driver_id" not in delivery_data
     assert "assigned_at" not in delivery_data
 
+'''
+Integration test with order
+'''
 def test_order_to_delivery_integration(test_client):
-    # Step 1: create an order
     order_payload = {
         "customer_id": 1,
         "restaurant_id": 2,
@@ -195,27 +197,16 @@ def test_order_to_delivery_integration(test_client):
         "order_items": []
     }
 
-    create_order_response = test_client.post(
-        "/orders/",
-        json=order_payload,
-        headers={"X-User-Id": "1"}
-    )
+    create_order_response = test_client.post("/orders/", json=order_payload, headers={"X-User-Id": "1"})
     assert create_order_response.status_code == 200
 
     order_id = create_order_response.json()["id"]
 
-    # Step 2: move order to out for delivery
-    update_response = test_client.put(
-        f"/orders/{order_id}/status",
-        params={
-            "new_status": OrderStatus.OUT_FOR_DELIVERY.value,
-            "role": "manager"
-        }
-    )
-    print(update_response.json())
+    # Updating order status and creating delivery
+    update_response = test_client.put(f"/orders/{order_id}/status", params={"new_status": OrderStatus.OUT_FOR_DELIVERY.value, "role": "manager"})
     assert update_response.status_code == 200
 
-    # Step 3: verify delivery was created
+    # Ensuring the delivery is there
     delivery_response = test_client.get(f"/deliveries/order/{order_id}")
     assert delivery_response.status_code == 200
 
@@ -226,17 +217,11 @@ def test_order_to_delivery_integration(test_client):
     assert delivery_data["estimated_delivery_time"] is not None
     assert delivery_data["delivered_at"] is None
 
-    # Step 4: move order to delivered
-    delivered_response = test_client.put(
-        f"/orders/{order_id}/status",
-        params={
-            "new_status": OrderStatus.DELIVERED.value,
-            "role": "manager"
-        }
-    )
+    # Updating order so arrive_at variable from delivery is assigned a value
+    delivered_response = test_client.put(f"/orders/{order_id}/status", params={"new_status": OrderStatus.DELIVERED.value, "role": "manager"})
     assert delivered_response.status_code == 200
 
-    # Step 5: verify delivery got delivered_at
+    # Getting the updated delivery and ensuring arrived_at is there
     updated_delivery_response = test_client.get(f"/deliveries/order/{order_id}")
     assert updated_delivery_response.status_code == 200
 
