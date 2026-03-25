@@ -144,6 +144,9 @@ class OrderController:
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
 
+        # Getting order from order_id
+        order = self.get_order(order_id)
+
         # Updating status according to if transaction is accepted or not
         if(new_status == OrderStatus.AWAITING_PAYMENT.value):
             if(transaction_is_successful != None and transaction_is_successful):
