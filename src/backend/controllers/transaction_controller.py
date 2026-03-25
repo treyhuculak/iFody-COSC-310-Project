@@ -12,7 +12,13 @@ from src.backend.controllers.notification_controller import NotificationControll
 from src.backend.repositories.notification_repo import NotificationRepository
 
 class TransactionController:
-    def __init__(self, payment_repo: Optional[PaymentRepository] = None, repo: Optional[TransactionRepository] = None, notif_controller: Optional[NotificationController] = None) -> None:
+    def __init__(
+            self, 
+            payment_repo: Optional[PaymentRepository] = None, 
+            repo: Optional[TransactionRepository] = None, 
+            notif_controller: Optional[NotificationController] = None
+        ) -> None:
+        
         self.payment_repo = payment_repo or PaymentRepository()
         self.transaction_repo = repo or TransactionRepository()
         self.notif_controller = notif_controller or NotificationController()
@@ -82,7 +88,6 @@ class TransactionController:
                         order_id = transaction_info['order_id']
                     )
                     self.notif_controller.create_notif(unsuccessful_payment_notif)
-                    raise ValueError("Payment was declined.")
                 
             transaction_info['user_id'] = payment['user_id']
                 

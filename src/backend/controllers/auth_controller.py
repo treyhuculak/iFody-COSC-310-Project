@@ -2,6 +2,8 @@ from typing import Optional, Union
 
 from fastapi import HTTPException
 from src.backend.models.user import UserSave, Role
+from src.backend.models.notification import NotificationType, NotificationCreate
+from src.backend.controllers.notification_controller import NotificationController
 from src.backend.repositories.user_repo import UserRepository
 from src.backend.services.admin_service import AdminService
 
@@ -21,7 +23,8 @@ class AuthController:
     def __init__(
             self,
             repo: Optional[UserRepository] = None,
-            service: Optional[AdminService] = None
+            service: Optional[AdminService] = None,
+            notif_controller: Optional[NotificationController] = None
         ) -> None:
         '''
         Initializes the AuthController class with the necessary fields.
@@ -30,6 +33,8 @@ class AuthController:
         self.cur_user = None
         self.repo = repo or UserRepository()
         self.service = service or AdminService()
+        self.notif_controller = notif_controller or NotificationController()
+
 
     def register(self, username: str, email: str, password: str, role: Role):
         '''
@@ -40,7 +45,13 @@ class AuthController:
         emails = [user["email"] for user in users]
         if (username in usernames) or (email in emails):
             raise AccountExistsException("The account already exists. Try logging in to the account.")
-        new_user = UserSave(id = 1, username = username, email = email, password = password, role = role)
+        new_user = UserSave(
+            id = 1,
+            username = username,
+            email = email, 
+            password = password, 
+            role = role
+        )
         user_dict = new_user.model_dump()
         if hasattr(user_dict['role'], 'value'):
             user_dict['role'] = user_dict['role'].value
@@ -88,6 +99,18 @@ class AuthController:
         '''
         if self.cur_user:
             if self.cur_user["role"] == Role.ADMIN.value:
+                blocked_customer = self.repo.get_user_by_username(username)
+                if blocked_customer == None:
+                    return None
+                blocked_customer_id = blocked_customer["id"]
+                blocked_notif = NotificationCreate(
+                    user_id = blocked_customer_id,
+                    type = NotificationType.BLOCKED_ACCOUNT,
+                    title = "Account has been blocked",
+                    message = "Your account has been blocked by the administrator",
+                    is_read = False,
+                )
+                self.notif_controller.create_notif(blocked_notif)
                 return self.service.block_user(username)
             else:
                 raise HTTPException(status_code = 403, detail = "Only administrators can block accounts.")
@@ -100,6 +123,18 @@ class AuthController:
         '''
         if self.cur_user:
             if self.cur_user["role"] == Role.ADMIN.value:
+                unblocked_customer = self.repo.get_user_by_username(username)
+                if unblocked_customer == None:
+                    return None
+                unblocked_customer_id = unblocked_customer["id"]
+                unblocked_notif = NotificationCreate(
+                    user_id = unblocked_customer_id,
+                    type = NotificationType.UNBLOCKED_ACCOUNT,
+                    title = "Account has been unblocked",
+                    message = f"Your account has been unblocked by the administrator",
+                    is_read = False,
+                )
+                self.notif_controller.create_notif(unblocked_notif)
                 return self.service.unblock_user(username)
             else:
                 raise HTTPException(status_code = 403, detail = "Only administrators can unblock accounts.")
