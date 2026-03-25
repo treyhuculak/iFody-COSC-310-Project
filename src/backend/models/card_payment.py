@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from src.backend.models.payment import Payment, PaymentCreate
 
 from enum import Enum
