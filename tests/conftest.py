@@ -68,6 +68,15 @@ def test_client(tmp_path):
                 "role": "restaurant owner",
                 "is_logged_in": False,
                 "is_blocked": False
+            },
+            {
+                "id": 5,
+                "username": "TestAdmin",
+                "email": "testadmin@123.com",
+                "password": "Test@123",
+                "role": "administrator",
+                "is_logged_in": False,
+                "is_blocked": False
             }
 
         ]
