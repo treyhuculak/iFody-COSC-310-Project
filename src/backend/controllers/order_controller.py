@@ -28,6 +28,11 @@ class OrderController:
         self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
 
+    def _get_owner_id(self, restaurant_id: int) -> int:
+        restaurant_info = self.restaurant_repo.get_restaurant_by_id(restaurant_id)
+        owner_id = restaurant_info["owner_id"]
+        return owner_id
+
     def add_order(self, order: OrderCreate):
         try:
             # Calculate totals first using the original order with Enum objects
@@ -51,27 +56,26 @@ class OrderController:
             restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
             restaurant_name = restaurant["name"]
             order_id = new_order["id"]
-            if restaurant:
-                owner_id = restaurant["owner_id"]
-                manager_notification = NotificationCreate(
-                    user_id= owner_id,
-                    type= NotificationType.NEW_ORDER_RECEIVED,
-                    title= "New Order Received",
-                    message= f"A new order with id {order_id} has been received.",
-                    is_read = False,
-                    order_id = order_id
-                )
-                self.notif_controller.create_notif(manager_notification)
+            owner_id = self._get_owner_id(new_order["restaurant_id"])
+            manager_notification = NotificationCreate(
+                user_id= owner_id,
+                type= NotificationType.NEW_ORDER_RECEIVED,
+                title= "New Order Received",
+                message= f"A new order with id {order_id} has been received.",
+                is_read = False,
+                order_id = order_id
+            )
+            self.notif_controller.create_notif(manager_notification)
 
-                customer_notif = NotificationCreate(
-                    user_id = customer_id,
-                    type = NotificationType.NEW_ORDER_RECEIVED,
-                    title = "Order Confirmed",
-                    message = f"Your order at {restaurant_name} has been received, and is awaiting payment",
-                    is_read = False,
-                    order_id = new_order["id"]
-                )
-                self.notif_controller.create_notif(customer_notif)
+            customer_notif = NotificationCreate(
+                user_id = customer_id,
+                type = NotificationType.NEW_ORDER_RECEIVED,
+                title = "Order Confirmed",
+                message = f"Your order at {restaurant_name} has been received, and is awaiting payment",
+                is_read = False,
+                order_id = new_order["id"]
+            )
+            self.notif_controller.create_notif(customer_notif)
             return new_order
             
         except ValueError as e:
@@ -92,8 +96,7 @@ class OrderController:
             raise HTTPException(status_code=403, detail="You can only cancel your own orders")
 
         if (order["status"] == OrderStatus.PENDING.value or order["status"] == OrderStatus.AWAITING_PAYMENT.value or order["status"] == OrderStatus.PAYMENT_FAILED.value):
-            rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
-            owner_id = rest_id["owner_id"]
+            owner_id = self._get_owner_id(order["restaurant_id"])
             manager_deleted_order_notif = NotificationCreate(
                 user_id = owner_id,
                 type = NotificationType.ORDER_CANCELLED,
@@ -115,8 +118,7 @@ class OrderController:
             return self.order_repo.delete_order(order_id)
 
         elif(order["status"] == OrderStatus.PAYMENT_CONFIRMED.value or order["status"] == OrderStatus.PREPARING_ORDER.value):
-            rest_id = self.restaurant_repo.get_restaurant_by_id(order["restaurant_id"])
-            owner_id = rest_id["owner_id"]
+            owner_id = self._get_owner_id(order["restaurant_id"])
             manager_deleted_order_notif = NotificationCreate(
                 user_id = owner_id,
                 type = NotificationType.ORDER_CANCELLED,
@@ -193,8 +195,7 @@ class OrderController:
 
             if status_enum in manager_status_map:
                 notif_type, title, message = manager_status_map[status_enum]
-                restaurant = self.restaurant_repo.get_restaurant_by_id(updated_order["restaurant_id"])
-                owner_id = restaurant["owner_id"]
+                owner_id = self._get_owner_id(order["restaurant_id"])
                 manager_notification = NotificationCreate(
                     user_id = owner_id,
                     type = notif_type,
@@ -222,19 +223,14 @@ class OrderController:
 
         if (order["customer_id"] != user_id and user_role != Role.ADMIN):
             raise HTTPException(status_code=403, detail="You can only modify your own orders")
-        # Checking if order should be able to be modified or not
         if not (order["status"] == OrderStatus.OUT_FOR_DELIVERY.value or order["status"] == OrderStatus.DELIVERED.value):
 
-            # Creating order item based on menu item
             order_item = OrderItemCreate(item_id=menu_item.id, quantity=quantity)
             
-            # Note: Basic field validation (e.g., quantity > 0) is handled by the OrderItemCreate Pydantic model.
             order_item_data = order_item.model_dump()
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
             item_name = menu_item.name
-            restaurant_id = order["restaurant_id"]
-            restaurant = self.restaurant_repo.get_restaurant_by_id(restaurant_id)
-            owner_id = restaurant["owner_id"]
+            owner_id = self._get_owner_id(order["restaurant_id"])
             added_item_manager_notif = NotificationCreate(
                 user_id = owner_id,
                 type = NotificationType.NEW_ITEM_ADDED,
