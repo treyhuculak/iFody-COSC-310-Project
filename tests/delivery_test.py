@@ -23,7 +23,8 @@ def test_client(tmp_path):
     temp_order_db = tmp_path / "test_order.json"
     temp_delivery_db = tmp_path / "test_delivery.json"
 
-    temp_order_db.write_text(json.dumps([{
+
+    sample_order = {
         "id": 1,
         "customer_id": 1,
         "restaurant_id": 2,
@@ -35,14 +36,18 @@ def test_client(tmp_path):
         "total_price": 12.0,
         "tax": 2.0,
         "delivery_fee": 0.0
-    }]))
-    temp_delivery_db.write_text(json.dumps([{
+    }
+
+    sample_delivery = {
         "id": 1,
         "order_id": 1,
         "driver_id": 1,
         "assigned_at": datetime.now().isoformat(),
         "estimated_delivery_time": (datetime.now() + timedelta(minutes = 30)).isoformat(),
-    }]))
+    }
+    
+    temp_order_db.write_text(json.dumps([sample_order]))
+    temp_delivery_db.write_text(json.dumps([sample_delivery]))
 
     shared_order_repo = OrderRepository(file_path=str(temp_order_db))
     delivery_repo = DeliveryRepository(file_path=str(temp_delivery_db))
@@ -58,7 +63,7 @@ def test_client(tmp_path):
 
     app.dependency_overrides.clear()
 
-delivery_service = DeliveryService()
+test_delivery_service = DeliveryService()
 
 def test_get_delivery(test_client):
     delivery_id = 1
@@ -93,21 +98,21 @@ def test_create_delivery(test_client):
     response = test_client.post("/deliveries/", json=delivery_payload)
     assert response.status_code == 200
 
-def test_delete_cash_payment_with_invalid_id(test_client):
+def test_delete_delivery_with_invalid_id(test_client):
     delivery_id = 999
 
     # Delete delivery should give 404 since no delivery exists with that delivery id
     delete_response = test_client.delete(f"/deliveries/{delivery_id}")
     assert delete_response.status_code == 404
 
-def test_delete_card_payment(test_client):
+def test_delete_delivery(test_client):
     delivery_id = 1
 
     # Delete delivery
     delete_response = test_client.delete(f"/deliveries/{delivery_id}")
     assert delete_response.status_code == 200
 
-    # After deletion, trying to get the payment method should return a 404
+    # After deletion, trying to get the delivery should return a 404
     get_response = test_client.get(f"/deliveries/{delivery_id}")
     assert get_response.status_code == 404
 
@@ -119,7 +124,7 @@ def test_assign_delivered_at_time(test_client):
     update_response = test_client.put(f"/deliveries/{delivery_id}/{time}")
     assert update_response.status_code == 200
 
-    # Now try to retrieve the active payment method
+    # Now try to retrieve the updated delivery
     get_response = test_client.get(f"/deliveries/{delivery_id}")
     assert get_response.status_code == 200
     data = get_response.json()
@@ -145,7 +150,7 @@ def test_get_delivery_by_invalid_order_id(test_client):
 def test_calculate_estimated_delivery_time_bc():
     # This way we ensure a correct behavior even if a few ms has passed in between the calls
     before = datetime.now()
-    result = delivery_service.calculate_estimated_delivery_time(OrderLocation.BRITISH_COLUMBIA.value)
+    result = test_delivery_service.calculate_estimated_delivery_time(OrderLocation.BRITISH_COLUMBIA.value)
     after = datetime.now()
 
     result_dt = datetime.fromisoformat(result)
@@ -155,7 +160,7 @@ def test_calculate_estimated_delivery_time_bc():
 def test_calculate_estimated_delivery_time_other_location():
     # This way we ensure a correct behavior even if a few ms has passed in between the calls
     before = datetime.now()
-    result = delivery_service.calculate_estimated_delivery_time(OrderLocation.ALBERTA.value)
+    result = test_delivery_service.calculate_estimated_delivery_time(OrderLocation.ALBERTA.value)
     after = datetime.now()
 
     result_dt = datetime.fromisoformat(result)
@@ -167,7 +172,7 @@ def test_assign_delivery_driver_assigns_driver_when_under_60_minutes():
         "estimated_delivery_time": (datetime.now() + timedelta(minutes=30)).isoformat()
     }
 
-    result = delivery_service.assign_delivery_driver(delivery_data)
+    result = test_delivery_service.assign_delivery_driver(delivery_data)
 
     assert result is True
     assert delivery_data["driver_id"] == 1
@@ -178,7 +183,7 @@ def test_assign_delivery_driver_does_not_assign_when_over_60_minutes():
         "estimated_delivery_time": (datetime.now() + timedelta(minutes=90)).isoformat()
     }
 
-    result = delivery_service.assign_delivery_driver(delivery_data)
+    result = test_delivery_service.assign_delivery_driver(delivery_data)
 
     assert result is False
     assert "driver_id" not in delivery_data
