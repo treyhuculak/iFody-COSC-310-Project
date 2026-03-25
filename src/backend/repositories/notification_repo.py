@@ -25,6 +25,7 @@ class NotificationRepository:
                 data = json.load(f)
 
                 notif_dict = notif_data.model_dump(mode= 'json')
+                '''creating a dictionary of JSON serializable values'''
 
                 new_id = max([notif['id'] for notif in data], default=0) + 1
                 notif_dict['id'] = new_id
@@ -35,6 +36,7 @@ class NotificationRepository:
             with open(self.file_path, 'w') as f:
                 json.dump(data, f, indent=4)
                 return notif_dict
+            
         except FileNotFoundError:
             notif_dict = notif_data.model_dump(mode= 'json')
             notif_dict['id'] = 1
@@ -42,8 +44,10 @@ class NotificationRepository:
             with open(self.file_path, 'w') as f:
                 json.dump([notif_dict], f, indent=4)
             return notif_dict
+        
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        
         except KeyError as e:
             raise HTTPException(status_code=500, detail=f"Notification missing id field: {e}")
     

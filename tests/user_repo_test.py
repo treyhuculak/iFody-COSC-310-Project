@@ -47,10 +47,13 @@ def test_del_user_with_invalid_username(setup_user_db) -> None:
     '''
     repo.del_user("")
     assert len(repo.get_all_users()) == 1
-    repo.del_user("")
+    repo.del_user("1234")
     assert len(repo.get_all_users()) == 1
 
 def test_del_user_with_valid_username(setup_user_db) -> None:
+    '''
+    Tests the del_user function using valid usernames.
+    '''
     assert len(repo.get_all_users()) == 1
     repo.del_user("TestCustomer")
     assert len(repo.get_all_users()) == 0
@@ -67,6 +70,71 @@ def test_del_user_with_valid_username(setup_user_db) -> None:
     assert len(repo.get_all_users()) == 1
     repo.del_user("TestCustomerNum2")
     assert len(repo.get_all_users()) == 0
+
+def test_block_user_with_invalid_username(setup_user_db) -> None:
+    '''
+    Tests the block_user function using invalid usernames.
+    '''
+    assert repo.block_user("") == None
+    assert repo.block_user("GuguGaga") == None
+
+def test_block_user_with_valid_username(setup_user_db) -> None:
+    '''
+    Tests the block_user function using a valid username.
+    '''
+    blocked = repo.block_user(user_example["username"])
+    assert blocked != None
+    assert blocked["is_blocked"]
+    assert blocked == {
+        "id": 1,
+        "username": "TestCustomer",
+        "email": "testcustomer@123.com",
+        "password": "Test@123",
+        "role": "Customer",
+        "is_logged_in": False,
+        "is_blocked": True
+    }
+
+def test_unblock_user_with_invalid_username(setup_user_db) -> None:
+    '''
+    Tests the unblock_user function using invalid usernames.
+    '''
+    blocked = repo.block_user(user_example["username"])
+    repo.unblock_user("")
+    assert blocked["is_blocked"]
+    repo.unblock_user("123456")
+    assert blocked["is_blocked"]
+
+def test_unblock_user_with_valid_username(setup_user_db) -> None:
+    '''
+    Tests the unblock_user function using a valid username.
+    '''
+    blocked = repo.block_user(user_example["username"])
+    assert blocked["is_blocked"]
+    assert repo.get_all_users() == [
+        {
+            "id": 1,
+            "username": "TestCustomer",
+            "email": "testcustomer@123.com",
+            "password": "Test@123",
+            "role": "Customer",
+            "is_logged_in": False,
+            "is_blocked": True
+        }
+    ]
+    unblocked = repo.unblock_user(user_example["username"])
+    assert not unblocked["is_blocked"]
+    assert repo.get_all_users() == [
+        {
+            "id": 1,
+            "username": "TestCustomer",
+            "email": "testcustomer@123.com",
+            "password": "Test@123",
+            "role": "Customer",
+            "is_logged_in": False,
+            "is_blocked": False
+        }
+    ]
 
 def test_get_all_users(setup_user_db) -> None:
     '''
