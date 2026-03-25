@@ -2,29 +2,26 @@ from typing import Optional
 from datetime import datetime
 from fastapi import HTTPException
 
-from src.backend.models.order import OrderCreate
+from src.backend.models.order import OrderCreate, OrderStatus
 from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 
 from src.backend.services.order_service import OrderService
-from src.backend.models.order import OrderStatus
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.review import Review, ReviewCreate
 from src.backend.models.user import Role
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
+from src.backend.models.delivery import DeliveryCreate
+from src.backend.controllers.delivery_controller import DeliveryController
 
 class OrderController:
-    def __init__(
-            self, 
-            repo: Optional[OrderRepository] = None, 
-            notif_controller: Optional[NotificationController] = None
-        ) -> None:
-
+    def __init__(self, repo: Optional[OrderRepository] = None, notif_controller: Optional[NotificationController] = None, delivery_controller: Optional[DeliveryController] = None) -> None:
         self.order_repo = repo or OrderRepository()
         self.notif_controller = notif_controller or NotificationController()
+        self.delivery_controller = delivery_controller or DeliveryController()
         self.order_service = OrderService()
         self.restaurant_repo = RestaurantRepository()
 
@@ -154,6 +151,14 @@ class OrderController:
                 new_status = OrderStatus.PAYMENT_CONFIRMED
             else:
                 new_status = OrderStatus.PAYMENT_FAILED
+        # Since new_status is Out_for_delivery
+        elif(order['status'] == OrderStatus.PREPARING_ORDER.value):
+            delivery = DeliveryCreate(order_id=order_id)
+            self.delivery_controller.create_delivery(delivery)
+        # Since new_status is Delivered
+        elif(order['status'] == OrderStatus.OUT_FOR_DELIVERY.value):
+            delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
+            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now())
         
         # Convert string to OrderStatus enum
         try:
