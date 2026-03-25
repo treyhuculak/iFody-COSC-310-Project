@@ -1,5 +1,6 @@
 from enum import Enum
 from datetime import datetime 
+from typing import Optional
 from pydantic import BaseModel
 
 class NotificationType(Enum):
@@ -10,6 +11,10 @@ class NotificationType(Enum):
     PAYMENT_FAILED = "payment failed"
     ORDER_IN_PROGRESS = "order in progress"
     NEW_ORDER_RECEIVED = "new order received"
+    ORDER_FAILED = "order has failed to complete"
+    NEW_ITEM_ADDED = "new item has been added to order"
+    BLOCKED_ACCOUNT = "your account has been blocked"
+    UNBLOCKED_ACCOUNT = "your account is now unblocked"
 
 class NotificationBase(BaseModel):
     user_id: int
@@ -17,7 +22,7 @@ class NotificationBase(BaseModel):
     title: str
     message: str
     is_read: bool = False
-    order_id: int
+    order_id: Optional[int] = None
 
 class NotificationCreate(NotificationBase):
     pass
