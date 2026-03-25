@@ -24,12 +24,24 @@ class AdminService:
         A wrapper function for del_user that deletes a user based on the username.
         '''
         return self.user_repo.del_user(username)
+    
+    def block_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for ban_user that blocks a user based on the username.
+        '''
+        return self.user_repo.block_user(username)
+    
+    def unblock_user(self, username: str) -> Union[dict, None]:
+        '''
+        A wrapper function for unban_user that unblocks a user based on the username.
+        '''
+        return self.user_repo.unblock_user(username)
 
     def get_all_orders(self) -> list[dict]:
         '''
         Gets all the orders from all the restaurant instances.
         '''
-        return self.order_repo.get_all_orders_for_admin()
+        return self.order_repo.get_all_orders()
     
     def get_gross_revenue_by_restaurant_id(self, restaurant_id: int) -> float:
         '''
