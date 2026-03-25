@@ -10,7 +10,7 @@ from src.backend.repositories.delivery_repo import DeliveryRepository
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.controllers.delivery_controller import DeliveryController
 from src.backend.controllers.order_controller import OrderController
-from src.backend.models.order import OrderLocation
+from src.backend.models.order import OrderLocation, OrderStatus
 from src.backend.services.delivery_service import DeliveryService
 
 @pytest.fixture
@@ -47,8 +47,9 @@ def test_client(tmp_path):
     shared_order_repo = OrderRepository(file_path=str(temp_order_db))
     delivery_repo = DeliveryRepository(file_path=str(temp_delivery_db))
 
-    order_controller = OrderController(repo=shared_order_repo)
     delivery_controller = DeliveryController(order_repo=shared_order_repo, repo=delivery_repo)
+    order_controller = OrderController(repo=shared_order_repo, delivery_controller=delivery_controller)
+
 
     app.dependency_overrides[get_order_controller] = lambda: order_controller
     app.dependency_overrides[get_delivery_controller] = lambda: delivery_controller
@@ -128,7 +129,7 @@ def test_assign_delivered_at_time(test_client):
 def test_get_delivery_by_order_id(test_client):
     order_id = 1
     # Should return 200
-    get_response = test_client.get(f"/deliveries/order_id/{order_id}")
+    get_response = test_client.get(f"/deliveries/order/{order_id}")
     assert get_response.status_code == 200
 
     data = get_response.json()
@@ -139,7 +140,7 @@ def test_get_delivery_by_order_id(test_client):
 def test_get_delivery_by_invalid_order_id(test_client):
     order_id = 999
     # Should return 404
-    get_response = test_client.get(f"/deliveries/order_id/{order_id}")
+    get_response = test_client.get(f"/deliveries/order/{order_id}")
     assert get_response.status_code == 404
 
 def test_calculate_estimated_delivery_time_bc():
@@ -183,4 +184,62 @@ def test_assign_delivery_driver_does_not_assign_when_over_60_minutes():
     assert result is False
     assert "driver_id" not in delivery_data
     assert "assigned_at" not in delivery_data
+
+def test_order_to_delivery_integration(test_client):
+    # Step 1: create an order
+    order_payload = {
+        "customer_id": 1,
+        "restaurant_id": 2,
+        "status": OrderStatus.PREPARING_ORDER.value,
+        "location": OrderLocation.BRITISH_COLUMBIA.value,
+        "order_items": []
+    }
+
+    create_order_response = test_client.post(
+        "/orders/",
+        json=order_payload,
+        headers={"X-User-Id": "1"}
+    )
+    assert create_order_response.status_code == 200
+
+    order_id = create_order_response.json()["id"]
+
+    # Step 2: move order to out for delivery
+    update_response = test_client.put(
+        f"/orders/{order_id}/status",
+        params={
+            "new_status": OrderStatus.OUT_FOR_DELIVERY.value,
+            "role": "manager"
+        }
+    )
+    print(update_response.json())
+    assert update_response.status_code == 200
+
+    # Step 3: verify delivery was created
+    delivery_response = test_client.get(f"/deliveries/order/{order_id}")
+    assert delivery_response.status_code == 200
+
+    delivery_data = delivery_response.json()
+    assert delivery_data["order_id"] == order_id
+    assert delivery_data["driver_id"] == 1
+    assert delivery_data["assigned_at"] is not None
+    assert delivery_data["estimated_delivery_time"] is not None
+    assert delivery_data["delivered_at"] is None
+
+    # Step 4: move order to delivered
+    delivered_response = test_client.put(
+        f"/orders/{order_id}/status",
+        params={
+            "new_status": OrderStatus.DELIVERED.value,
+            "role": "manager"
+        }
+    )
+    assert delivered_response.status_code == 200
+
+    # Step 5: verify delivery got delivered_at
+    updated_delivery_response = test_client.get(f"/deliveries/order/{order_id}")
+    assert updated_delivery_response.status_code == 200
+
+    updated_delivery = updated_delivery_response.json()
+    assert updated_delivery["delivered_at"] is not None
     

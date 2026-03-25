@@ -39,7 +39,7 @@ class OrderController:
             order_data['total_price'] = subtotal + tax + delivery_fee
 
             new_order = self.order_repo.create_order(order_data)
-            
+            '''
             try:    
                 restaurant = self.restaurant_repo.get_restaurant_by_id(new_order["restaurant_id"])
                 if restaurant:
@@ -48,6 +48,7 @@ class OrderController:
                     self.notif_controller.create_notif(manager_notification)
             except:
                 pass
+                '''
             return new_order
 
         except ValueError as e:
@@ -82,6 +83,8 @@ class OrderController:
         
         # Getting order using order id
         order = self.get_order(order_id)
+        delivery = DeliveryCreate(order_id=order_id)
+        self.delivery_controller.create_delivery(delivery)
 
         # Updating status according to if transaction is accepted or not
         if(order['status'] == OrderStatus.AWAITING_PAYMENT.value):
@@ -89,6 +92,7 @@ class OrderController:
                 new_status = OrderStatus.PAYMENT_CONFIRMED
             else:
                 new_status = OrderStatus.PAYMENT_FAILED
+                
         # Since new_status is Out_for_delivery
         elif(order['status'] == OrderStatus.PREPARING_ORDER.value):
             delivery = DeliveryCreate(order_id=order_id)
@@ -96,7 +100,8 @@ class OrderController:
         # Since new_status is Delivered
         elif(order['status'] == OrderStatus.OUT_FOR_DELIVERY.value):
             delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
-            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now())
+            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now().isoformat())
+            
         
         # Convert string to OrderStatus enum
         try:
@@ -115,7 +120,7 @@ class OrderController:
                 OrderStatus.OUT_FOR_DELIVERY: NotificationType.ORDER_IN_TRANSIT,
                 OrderStatus.DELIVERED: NotificationType.ORDER_DELIVERED
             }
-
+            
             notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
 
             #create notification for the customer
@@ -147,7 +152,6 @@ class OrderController:
                     is_read = False
                 )
                 self.notif_controller.create_notif(manager_notification)
-
             
             return updated_order
         
