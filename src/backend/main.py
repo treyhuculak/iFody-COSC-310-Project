@@ -6,6 +6,7 @@ from src.backend.routers import payments
 from src.backend.routers import notification
 from src.backend.routers import auth
 from src.backend.routers import transactions
+from src.backend.routers import deliveries
 
 app = FastAPI()
 
@@ -15,6 +16,7 @@ app.include_router(orders.router)
 app.include_router(payments.router)
 app.include_router(notification.router)
 app.include_router(transactions.router)
+app.include_router(deliveries.router)
 
 @app.get("/")
 def root():
