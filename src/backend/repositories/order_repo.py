@@ -113,6 +113,20 @@ class OrderRepository:
                         json.dump(data, f, indent=4)
                     return order 
         return None
+
+    def update_order_pricing(self, order_id: int, subtotal: float, tax: float, delivery_fee: float) -> Optional[dict]:
+        with open(self.file_path, 'r') as j:
+            data = json.load(j)
+            for order in data:
+                if order["id"] == order_id:
+                    order["subtotal_price"] = subtotal
+                    order["tax"] = tax
+                    order["delivery_fee"] = delivery_fee
+                    order["total_price"] = subtotal + tax + delivery_fee
+                    with open(self.file_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    return order
+        return None
                 
     def add_order_item_to_order(self, item_data: dict, order_id: int, price: float) -> dict:
         try:
