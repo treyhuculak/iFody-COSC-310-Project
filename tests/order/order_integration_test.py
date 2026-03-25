@@ -21,6 +21,7 @@ from src.backend.routers.orders import get_controller
 from src.backend.main import app
 from src.backend.repositories.delivery_repo import DeliveryRepository
 from src.backend.controllers.delivery_controller import DeliveryController
+from src.backend.routers.deliveries import get_controller as get_delivery_controller
 
 @pytest.fixture
 def test_client(tmp_path):
@@ -108,6 +109,7 @@ def test_client(tmp_path):
     app.dependency_overrides[get_controller] = lambda: test_controller
     app.dependency_overrides[get_payment_controller] = lambda: test_payment_controller
     app.dependency_overrides[get_transaction_controller] = lambda: test_transaction_controller
+    app.dependency_overrides[get_delivery_controller] = lambda: test_delivery_controller
 
     original_repo = auth_dependencies.repo
     auth_dependencies.repo = test_user_repo
