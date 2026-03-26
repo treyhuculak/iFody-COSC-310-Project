@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime
 from fastapi import HTTPException
 
-from src.backend.models.order import OrderCreate, OrderStatus
+from src.backend.models.order import OrderCreate, OrderLocation, OrderStatus
 from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
@@ -267,6 +267,13 @@ class OrderController:
                 is_read = False
             )
             self.notif_controller.create_notif(added_item_manager_notif)
+
+            # Re-fetch after mutation so totals are based on the latest order_items.
+            updated_order = self.get_order(order_id)
+            updated_subtotal = self.order_service.calculate_order_subtotal(OrderCreate(**updated_order))
+            updated_tax = self.order_service.calculate_tax(OrderCreate(**updated_order), updated_subtotal)
+            updated_delivery_fee = self.order_service.get_delivery_fee(OrderCreate(**updated_order))
+            self.order_repo.update_order_pricing(order_id, updated_subtotal, updated_tax, updated_delivery_fee)
             
             return added_item
         else:
@@ -293,21 +300,33 @@ class OrderController:
     # Review functionality
 
     def get_review_by_order_id(self, order_id: int):
+        '''
+        Get the review for a specific order. Raises an HTTPException if not found.
+        '''
         review = self.order_repo.get_review_by_order_id(order_id)
         if review is None:
             raise HTTPException(status_code=404, detail="Review not found for this order")
         return review
     
     def add_review_to_order(self, order_id: int, review: ReviewCreate) -> Review:
+        '''
+        Add a review to a specific order. Raises an HTTPException if the order already has a review.
+        '''
         review_data = review.model_dump()
         added_review = self.order_repo.add_review_to_order(order_id, review_data)
         return Review(**added_review)
     
     def delete_review_from_order(self, order_id: int) -> Review:
+        '''
+        Delete the review from a specific order. Raises an HTTPException if no review exists for the order.
+        '''
         deleted_review = self.order_repo.delete_review_from_order(order_id)
         return Review(**deleted_review)
     
     def update_review_from_order(self, order_id: int, review: ReviewCreate) -> Review:
+        '''
+        Update the review for a specific order. Adds the review if a previous order doesn't exist.
+        '''
         review_data = review.model_dump()
         updated_review = self.order_repo.update_review_from_order(order_id, review_data)
         return Review(**updated_review)
