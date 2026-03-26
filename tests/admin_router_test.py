@@ -1,8 +1,10 @@
 from fastapi.testclient import TestClient
 import json, pytest
 from src.backend.controllers.auth_controller import AuthController
+from src.backend.controllers.notification_controller import NotificationController
 from src.backend.main import app
 from src.backend.repositories.user_repo import UserRepository
+from src.backend.repositories.notification_repo import NotificationRepository
 from src.backend.routers.auth import get_controller
 from src.backend.services.admin_service import AdminService
 from src.backend.utils import auth_dependencies
@@ -97,10 +99,14 @@ def test_client(tmp_path):
             ]
         )
     )
+    temp_notif_database = tmp_path / "temp_notif_db.json"
+    temp_notif_database.write_text(json.dumps([]))
 
     test_user_repo = UserRepository(str(temp_user_database))
+    test_notif_repo = NotificationRepository(str(temp_notif_database))
+    test_notif_controller = NotificationController(repo=test_notif_repo)
     test_admin_service = AdminService(str(test_order_database), str(temp_user_database))
-    test_controller = AuthController(test_user_repo, test_admin_service)
+    test_controller = AuthController(test_user_repo, test_admin_service, test_notif_controller)
 
     app.dependency_overrides[get_controller] = lambda: test_controller
     original_repo = auth_dependencies.repo
