@@ -2,7 +2,7 @@ from typing import Optional
 
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
-from src.backend.models.order import OrderCreate
+from src.backend.models.order import OrderCreate, OrderLocation
 import json
 
 '''
@@ -26,7 +26,7 @@ class OrderService:
             with open(self.TAX_RATES, 'r') as f:
                 tax_data = json.load(f)
                 tax_rate = tax_data.get(order.location.value, 0)
-                return (order_subtotal if order_subtotal is not None else self.calculate_order_subtotal(order)) * tax_rate
+                return order_subtotal * tax_rate
         except FileNotFoundError:
             raise ValueError("Tax rates file not found")
         except json.JSONDecodeError:

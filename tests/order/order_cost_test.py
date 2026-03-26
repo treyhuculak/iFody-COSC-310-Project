@@ -117,3 +117,43 @@ def test_get_delivery_fee():
         fee = order_service.get_delivery_fee(order)
         assert fee == 7.5
 
+
+def test_subtotal_and_tax_updates(test_client):
+    # This is to test the bug fix where subtotal and tax were not updating after adding an item to an existing order. This test will create an order with items, then later add another item to it, and then check if the subtotal and tax are updated correctly.
+    
+    with patch('src.backend.services.order_service.OrderService.get_delivery_fee', return_value=5):
+        # Create the initial order
+        response = test_client.post("/orders/", json=order.model_dump(mode="json"))
+        assert response.status_code == 200
+        data = response.json()
+        order_id = data["id"]
+
+        prev_subtotal = data["subtotal_price"]
+        prev_tax = data["tax"]
+
+        # Add another item to the existing order
+        menu_item = {
+            "name": "Test Menu Item",
+            "description": "A menu item for testing",
+            "price": 8.00,
+            "id": 0
+        }
+        add_response = test_client.post(f"/orders/{order_id}/items", params={"quantity": 1}, json=menu_item)
+        assert add_response.status_code == 200
+
+        # Get the updated order details
+        get_order_response = test_client.get(f"/orders/{order_id}")
+        assert get_order_response.status_code == 200
+        updated_order = get_order_response.json()
+
+        new_subtotal = updated_order["subtotal_price"]
+        new_tax = updated_order["tax"]
+
+        # Check if the subtotal and tax are updated correctly
+        expected_subtotal = prev_subtotal + (8.0)  # Original subtotal + new item price
+        expected_tax = expected_subtotal * 0.12  # Assuming a tax rate of 12%
+        
+        assert updated_order["subtotal_price"] == expected_subtotal
+        assert updated_order["tax"] == expected_tax
+        assert new_subtotal != prev_subtotal
+        assert new_tax != prev_tax

@@ -64,5 +64,37 @@
                 "id": 2
             }
         ]
+    },
+    {
+        "name": "My rest",
+        "cuisine": "canadian",
+        "location": "kelowna",
+        "delivery_fee": 4.99,
+        "owner_id": 1,
+        "id": 4
+    },
+    {
+        "name": "My rest 2",
+        "cuisine": "canadian",
+        "location": "kelowna",
+        "delivery_fee": 4.99,
+        "owner_id": 1,
+        "id": 5
+    },
+    {
+        "name": "My rest 3",
+        "cuisine": "canadian",
+        "location": "kelowna",
+        "delivery_fee": 4.99,
+        "owner_id": 1,
+        "id": 6
+    },
+    {
+        "name": "My rest 3",
+        "cuisine": "canadian",
+        "location": "kelowna",
+        "delivery_fee": 4.99,
+        "owner_id": 1,
+        "id": 7
     }
 ]
