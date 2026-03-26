@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime
 from fastapi import HTTPException
 
-from src.backend.models.order import OrderCreate, OrderStatus
+from src.backend.models.order import OrderCreate, OrderLocation, OrderStatus
 from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
@@ -245,6 +245,13 @@ class OrderController:
                 is_read = False
             )
             self.notif_controller.create_notif(added_item_manager_notif)
+
+            # Re-fetch after mutation so totals are based on the latest order_items.
+            updated_order = self.get_order(order_id)
+            updated_subtotal = self.order_service.calculate_order_subtotal(OrderCreate(**updated_order))
+            updated_tax = self.order_service.calculate_tax(OrderCreate(**updated_order), updated_subtotal)
+            updated_delivery_fee = self.order_service.get_delivery_fee(OrderCreate(**updated_order))
+            self.order_repo.update_order_pricing(order_id, updated_subtotal, updated_tax, updated_delivery_fee)
             
             return added_item
         else:
