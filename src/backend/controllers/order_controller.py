@@ -92,7 +92,7 @@ class OrderController:
         if(order["customer_id"] != user_id and user_role != Role.ADMIN):
             raise HTTPException(status_code=403, detail="You can only cancel your own orders")
 
-        if (order["status"] == OrderStatus.PENDING.value or order["status"] == OrderStatus.AWAITING_PAYMENT.value or order["status"] == OrderStatus.PAYMENT_FAILED.value):
+        if (order["status"] == OrderStatus.PENDING.value or order["status"] == OrderStatus.AWAITING_PAYMENT.value):
             owner_id = self._get_owner_id(order["restaurant_id"])
             manager_deleted_order_notif = NotificationCreate(
                 user_id = owner_id,
@@ -108,6 +108,28 @@ class OrderController:
                 type = NotificationType.ORDER_CANCELLED,
                 title = "Order Cancelled",
                 message = f"Order {order_id} has been successfully cancelled before confirmation",
+                is_read = False,
+                order_id = order_id
+            )  
+            self.notif_controller.create_notif(customer_del_order_notif)
+            return self.order_repo.delete_order(order_id)
+        
+        elif(order["status"] == OrderStatus.PAYMENT_FAILED.value):
+            owner_id = self._get_owner_id(order["restaurant_id"])
+            manager_deleted_order_notif = NotificationCreate(
+                user_id = owner_id,
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Customer's payment failed. Order with ID {order_id} has been cancelled.",
+                is_read = False,
+                order_id = order_id
+            )
+            self.notif_controller.create_notif(manager_deleted_order_notif)
+            customer_del_order_notif = NotificationCreate(
+                user_id = order["customer_id"],
+                type = NotificationType.ORDER_CANCELLED,
+                title = "Order Cancelled",
+                message = f"Payment Failed. Please review payment method. Order {order_id} has been cancelled",
                 is_read = False,
                 order_id = order_id
             )  
@@ -160,7 +182,7 @@ class OrderController:
         # Since new_status is Delivered
         elif(order['status'] == OrderStatus.OUT_FOR_DELIVERY.value):
             delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
-            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now())
+            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now().isoformat())
         
         # Convert string to OrderStatus enum
         try:
