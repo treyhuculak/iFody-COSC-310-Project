@@ -4,7 +4,7 @@
         "cuisine": "Italian",
         "location": "Kelowna, BC",
         "delivery_fee": 5.99,
-        "owner_id": 1,
+        "owner_id": 2,
         "id": 1,
         "menu_items": [
             {
@@ -48,7 +48,7 @@
         "cuisine": "Mexican",
         "location": "Kelowna, BC",
         "delivery_fee": 2.99,
-        "owner_id": 3,
+        "owner_id": 2,
         "id": 3,
         "menu_items": [
             {
@@ -70,7 +70,7 @@
         "cuisine": "Indian",
         "location": "Vancouver, BC",
         "delivery_fee": 4.99,
-        "owner_id": 4,
+        "owner_id": 2,
         "id": 4,
         "menu_items": [
             {
@@ -92,7 +92,7 @@
         "cuisine": "American",
         "location": "Kelowna, BC",
         "delivery_fee": 3.49,
-        "owner_id": 5,
+        "owner_id": 2,
         "id": 5,
         "menu_items": [
             {

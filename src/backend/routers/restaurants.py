@@ -16,7 +16,7 @@ router = APIRouter(
 def get_controller():
     return RestaurantController()
 
-def get_user_id_from_auth(x_user_id: int = Header(..., alias="X-User-Id")):
+def get_user_id_from_auth(x_user_id: int = Header(...)):
     return x_user_id
 
 
