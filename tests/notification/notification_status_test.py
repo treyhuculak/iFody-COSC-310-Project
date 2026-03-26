@@ -145,7 +145,7 @@ def test_notification_status_payment_failed(test_client):
 
     update_response = client.put(f"/orders/{order_id}/status",
         params={
-            "new_status": OrderStatus.PAYMENT_CONFIRMED.value,
+            "new_status": OrderStatus.AWAITING_PAYMENT.value,
             "role": "manager",
             "transaction_is_successful": False
         }

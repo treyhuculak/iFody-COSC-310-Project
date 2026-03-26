@@ -165,25 +165,20 @@ class OrderController:
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
 
-        # Getting order from order_id
         order = self.get_order(order_id)
 
-        # Updating status according to if transaction is accepted or not
         if(new_status == OrderStatus.AWAITING_PAYMENT.value):
             if(transaction_is_successful != None and transaction_is_successful):
                 new_status = OrderStatus.PAYMENT_CONFIRMED
             else:
                 new_status = OrderStatus.PAYMENT_FAILED              
-        # Since new_status is Out_for_delivery
         elif(new_status == OrderStatus.OUT_FOR_DELIVERY.value):
             delivery = DeliveryCreate(order_id=order_id)
             self.delivery_controller.create_delivery(delivery)
-        # Since new_status is Delivered
         elif(new_status == OrderStatus.DELIVERED.value):
             delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
             self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now().isoformat())
         
-        # Convert string to OrderStatus enum
         try:
             status_enum = OrderStatus(new_status)
         except ValueError:
@@ -203,7 +198,6 @@ class OrderController:
             
             notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
 
-            #create notification for the customer
             customer_notification = NotificationCreate(
                 user_id = updated_order["customer_id"],
                 type = notif_type,
