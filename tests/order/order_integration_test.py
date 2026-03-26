@@ -137,21 +137,26 @@ def test_full_order_integration(test_client):
         }]
     }
 
-    '''
     menu_item = {
         "name": "Test Menu Item",
         "description": "A menu item for testing",
         "price": 10,
         "id": 1
     }
-    
-    add_item_response = client.post(f"/orders/{order_id}/items",params = {"quantity": 1},json = menu_item)
-    assert add_item_response.status_code == 200
-    '''
 
     response = client.post("/orders/", json=new_order)
     assert response.status_code == 200
     order_price = response.json()["total_price"]
+
+    add_item_response = client.post(f"/orders/{order_id}/items",params = {"quantity": 1},json = menu_item)
+    assert add_item_response.status_code == 200
+
+    # Fetch updated order
+    get_order_response = client.get(f"/orders/{order_id}")
+    assert get_order_response.status_code == 200
+
+    updated_order_price = get_order_response.json()["total_price"]
+    assert updated_order_price != order_price
 
     card_payment = {
     "user_id": 1,
@@ -171,7 +176,7 @@ def test_full_order_integration(test_client):
     transaction_payload = {
         "payment_method_id": payment_id,
         "order_id": order_id,
-        "amount": order_price
+        "amount": updated_order_price
     }
 
     # The controller should return the new transaction dict, which the router translates to a 200 response
