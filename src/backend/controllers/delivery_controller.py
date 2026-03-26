@@ -1,5 +1,4 @@
 from typing import Optional
-from datetime import datetime
 from fastapi import HTTPException
 
 from src.backend.models.delivery import DeliveryCreate
@@ -24,7 +23,6 @@ class DeliveryController:
             new_delivery = self.delivery_repo.create_delivery(delivery_data)
             
             return new_delivery
-
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:

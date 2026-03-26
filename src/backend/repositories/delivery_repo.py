@@ -1,6 +1,5 @@
 import json
-from typing import List, Optional
-from datetime import datetime
+from typing import Optional
 from fastapi import HTTPException
 
 class DeliveryRepository:
@@ -16,7 +15,6 @@ class DeliveryRepository:
             # file doesn't exist or is corrupted, create/reset it with an empty list
             with open(self.file_path, 'w') as f:
                 json.dump([], f, indent=4)
-        pass
 
     def create_delivery(self, delivery_data: dict) -> dict:
         try:
@@ -87,7 +85,7 @@ class DeliveryRepository:
                             break
                     
                     # If nothing is found
-                    if deleted_delivery == None:
+                    if deleted_delivery is None:
                         raise HTTPException(status_code=404, detail=f"Delivery with id {delivery_id} not found.")
                     
                     # Saving changes

@@ -9,7 +9,6 @@ from src.backend.models.payment_transaction import PaymentTransactionCreate
 from src.backend.services.payment_service import PaymentService
 from src.backend.models.notification import NotificationType, NotificationCreate
 from src.backend.controllers.notification_controller import NotificationController
-from src.backend.repositories.notification_repo import NotificationRepository
 
 class TransactionController:
     def __init__(
