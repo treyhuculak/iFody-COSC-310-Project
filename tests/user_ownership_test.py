@@ -276,3 +276,24 @@ def test_non_owner_cannot_delete_menu_item_from_restaurant(test_client):
     assert get_response.status_code == 200
     data = get_response.json()
     assert data["items"][0]["id"] == menu_item_id
+
+
+    # ── FAULT INJECTION ──────────────────────────────────────────────────────────
+
+def test_create_order_with_missing_customer_id(test_client):
+    """Fault injection: missing required customer_id field."""
+    bad_order = {k: v for k, v in new_order.items() if k != "customer_id"}
+    response = test_client.post("/orders/", json=bad_order)
+    assert response.status_code == 422
+
+def test_create_order_with_invalid_status(test_client):
+    """Fault injection: invalid order status value."""
+    bad_order = {**new_order, "status": "INVALID_STATUS"}
+    response = test_client.post("/orders/", json=bad_order)
+    assert response.status_code == 422
+
+def test_create_order_with_negative_quantity(test_client):
+    """Fault injection: negative quantity in order item."""
+    bad_order = {**new_order, "order_items": [{"item_id": 101, "quantity": -1, "price_at_purchase": 5.0}]}
+    response = test_client.post("/orders/", json=bad_order)
+    assert response.status_code == 422
