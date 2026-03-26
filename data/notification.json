@@ -8,5 +8,65 @@
         "order_id": null,
         "id": 1,
         "created_at": "2026-03-09T20:20:28.626392"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 2 has been received.",
+        "is_read": false,
+        "order_id": 2,
+        "id": 2,
+        "created_at": "2026-03-25T17:30:27.200098"
+    },
+    {
+        "user_id": 1,
+        "type": "new order received",
+        "title": "Order Confirmed",
+        "message": "Your order at Sushi World has been received, and is awaiting payment",
+        "is_read": false,
+        "order_id": 2,
+        "id": 3,
+        "created_at": "2026-03-25T17:30:27.210613"
+    },
+    {
+        "user_id": 1,
+        "type": "order in transit",
+        "title": "Order Status Updated",
+        "message": "Your order status is now out for delivery",
+        "is_read": false,
+        "order_id": 2,
+        "id": 4,
+        "created_at": "2026-03-25T17:30:27.240322"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #2 picked up by driver",
+        "is_read": false,
+        "order_id": 2,
+        "id": 5,
+        "created_at": "2026-03-25T17:30:27.249853"
+    },
+    {
+        "user_id": 1,
+        "type": "order delivered",
+        "title": "Order Status Updated",
+        "message": "Your order status is now delivered",
+        "is_read": false,
+        "order_id": 2,
+        "id": 6,
+        "created_at": "2026-03-25T17:30:27.287052"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #2 has been delivered",
+        "is_read": false,
+        "order_id": 2,
+        "id": 7,
+        "created_at": "2026-03-25T17:30:27.296078"
     }
 ]
