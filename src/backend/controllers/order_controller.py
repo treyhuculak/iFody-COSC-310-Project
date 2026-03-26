@@ -143,24 +143,25 @@ class OrderController:
     def update_order_status(self, order_id: int, new_status: str, role: str, transaction_is_successful: Optional[bool] = None):
         if role != "manager":
             raise HTTPException(status_code=403, detail="Only managers can update order status")
-        
-        # Getting order using order id
+
+        # Getting order from order_id
         order = self.get_order(order_id)
 
         # Updating status according to if transaction is accepted or not
-        if(order['status'] == OrderStatus.AWAITING_PAYMENT.value):
+        if(new_status == OrderStatus.AWAITING_PAYMENT.value):
             if(transaction_is_successful != None and transaction_is_successful):
                 new_status = OrderStatus.PAYMENT_CONFIRMED
             else:
-                new_status = OrderStatus.PAYMENT_FAILED
+                new_status = OrderStatus.PAYMENT_FAILED              
         # Since new_status is Out_for_delivery
-        elif(order['status'] == OrderStatus.PREPARING_ORDER.value):
+        elif(new_status == OrderStatus.OUT_FOR_DELIVERY.value):
             delivery = DeliveryCreate(order_id=order_id)
             self.delivery_controller.create_delivery(delivery)
         # Since new_status is Delivered
-        elif(order['status'] == OrderStatus.OUT_FOR_DELIVERY.value):
+        elif(new_status == OrderStatus.DELIVERED.value):
             delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
-            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now())
+            self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now().isoformat())
+            
         
         # Convert string to OrderStatus enum
         try:
@@ -179,7 +180,7 @@ class OrderController:
                 OrderStatus.OUT_FOR_DELIVERY: NotificationType.ORDER_IN_TRANSIT,
                 OrderStatus.DELIVERED: NotificationType.ORDER_DELIVERED
             }
-
+            
             notif_type = customer_status_map.get(status_enum, NotificationType.ORDER_CONFIRMED)
 
             #create notification for the customer
@@ -234,6 +235,7 @@ class OrderController:
             
             order_item_data = order_item.model_dump()
             added_item = self.order_repo.add_order_item_to_order(order_item_data, order_id, menu_item.price)
+
             item_name = menu_item.name
             owner_id = self._get_owner_id(order["restaurant_id"])
             added_item_manager_notif = NotificationCreate(

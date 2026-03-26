@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Optional
+from fastapi import APIRouter, Depends
 from src.backend.controllers.delivery_controller import DeliveryController
 from src.backend.models.delivery import DeliveryCreate, Delivery
 
@@ -30,6 +29,6 @@ def update_delivery(delivery_id: int, time: str, controller: DeliveryController 
     controller.assign_delivered_at_time(delivery_id, time)
     return {"message": f"Delivery {delivery_id} was delivered at: {time}"}
 
-@router.get("/order_id/{order_id}", response_model=Delivery)
+@router.get("/order/{order_id}", response_model=Delivery)
 def get_delivery_by_order_id(order_id: int, controller: DeliveryController = Depends(get_controller)):
     return controller.get_delivery_by_order_id(order_id)

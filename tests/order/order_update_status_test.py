@@ -24,7 +24,6 @@ awaiting_payment_order = OrderCreate(
 
 def test_mgr_update_order(test_client):
     order_data = new_order.model_dump()
-    # Serialize enums to their values for JSON
     order_data['status'] = order_data['status'].value
     order_data['location'] = order_data['location'].value
     response = test_client.post("/orders/", json=order_data)
@@ -43,7 +42,6 @@ def test_invalid_order(test_client):
 
 def test_mgr_update_order_payment_confirmed(test_client):
     order_data = awaiting_payment_order.model_dump()
-    # Serialize enums to their values for JSON
     order_data["status"] = order_data["status"].value
     order_data["location"] = order_data["location"].value
 
@@ -61,7 +59,6 @@ def test_mgr_update_order_payment_confirmed(test_client):
 
 def test_mgr_update_order_payment_denied(test_client):
     order_data = awaiting_payment_order.model_dump()
-    # Serialize enums to their values for JSON
     order_data["status"] = order_data["status"].value
     order_data["location"] = order_data["location"].value
 

@@ -116,7 +116,7 @@ def test_get_order(test_client):
     assert len(data["order_items"]) == 1
     assert data["order_items"][0]["item_id"] == 101
 
-def test_non_existing_order(test_client):
+def test_get_non_existing_order(test_client):
     response = test_client.post("/orders/", json=new_order)
     assert response.status_code == 200
 

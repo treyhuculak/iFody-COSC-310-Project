@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-from src.backend.models.order import OrderStatus
 
 '''
 Instead of having a delivery status field we are going to use the order status field so no overlap between the two happens

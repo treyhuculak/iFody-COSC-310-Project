@@ -16,9 +16,7 @@ def test_client(tmp_path):
     The temporary file is automatically deleted after each test so the production database is never touched.
     """
     temp_user_database = tmp_path / "temp_user_database.json"
-    temp_user_database.write_text(
-        json.dumps(
-            {
+    temp_user_database.write_text(json.dumps({
                 "Users": [
                     {
                         "id": 1,
@@ -53,8 +51,7 @@ def test_client(tmp_path):
     )
 
     test_order_database = tmp_path / "test_order_database.json"
-    test_order_database.write_text(
-        json.dumps(
+    test_order_database.write_text(json.dumps(
             [
                 {
                     "customer_id": 1,
