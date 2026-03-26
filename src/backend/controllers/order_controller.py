@@ -167,7 +167,7 @@ class OrderController:
 
         order = self.get_order(order_id)
 
-        if(new_status == OrderStatus.AWAITING_PAYMENT.value):
+        if(new_status == OrderStatus.AWAITING_PAYMENT.value or new_status == OrderStatus.PAYMENT_CONFIRMED.value or new_status == OrderStatus.PAYMENT_FAILED.value):
             if(transaction_is_successful != None and transaction_is_successful):
                 new_status = OrderStatus.PAYMENT_CONFIRMED
             else:

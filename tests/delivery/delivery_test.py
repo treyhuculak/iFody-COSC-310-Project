@@ -8,6 +8,8 @@ from src.backend.routers.orders import get_controller as get_order_controller
 from src.backend.routers.deliveries import get_controller as get_delivery_controller
 from src.backend.repositories.delivery_repo import DeliveryRepository
 from src.backend.repositories.order_repo import OrderRepository
+from src.backend.repositories.notification_repo import NotificationRepository
+from src.backend.controllers.notification_controller import NotificationController
 from src.backend.controllers.delivery_controller import DeliveryController
 from src.backend.controllers.order_controller import OrderController
 from src.backend.models.order import OrderLocation, OrderStatus
@@ -22,6 +24,7 @@ def test_client(tmp_path):
     """
     temp_order_db = tmp_path / "test_order.json"
     temp_delivery_db = tmp_path / "test_delivery.json"
+    temp_notif_db = tmp_path / "test_notif.json"
 
 
     sample_order = {
@@ -48,13 +51,16 @@ def test_client(tmp_path):
     
     temp_order_db.write_text(json.dumps([sample_order]))
     temp_delivery_db.write_text(json.dumps([sample_delivery]))
+    temp_notif_db.write_text(json.dumps([]))
 
     order_repo = OrderRepository(file_path=str(temp_order_db))
     delivery_repo = DeliveryRepository(file_path=str(temp_delivery_db))
+    notif_repo = NotificationRepository(file_path=str(temp_notif_db))
 
     delivery_controller = DeliveryController(repo=delivery_repo, order_repo=order_repo)
+    notif_controller = NotificationController(repo=notif_repo)
 
-    order_controller = OrderController(repo=order_repo, delivery_controller=delivery_controller)
+    order_controller = OrderController(repo=order_repo, delivery_controller=delivery_controller, notif_controller=notif_controller)
 
     app.dependency_overrides[get_order_controller] = lambda: order_controller
     app.dependency_overrides[get_delivery_controller] = lambda: delivery_controller
