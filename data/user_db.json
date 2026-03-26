@@ -5,7 +5,7 @@
             "username": "TestCustomer",
             "email": "testcustomer@123.com",
             "password": "Test@123",
-            "role": "Customer",
+            "role": "customer",
             "is_logged_in": false,
             "is_blocked": false
         },
@@ -14,7 +14,16 @@
             "username": "TestOwner",
             "email": "testowner@123.com",
             "password": "Test@123",
-            "role": "Restaurant Owner",
+            "role": "restaurant owner",
+            "is_logged_in": false,
+            "is_blocked": false
+        },
+        {
+            "id": 3,
+            "username": "TestAdmin",
+            "email": "testadmin@123.com",
+            "password": "Test@123",
+            "role": "administrator",
             "is_logged_in": false,
             "is_blocked": false
         }
