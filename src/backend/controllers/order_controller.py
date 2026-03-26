@@ -278,21 +278,33 @@ class OrderController:
     # Review functionality
 
     def get_review_by_order_id(self, order_id: int):
+        '''
+        Get the review for a specific order. Raises an HTTPException if not found.
+        '''
         review = self.order_repo.get_review_by_order_id(order_id)
         if review is None:
             raise HTTPException(status_code=404, detail="Review not found for this order")
         return review
     
     def add_review_to_order(self, order_id: int, review: ReviewCreate) -> Review:
+        '''
+        Add a review to a specific order. Raises an HTTPException if the order already has a review.
+        '''
         review_data = review.model_dump()
         added_review = self.order_repo.add_review_to_order(order_id, review_data)
         return Review(**added_review)
     
     def delete_review_from_order(self, order_id: int) -> Review:
+        '''
+        Delete the review from a specific order. Raises an HTTPException if no review exists for the order.
+        '''
         deleted_review = self.order_repo.delete_review_from_order(order_id)
         return Review(**deleted_review)
     
     def update_review_from_order(self, order_id: int, review: ReviewCreate) -> Review:
+        '''
+        Update the review for a specific order. Adds the review if a previous order doesn't exist.
+        '''
         review_data = review.model_dump()
         updated_review = self.order_repo.update_review_from_order(order_id, review_data)
         return Review(**updated_review)
