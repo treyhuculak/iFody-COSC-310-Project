@@ -11,16 +11,16 @@ class DeliveryService:
         pass
 
     def assign_delivery_driver(self, delivery_data: dict) -> bool:
-        flag = True
         estimated_delivery_time_str = delivery_data["estimated_delivery_time"]
         edt = datetime.fromisoformat(estimated_delivery_time_str)
+        
         if(edt > datetime.now() + timedelta(minutes = 60)):
-            flag = False
+            return False
         else:
             delivery_data["driver_id"] = 1 # TBD
             delivery_data["assigned_at"] = datetime.now().isoformat() 
         
-        return flag
+        return True
     
     def calculate_estimated_delivery_time(self, location: OrderLocation) -> datetime:
         dt = 0
