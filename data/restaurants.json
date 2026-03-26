@@ -66,35 +66,47 @@
         ]
     },
     {
-        "name": "My rest",
-        "cuisine": "canadian",
-        "location": "kelowna",
+        "name": "Curry House",
+        "cuisine": "Indian",
+        "location": "Vancouver, BC",
         "delivery_fee": 4.99,
-        "owner_id": 1,
-        "id": 4
+        "owner_id": 4,
+        "id": 4,
+        "menu_items": [
+            {
+                "name": "Butter Chicken",
+                "description": "Tender chicken cooked in a creamy tomato sauce with spices.",
+                "price": 11.99,
+                "id": 1
+            },
+            {
+                "name": "Vegetable Biryani",
+                "description": "Fragrant rice dish with mixed vegetables and aromatic spices.",
+                "price": 10.99,
+                "id": 2
+            }
+        ]
     },
     {
-        "name": "My rest 2",
-        "cuisine": "canadian",
-        "location": "kelowna",
-        "delivery_fee": 4.99,
-        "owner_id": 1,
-        "id": 5
-    },
-    {
-        "name": "My rest 3",
-        "cuisine": "canadian",
-        "location": "kelowna",
-        "delivery_fee": 4.99,
-        "owner_id": 1,
-        "id": 6
-    },
-    {
-        "name": "My rest 3",
-        "cuisine": "canadian",
-        "location": "kelowna",
-        "delivery_fee": 4.99,
-        "owner_id": 1,
-        "id": 7
+        "name": "Burger Barn",
+        "cuisine": "American",
+        "location": "Kelowna, BC",
+        "delivery_fee": 3.49,
+        "owner_id": 5,
+        "id": 5,
+        "menu_items": [
+            {
+                "name": "Classic Cheeseburger",
+                "description": "Juicy beef patty with cheddar cheese, lettuce, tomato, and pickles.",
+                "price": 8.99,
+                "id": 1
+            },
+            {
+                "name": "Veggie Burger",
+                "description": "Grilled veggie patty with avocado, lettuce, tomato, and vegan mayo.",
+                "price": 9.99,
+                "id": 2
+            }
+        ]
     }
 ]
