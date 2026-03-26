@@ -6,7 +6,6 @@ from src.backend.models.order import OrderCreate, OrderStatus
 from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
-
 from src.backend.services.order_service import OrderService
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.review import Review, ReviewCreate
