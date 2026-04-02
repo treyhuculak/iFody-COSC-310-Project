@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from src.backend.routers import restaurants
 from src.backend.routers import orders
@@ -19,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/", StaticFiles(directory="src/frontend/dist", html=True), name="frontend")
+
 app.include_router(auth.router)
 app.include_router(restaurants.router)
 app.include_router(orders.router)
@@ -27,6 +30,6 @@ app.include_router(notification.router)
 app.include_router(transactions.router)
 app.include_router(deliveries.router)
 
-@app.get("/")
+@app.get("/api")
 def root():
     return {"message": "Hello World"}
