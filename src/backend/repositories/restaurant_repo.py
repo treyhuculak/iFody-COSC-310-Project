@@ -9,6 +9,7 @@ class RestaurantRepository:
     def __init__(self, file_path: Optional[str] = None) -> None:
         self.order_repo = OrderRepository()
         self.file_path = file_path or self.DEFAULT_FILE
+        self.X_LIMIT_ALGO_RESTAURANTS = 5
         try:
             with open(self.file_path, 'r') as f:
                 json.load(f)
@@ -98,7 +99,7 @@ class RestaurantRepository:
         recent_restaurant_ids = self.order_repo.get_recently_ordered_from_restaurants(customer_id)
         restaurants_by_id = {restaurant['id']: restaurant for restaurant in self._get_all_restaurants()}
         recent_restaurants = [restaurants_by_id[restaurant_id] for restaurant_id in recent_restaurant_ids if restaurant_id in restaurants_by_id]
-        return self._paginate(recent_restaurants, skip, limit)
+        return self._paginate(recent_restaurants[:self.X_LIMIT_ALGO_RESTAURANTS], skip, limit)
     
     def get_popular_restaurants_in_location(self, location: str, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
         '''
@@ -128,7 +129,7 @@ class RestaurantRepository:
         restaurants_by_id = {restaurant['id']: restaurant for restaurant in restaurants}
         sorted_restaurants = [restaurants_by_id[restaurant_id] for restaurant_id in sorted_restaurant_ids if restaurant_id in restaurants_by_id]
         
-        return self._paginate(sorted_restaurants, skip, limit)
+        return self._paginate(sorted_restaurants[:self.X_LIMIT_ALGO_RESTAURANTS], skip, limit)
 
     def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0, 
                            skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
