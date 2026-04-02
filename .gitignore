@@ -1,35 +1,35 @@
-# Virtual environments
-.venv
+# Python: Virtual Environments
+.venv/
 venv/
-.VENV
+.VENV/
 VENV/
 env/
 ENV/
 
-# Python cache and compiled files
+# Python: Cache & Compiled Files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# Testing
+# Python: Testing
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Environment variables
+# Environment Variables
 .env
 .env.local
 .env.*.local
 
-# IDEs
+# IDE / Editor Files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# Operating System Files
 .DS_Store
 */.DS_Store
 .*/.DS_Store
@@ -37,7 +37,20 @@ htmlcov/
 .*/*/.DS_Store
 Thumbs.db
 
-# Project specific
+# Build Artifacts (General)
 dist/
 build/
 *.egg-info/
+
+# Node / JavaScript Ecosystem
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Vite
+.vite/
