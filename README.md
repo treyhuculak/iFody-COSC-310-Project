@@ -1,4 +1,4 @@
-# iFody---COSC-310-Project
+# iFody
 This is the repository for the iFody project in COSC 310, a food delivery draft application.
 
 ---
