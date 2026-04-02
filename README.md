@@ -12,57 +12,6 @@ The iFody project supports **two different run modes** depending on your workflo
 
 ---
 
-## One‑Command Mode (Production‑Style)
-
-In this mode, FastAPI serves **both** the backend API and the built React frontend.  
-You only need **one terminal** and **one command**.
-
-### **1. Build the frontend**  
-(Only required when UI changes)
-
-```bash
-cd src/frontend
-npm install
-npm run build
-```
-
-This generates the production build in:
-
-```
-src/frontend/dist/
-```
-
-### **2. Run FastAPI from the project root**
-
-```bash
-fastapi dev src/backend/main.py
-```
-
-### **3. Open the app**
-
-```
-http://localhost:8000
-```
-
-### **What this mode does**
-
-- FastAPI serves the backend  
-- FastAPI serves the built frontend  
-- Everything runs on **port 8000**  
-- No Vite dev server  
-- No second terminal  
-
-Best for:
-- Demos  
-- Deployment  
-- Simplicity  
-
----
-
-## Two‑Terminal Mode (Development)
-
-In this mode, the frontend runs on its own dev server with hot reload, while FastAPI runs separately.
-
 ### **Terminal 1 — Backend**
 
 ```bash
