@@ -1,12 +1,30 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 
 from src.backend.models.menu_item import MenuItem
 
+class Province(Enum):
+    BRITISH_COLUMBIA = "BC"
+    ALBERTA = "AB"
+    SASKATCHEWAN = "SK"
+    MANITOBA = "MB"
+    ONTARIO = "ON"
+    QUEBEC = "QC"
+    NEW_BRUNSWICK = "NB"
+    NOVA_SCOTIA = "NS"
+    PRINCE_EDWARD_ISLAND = "PE"
+    NEWFOUNDLAND_AND_LABRADOR = "NL"
+    YUKON = "YT"
+    NORTHWEST_TERRITORIES = "NT"
+    NUNAVUT = "NU"
+
 class RestaurantBase(BaseModel):
-    name: str = Field(..., min_length=1)  # Name must not be empty
-    cuisine: str = Field(..., min_length=1)  # Cuisine must not be empty
-    location: str = Field(..., min_length=1)  # Location must not be empty
+    name: str = Field(..., min_length=1, max_length=100)  # Name must not be empty
+    cuisine: str = Field(..., min_length=1, max_length=100)  # Cuisine must not be empty
+    city: str = Field(..., min_length=1, max_length=100)  # City must not be empty
+    province: Province = Field(...)  # Province must be a valid province
     delivery_fee: float = Field(..., ge=0)  # Delivery fee must be greater than or equal to 0
 
 class RestaurantCreate(RestaurantBase):

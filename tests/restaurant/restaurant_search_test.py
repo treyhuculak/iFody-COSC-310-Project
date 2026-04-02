@@ -54,19 +54,22 @@ def test_search_restaurants_by_partial_name(test_client):
     restaurant1 = {
         "name": "Pizza Palace",
         "cuisine": "Italian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     restaurant2 = {
         "name": "Burger Barn",
         "cuisine": "American",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 2.99
     }
     restaurant3 = {
         "name": "Pasta Place",
         "cuisine": "Italian",
-        "location": "Midtown",
+        "city": "Midtown",
+        "province": "BC",
         "delivery_fee": 4.99
     }
     test_client.post("/restaurants/", json=restaurant1)
@@ -84,7 +87,8 @@ def test_search_restaurants_by_partial_name_no_matches(test_client):
     restaurant = {
         "name": "Sushi Spot",
         "cuisine": "Japanese",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 5.99
     }
     test_client.post("/restaurants/", json=restaurant)
@@ -100,7 +104,8 @@ def test_search_restaurants_by_partial_name_case_insensitive(test_client):
     restaurant = {
         "name": "Taco Town",
         "cuisine": "Mexican",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 2.49
     }
     test_client.post("/restaurants/", json=restaurant)
@@ -116,13 +121,15 @@ def test_search_restaurants_by_partial_name_empty_string(test_client):
     restaurant1 = {
         "name": "Noodle Nook",
         "cuisine": "Asian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.49
     }
     restaurant2 = {
         "name": "Salad Stop",
         "cuisine": "Healthy",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 1.99
     }
     test_client.post("/restaurants/", json=restaurant1)
@@ -139,7 +146,8 @@ def test_search_restaurants_by_partial_name_whitespace_handling(test_client):
     restaurant = {
         "name": "BBQ Bistro",
         "cuisine": "Barbecue",
-        "location": "Midtown",
+        "city": "Midtown",
+        "province": "BC",
         "delivery_fee": 4.49
     }
     test_client.post("/restaurants/", json=restaurant)
@@ -160,7 +168,8 @@ def test_search_menu_items_by_partial_name(test_client):
     restaurant = {
         "name": "BBQ Joint",
         "cuisine": "Barbecue",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 4.99
     }
     response = test_client.post("/restaurants/", json=restaurant)
@@ -196,7 +205,8 @@ def test_search_menu_items_by_partial_name_no_matches(test_client):
     restaurant = {
         "name": "Vegan Cafe",
         "cuisine": "Vegan",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 3.49
     }
     response = test_client.post("/restaurants/", json=restaurant)
@@ -220,7 +230,8 @@ def test_search_menu_items_by_partial_name_case_insensitive(test_client):
     restaurant = {
         "name": "Dessert Den",
         "cuisine": "Desserts",
-        "location": "Midtown",
+        "city": "Midtown",
+        "province": "BC",
         "delivery_fee": 2.99
     }
     response = test_client.post("/restaurants/", json=restaurant)
@@ -244,7 +255,8 @@ def test_search_menu_items_by_partial_name_empty_string(test_client):
     restaurant = {
         "name": "Breakfast Bistro",
         "cuisine": "Breakfast",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     response = test_client.post("/restaurants/", json=restaurant)
@@ -280,7 +292,8 @@ def test_search_menu_items_by_partial_name_whitespace_handling(test_client):
     restaurant = {
         "name": "Grill House",
         "cuisine": "Grilled Foods",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 4.49
     }
     response = test_client.post("/restaurants/", json=restaurant)

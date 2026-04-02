@@ -43,6 +43,12 @@ class OrderRepository:
         customer_orders = list(filter(lambda order: order.get("customer_id") == customer_id, orders))
         return customer_orders
     
+    def get_recently_ordered_from_restaurants(self, customer_id: int) -> List[dict]:
+        orders = self.get_orders_by_customer_id(customer_id)
+        # Sort orders by timestamp in descending order and get unique restaurant ids
+        recent_restaurant_ids = list({order["restaurant_id"] for order in sorted(orders, key=lambda x: x.get("timestamp", ""), reverse=True)})
+        return recent_restaurant_ids[:5]
+    
     def get_orders_by_restaurant_id(self, restaurant_id: int) -> List[dict]:
         orders = self._get_all_orders()
         restaurant_orders = list(filter(lambda order: order.get("restaurant_id") == restaurant_id, orders))

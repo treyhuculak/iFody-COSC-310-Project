@@ -84,8 +84,43 @@ class RestaurantRepository:
         if not location:
             raise HTTPException(status_code=400, detail="Invalid location provided.")
         restaurants = self._get_all_restaurants()
-        filtered_restaurants = [restaurant for restaurant in restaurants if restaurant.get('location', '').lower().strip() == location]
+        filtered_restaurants = [restaurant for restaurant in restaurants if restaurant.get('city', '').lower().strip() == location]
         return self._paginate(filtered_restaurants, skip, limit)
+    
+    def get_recently_ordered_from_restaurants(self, customer_id: int, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets all restaurants that the specified customer has recently ordered from.
+        Raises a 400 error if the customer_id is invalid (e.g., None or 0).
+        '''
+        if customer_id is None or customer_id == 0:
+            raise HTTPException(status_code=400, detail="Invalid customer_id provided.")
+        
+        recent_restaurant_ids = self.order_repo.get_recently_ordered_from_restaurants(customer_id)
+        recent_restaurants = [restaurant for restaurant in self._get_all_restaurants() if restaurant['id'] in recent_restaurant_ids]
+        return self._paginate(recent_restaurants, skip, limit)
+    
+    def get_popular_restaurants_in_location(self, location: str, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets the most popular restaurants in the specified location based on the number of orders.
+        Raises a 400 error if the location is invalid (e.g., empty string or only whitespace).
+        '''
+        location = location.strip().lower()
+        if not location:
+            raise HTTPException(status_code=400, detail="Invalid location provided.")
+        
+        restaurants = self._get_all_restaurants()
+        # Create a dictionary to count the number of orders for each restaurant in the specified location
+        restaurant_order_counts = {restaurant['id']: 0 for restaurant in restaurants if restaurant.get('city', '').lower().strip() == location}
+        
+        for order in self.order_repo._get_all_orders():
+            restaurant_id = order.get('restaurant_id')
+            if restaurant_id in restaurant_order_counts:
+                restaurant_order_counts[restaurant_id] += 1
+        
+        sorted_restaurant_ids = sorted(restaurant_order_counts, key=lambda x: restaurant_order_counts.get(x, 0), reverse=True)
+        sorted_restaurants = [restaurant for restaurant in restaurants if restaurant['id'] in sorted_restaurant_ids]
+        
+        return self._paginate(sorted_restaurants, skip, limit)
 
     def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0, 
                            skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
@@ -99,7 +134,7 @@ class RestaurantRepository:
         for restaurant in restaurants:
             if cuisine and cuisine != restaurant.get('cuisine','').lower().strip():
                 continue
-            if location and location != restaurant.get('location','').lower().strip():
+            if location and location != restaurant.get('city','').lower().strip():
                 continue
             if max_fee > 0 and restaurant.get('delivery_fee', float('inf')) > max_fee:
                 continue

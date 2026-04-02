@@ -47,7 +47,8 @@ def test_client(tmp_path):
                     "id": 2,
                     "name": "Sample Restaurant",
                     "cuisine": "Fusion",
-                    "location": "Vancouver",
+                    "city": "Vancouver",
+                    "province": "BC",
                     "delivery_fee": 3.5,
                     "is_available": True,
                     "owner_id": 2,
@@ -145,7 +146,8 @@ def test_get_restaurant_rating_endpoint_returns_zero_without_reviews(tmp_path):
                     "id": 10,
                     "name": "No Reviews Place",
                     "cuisine": "Cafe",
-                    "location": "Kelowna",
+                    "city": "Kelowna",
+                    "province": "BC",
                     "delivery_fee": 2.0,
                     "is_available": True,
                     "owner_id": 2,
@@ -172,3 +174,4 @@ def test_get_restaurant_rating_endpoint_returns_zero_without_reviews(tmp_path):
 
     assert response.status_code == 200
     assert response.json() == 0.0
+

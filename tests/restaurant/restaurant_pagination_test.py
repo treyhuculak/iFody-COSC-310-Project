@@ -113,7 +113,8 @@ def test_get_all_restaurants_endpoint_pagination(test_client):
     for i in range(15):
         restaurant_data = {
             "name": f"Test Restaurant {i}",
-            "location": "Test Location",
+            "city": "Test Location",
+            "province": "BC",
             "cuisine": "Test Cuisine",
             "delivery_fee": 5.0,
         }
@@ -157,3 +158,4 @@ def test_get_all_restaurants_endpoint_rejects_negative_skip(test_client):
 def test_get_all_restaurants_endpoint_rejects_excessive_limit(test_client):
     response = test_client.get("/restaurants?skip=0&limit=101")
     assert response.status_code == 422
+
