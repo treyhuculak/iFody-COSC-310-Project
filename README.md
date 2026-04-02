@@ -1,5 +1,5 @@
 # iFody---COSC-310-Project
-This is the repo for the iFody project in COSC 310
+This is the repository for the iFody project in COSC 310, a food delivery draft application.
 
 ---
 
@@ -86,5 +86,5 @@ npm run dev
 Frontend runs at:
 
 ```
-http://localhost:5173
+http://localhost:3000
 ```
