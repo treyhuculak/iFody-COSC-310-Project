@@ -3,7 +3,7 @@ This is the repository for the iFody project in COSC 310, a food delivery draft 
 
 ---
 
-# 📘 Running the Project
+# Running the Project
 
 The iFody project supports **two different run modes** depending on your workflow:
 
@@ -12,7 +12,7 @@ The iFody project supports **two different run modes** depending on your workflo
 
 ---
 
-## 🚀 One‑Command Mode (Production‑Style)
+## One‑Command Mode (Production‑Style)
 
 In this mode, FastAPI serves **both** the backend API and the built React frontend.  
 You only need **one terminal** and **one command**.
@@ -59,7 +59,7 @@ Best for:
 
 ---
 
-## 🛠️ Two‑Terminal Mode (Development)
+## Two‑Terminal Mode (Development)
 
 In this mode, the frontend runs on its own dev server with hot reload, while FastAPI runs separately.
 
