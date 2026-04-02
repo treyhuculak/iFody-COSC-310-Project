@@ -96,7 +96,8 @@ class RestaurantRepository:
             raise HTTPException(status_code=400, detail="Invalid customer_id provided.")
         
         recent_restaurant_ids = self.order_repo.get_recently_ordered_from_restaurants(customer_id)
-        recent_restaurants = [restaurant for restaurant in self._get_all_restaurants() if restaurant['id'] in recent_restaurant_ids]
+        restaurants_by_id = {restaurant['id']: restaurant for restaurant in self._get_all_restaurants()}
+        recent_restaurants = [restaurants_by_id[restaurant_id] for restaurant_id in recent_restaurant_ids if restaurant_id in restaurants_by_id]
         return self._paginate(recent_restaurants, skip, limit)
     
     def get_popular_restaurants_in_location(self, location: str, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
@@ -117,8 +118,15 @@ class RestaurantRepository:
             if restaurant_id in restaurant_order_counts:
                 restaurant_order_counts[restaurant_id] += 1
         
-        sorted_restaurant_ids = sorted(restaurant_order_counts, key=lambda x: restaurant_order_counts.get(x, 0), reverse=True)
-        sorted_restaurants = [restaurant for restaurant in restaurants if restaurant['id'] in sorted_restaurant_ids]
+        # Keep only restaurants that actually have orders in this location.
+        ranked_restaurant_ids = [restaurant_id for restaurant_id, count in restaurant_order_counts.items() if count > 0]
+        sorted_restaurant_ids = sorted(
+            ranked_restaurant_ids,
+            key=lambda x: restaurant_order_counts.get(x, 0),
+            reverse=True,
+        )
+        restaurants_by_id = {restaurant['id']: restaurant for restaurant in restaurants}
+        sorted_restaurants = [restaurants_by_id[restaurant_id] for restaurant_id in sorted_restaurant_ids if restaurant_id in restaurants_by_id]
         
         return self._paginate(sorted_restaurants, skip, limit)
 

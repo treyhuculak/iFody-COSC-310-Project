@@ -9,6 +9,7 @@ class OrderRepository:
     def __init__(self, file_path: Optional[str] = None) -> None:
         # check if files exist, if not create them with headers
         self.file_path = file_path or self.ORDER_FILE
+        self.X_MOST_RECENT_RESTAURANTS = 5
         try:
             with open(self.file_path, 'r') as f:
                 json.load(f)
@@ -45,9 +46,16 @@ class OrderRepository:
     
     def get_recently_ordered_from_restaurants(self, customer_id: int) -> List[dict]:
         orders = self.get_orders_by_customer_id(customer_id)
-        # Sort orders by timestamp in descending order and get unique restaurant ids
-        recent_restaurant_ids = list({order["restaurant_id"] for order in sorted(orders, key=lambda x: x.get("timestamp", ""), reverse=True)})
-        return recent_restaurant_ids[:5]
+        # Keep restaurant IDs unique while preserving most-recent-first order.
+        recent_restaurant_ids = []
+        seen_restaurant_ids = set()
+        for order in sorted(orders, key=lambda x: x.get("timestamp", ""), reverse=True):
+            restaurant_id = order.get("restaurant_id")
+            if restaurant_id in seen_restaurant_ids:
+                continue
+            seen_restaurant_ids.add(restaurant_id)
+            recent_restaurant_ids.append(restaurant_id)
+        return recent_restaurant_ids[:self.X_MOST_RECENT_RESTAURANTS]
     
     def get_orders_by_restaurant_id(self, restaurant_id: int) -> List[dict]:
         orders = self._get_all_orders()
