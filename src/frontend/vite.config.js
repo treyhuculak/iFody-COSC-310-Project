@@ -3,8 +3,16 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 
 // https://vite.dev/config/
-export default {
+export default defineConfig({
   server: {
-    port: 3000
-  }
-};
+    host: true,
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+})
