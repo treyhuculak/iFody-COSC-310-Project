@@ -79,7 +79,7 @@ def test_block_user_notification(test_client):
     assert notifications[0] ["user_id"] == 1
     assert notifications[0] ["type"] == NotificationType.BLOCKED_ACCOUNT.value
     assert notifications[0] ["is_read"] == False
-    assert notifications[0] ["message"] == "Your account has been blocked by the administrator"
+    assert notifications[0] ["message"] == "Your account has been blocked by the administrator."
 
 def test_unblock_user_notifications(test_client):
     client, test_notif_db = test_client
@@ -100,5 +100,4 @@ def test_unblock_user_notifications(test_client):
     assert notifications[1] ["user_id"] == 1
     assert notifications[1] ["type"] == NotificationType.UNBLOCKED_ACCOUNT.value
     assert notifications[1] ["is_read"] == False
-    assert notifications[1] ["message"] == "Your account has been unblocked by the administrator"
-
+    assert notifications[1] ["message"] == "Your account has been unblocked by the administrator."

@@ -65,6 +65,8 @@ class AuthController:
         if user_info == None:
             raise HTTPException(status_code = 404, detail = "The account is not found.")
         if password == user_info['password']:
+            if user_info["is_blocked"]:
+                raise HTTPException(status_code = 403, detail = "The account has been blocked.")
             user_info["is_logged_in"] = True
             self.cur_user = user_info
             return self.cur_user
@@ -106,8 +108,8 @@ class AuthController:
                 blocked_notif = NotificationCreate(
                     user_id = blocked_customer_id,
                     type = NotificationType.BLOCKED_ACCOUNT,
-                    title = "Account has been blocked",
-                    message = "Your account has been blocked by the administrator",
+                    title = "Your account has been blocked.",
+                    message = "Your account has been blocked by the administrator.",
                     is_read = False,
                 )
                 self.notif_controller.create_notif(blocked_notif)
@@ -130,8 +132,8 @@ class AuthController:
                 unblocked_notif = NotificationCreate(
                     user_id = unblocked_customer_id,
                     type = NotificationType.UNBLOCKED_ACCOUNT,
-                    title = "Account has been unblocked",
-                    message = f"Your account has been unblocked by the administrator",
+                    title = "Your account has been unblocked.",
+                    message = f"Your account has been unblocked by the administrator.",
                     is_read = False,
                 )
                 self.notif_controller.create_notif(unblocked_notif)
