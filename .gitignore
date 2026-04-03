@@ -53,3 +53,4 @@ pnpm-debug.log*
 
 # Vite
 .vite/
+src/frontend/dist/
