@@ -51,8 +51,8 @@ export default function Register() {
 
         <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
           <option value="customer">Customer</option>
-          <option value="restaurant">Restaurant Owner</option>
-          <option value="admin">Administrator</option>
+          <option value="restaurant owner">Restaurant Owner</option>
+          <option value="administrator">Administrator</option>
         </select>
 
         <button type="submit" style={styles.button}>Register</button>
