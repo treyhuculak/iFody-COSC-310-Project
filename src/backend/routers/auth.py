@@ -60,6 +60,21 @@ def login_user(data: LoginRequest, controller: AuthController = Depends(get_cont
         "role": user["role"]
     }
 
+@router.post("/logout")
+def logout_user(controller: AuthController = Depends(get_controller)):
+    '''
+    Calls the auth_controller's logout method.
+    Returns a simple success message along with the user's email and role.
+    '''
+    user = controller.cur_user
+    controller.logout()
+    return {
+        "message": "Logged out successfully.",
+        "username": user["username"],
+        "email": user["email"],
+        "role": user["role"]
+    }
+
 @router.post("/blocked/{username}")
 def block_user(username: str, controller: AuthController = Depends(get_controller)):
     '''

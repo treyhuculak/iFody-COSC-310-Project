@@ -73,18 +73,34 @@ export default function App() {
     setSearchQuery(restaurant?.name || "");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const keysToRemove = ["username", "userId", "auth_token", "token", "currentUserId"];
-    keysToRemove.forEach((k) => {
-      try {
-        localStorage.removeItem(k);
-      } catch (e) {
-        // ignore
+    try {
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("token");
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const resp = await fetch("/auth/logout", {
+        method: "POST",
+        headers,
+        credentials: "include",
+      });
+      if (!resp.ok && resp.status !== 401) {
+        console.warn("Logout request failed:", resp.status);
       }
-    });
-    setUsername(null);
-    // reload to ensure all components read cleared storage
-    window.location.href = "/";
+    } catch (err) {
+      console.warn("Logout request error:", err);
+    } finally {
+      keysToRemove.forEach((k) => {
+        try {
+          localStorage.removeItem(k);
+        } catch (e) {
+          // ignore
+        }
+      });
+      setUsername(null);
+      // reload to ensure all components read cleared storage
+      window.location.href = "/";
+    }
   };
 
   return (
