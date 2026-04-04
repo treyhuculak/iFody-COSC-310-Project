@@ -13,6 +13,13 @@ export default function App() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
+  const [username, setUsername] = useState(() => {
+    try {
+      return localStorage.getItem("username");
+    } catch (err) {
+      return null;
+    }
+  });
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -66,6 +73,20 @@ export default function App() {
     setSearchQuery(restaurant?.name || "");
   };
 
+  const handleLogout = () => {
+    const keysToRemove = ["username", "userId", "auth_token", "token", "currentUserId"];
+    keysToRemove.forEach((k) => {
+      try {
+        localStorage.removeItem(k);
+      } catch (e) {
+        // ignore
+      }
+    });
+    setUsername(null);
+    // reload to ensure all components read cleared storage
+    window.location.href = "/";
+  };
+
   return (
     <BrowserRouter>
       <nav className="app-nav">
@@ -93,8 +114,19 @@ export default function App() {
             <NavLink to="/" end>
               Home
             </NavLink>
-            <NavLink to="/login">Login</NavLink>
-            <NavLink to="/register">Register</NavLink>
+            {username ? (
+              <>
+                <span className="app-username">Hi, {username}</span>
+                <button className="link-button" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login">Login</NavLink>
+                <NavLink to="/register">Register</NavLink>
+              </>
+            )}
           </div>
         </div>
 
