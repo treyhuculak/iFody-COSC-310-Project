@@ -26,6 +26,24 @@
             "role": "administrator",
             "is_logged_in": false,
             "is_blocked": false
+        },
+        {
+            "id": 4,
+            "username": "treyhuc",
+            "email": "treyhuculak@gmail.com",
+            "password": "Test123$",
+            "role": "customer",
+            "is_logged_in": false,
+            "is_blocked": false
+        },
+        {
+            "id": 5,
+            "username": "Blocked Brocka",
+            "email": "bb@2298.com",
+            "password": "bbB@2298",
+            "role": "customer",
+            "is_logged_in": false,
+            "is_blocked": true
         }
     ]
 }
