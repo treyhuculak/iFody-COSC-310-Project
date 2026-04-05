@@ -5,6 +5,7 @@ class PaymentOptions(Enum):
     CASH = "cash"
     CREDIT_CARD = "credit_card"
     DEBIT_CARD = "debit_card"
+    PAYPAL = "paypal"
 
 class PaymentBase(BaseModel):
     user_id: int
