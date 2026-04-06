@@ -38,16 +38,36 @@ def get_restaurants_by_location(
 ):
     return controller.get_restaurants_by_location(location=location, skip=skip, limit=limit)
 
+@router.get("/recent", response_model=PaginatedResponse[Restaurant])
+def get_recently_ordered_from_restaurants(
+    customer_id: int = Depends(get_user_id_from_auth),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)
+):
+    return controller.get_recently_ordered_from_restaurants(customer_id=customer_id, skip=skip, limit=limit)
+
+@router.get("/popular/{location}", response_model=PaginatedResponse[Restaurant])
+def get_popular_restaurants_in_location(
+    location: str, 
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    controller: RestaurantController = Depends(get_controller)
+):
+    return controller.get_get_popular_restaurants_in_location(location=location, skip=skip, limit=limit)
+
 @router.get("/filter", response_model=PaginatedResponse[Restaurant])
 def filter_restaurants(
     cuisine: str = Query(default=""),
+    city: str = Query(default=""),
     location: str = Query(default=""),
     max_fee: float = Query(default=0, ge=0),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=10, ge=1, le=100),
     controller: RestaurantController = Depends(get_controller)
 ):
-    return controller.filter_restaurants(cuisine=cuisine, location=location, max_fee=max_fee, skip=skip, limit=limit)
+    effective_location = city if city else location
+    return controller.filter_restaurants(cuisine=cuisine, location=effective_location, max_fee=max_fee, skip=skip, limit=limit)
 
 @router.get("/search", response_model=PaginatedResponse[Restaurant])
 def search_restaurants(

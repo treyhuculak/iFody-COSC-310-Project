@@ -9,6 +9,7 @@ class RestaurantRepository:
     def __init__(self, file_path: Optional[str] = None) -> None:
         self.order_repo = OrderRepository()
         self.file_path = file_path or self.DEFAULT_FILE
+        self.X_LIMIT_ALGO_RESTAURANTS = 5
         try:
             with open(self.file_path, 'r') as f:
                 json.load(f)
@@ -84,8 +85,51 @@ class RestaurantRepository:
         if not location:
             raise HTTPException(status_code=400, detail="Invalid location provided.")
         restaurants = self._get_all_restaurants()
-        filtered_restaurants = [restaurant for restaurant in restaurants if restaurant.get('location', '').lower().strip() == location]
+        filtered_restaurants = [restaurant for restaurant in restaurants if restaurant.get('city', '').lower().strip() == location]
         return self._paginate(filtered_restaurants, skip, limit)
+    
+    def get_recently_ordered_from_restaurants(self, customer_id: int, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets all restaurants that the specified customer has recently ordered from.
+        Raises a 400 error if the customer_id is invalid (e.g., None or 0).
+        '''
+        if customer_id is None or customer_id == 0:
+            raise HTTPException(status_code=400, detail="Invalid customer_id provided.")
+        
+        recent_restaurant_ids = self.order_repo.get_recently_ordered_from_restaurants(customer_id)
+        restaurants_by_id = {restaurant['id']: restaurant for restaurant in self._get_all_restaurants()}
+        recent_restaurants = [restaurants_by_id[restaurant_id] for restaurant_id in recent_restaurant_ids if restaurant_id in restaurants_by_id]
+        return self._paginate(recent_restaurants[:self.X_LIMIT_ALGO_RESTAURANTS], skip, limit)
+    
+    def get_popular_restaurants_in_location(self, location: str, skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
+        '''
+        Gets the most popular restaurants in the specified location based on the number of orders.
+        Raises a 400 error if the location is invalid (e.g., empty string or only whitespace).
+        '''
+        location = location.strip().lower()
+        if not location:
+            raise HTTPException(status_code=400, detail="Invalid location provided.")
+        
+        restaurants = self._get_all_restaurants()
+        # Create a dictionary to count the number of orders for each restaurant in the specified location
+        restaurant_order_counts = {restaurant['id']: 0 for restaurant in restaurants if restaurant.get('city', '').lower().strip() == location}
+        
+        for order in self.order_repo._get_all_orders():
+            restaurant_id = order.get('restaurant_id')
+            if restaurant_id in restaurant_order_counts:
+                restaurant_order_counts[restaurant_id] += 1
+        
+        # Keep only restaurants that actually have orders in this location.
+        ranked_restaurant_ids = [restaurant_id for restaurant_id, count in restaurant_order_counts.items() if count > 0]
+        sorted_restaurant_ids = sorted(
+            ranked_restaurant_ids,
+            key=lambda x: restaurant_order_counts.get(x, 0),
+            reverse=True,
+        )
+        restaurants_by_id = {restaurant['id']: restaurant for restaurant in restaurants}
+        sorted_restaurants = [restaurants_by_id[restaurant_id] for restaurant_id in sorted_restaurant_ids if restaurant_id in restaurants_by_id]
+        
+        return self._paginate(sorted_restaurants[:self.X_LIMIT_ALGO_RESTAURANTS], skip, limit)
 
     def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0, 
                            skip: int = 0, limit: int = 10) -> tuple[List[dict], int]:
@@ -99,7 +143,7 @@ class RestaurantRepository:
         for restaurant in restaurants:
             if cuisine and cuisine != restaurant.get('cuisine','').lower().strip():
                 continue
-            if location and location != restaurant.get('location','').lower().strip():
+            if location and location != restaurant.get('city','').lower().strip():
                 continue
             if max_fee > 0 and restaurant.get('delivery_fee', float('inf')) > max_fee:
                 continue

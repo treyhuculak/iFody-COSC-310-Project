@@ -65,7 +65,8 @@ def test_client(tmp_path):
 new_restaurant = {
         "name": "Test Restaurant",
         "cuisine": "Test Cuisine",
-        "location": "123 Test St",
+    "city": "123 Test St",
+    "province": "BC",
         "delivery_fee": 2.99
     }
 
@@ -80,8 +81,9 @@ def test_add_restaurant(test_client):
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == new_restaurant["name"]
-    assert data["cuisine"] == new_restaurant["cuisine"]
-    assert data["location"] == new_restaurant["location"]
+    assert data["cuisine"] == new_restaurant["cuisine"].lower()
+    assert data["city"] == new_restaurant["city"].lower()
+    assert data["province"] == new_restaurant["province"]
     assert data["delivery_fee"] == new_restaurant["delivery_fee"]
 
 def test_add_restaurant_missing_fields(test_client):
@@ -237,18 +239,18 @@ def test_get_restaurants_by_owner(test_client):
 def test_get_restaurants_by_location(test_client):
     # Add two restaurants with the same location
     restaurant1 = new_restaurant.copy()
-    restaurant1["location"] = "Test Location"
+    restaurant1["city"] = "Test Location"
     response1 = test_client.post("/restaurants/", json=restaurant1)
     assert response1.status_code == 200
 
     restaurant2 = new_restaurant.copy()
-    restaurant2["location"] = "Test Location"
+    restaurant2["city"] = "Test Location"
     response2 = test_client.post("/restaurants/", json=restaurant2)
     assert response2.status_code == 200
 
     # Add a third restaurant with a different location
     restaurant3 = new_restaurant.copy()
-    restaurant3["location"] = "Different Location"
+    restaurant3["city"] = "Different Location"
     response3 = test_client.post("/restaurants/", json=restaurant3)
     assert response3.status_code == 200
 
@@ -259,7 +261,7 @@ def test_get_restaurants_by_location(test_client):
     assert isinstance(data, dict) # Should return a paginated response dict
     assert len(data["items"]) == 2
     for rest in data["items"]:
-        assert rest["location"] == "Test Location"
+        assert rest["city"] == "test location"
 
 
 '''
@@ -480,4 +482,5 @@ def test_get_menu_items_by_restaurant_id_no_items(test_client):
     data = get_response.json()
     assert isinstance(data, dict) # Should return a paginated response dict
     assert len(data["items"]) == 0
+
 

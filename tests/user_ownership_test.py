@@ -167,7 +167,8 @@ def test_non_owner_cannot_delete_order_item_from_order(test_client):
 new_restaurant = {
     "name": "Test Restaurant",
     "cuisine": "Test Cuisine",
-    "location": "Kelowna",
+    "city": "Kelowna",
+    "province": "BC",
     "delivery_fee": 5.0,
 }
 

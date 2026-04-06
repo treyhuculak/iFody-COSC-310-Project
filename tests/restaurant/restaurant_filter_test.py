@@ -65,19 +65,22 @@ def test_filter_restaurants(test_client):
     restaurant1 = {
         "name": "Pizza Place",
         "cuisine": "Italian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     restaurant2 = {
         "name": "Sushi Spot",
         "cuisine": "Japanese",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 5.99
     }
     restaurant3 = {
         "name": "Burger Joint",
         "cuisine": "American",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 2.99
     }
 
@@ -93,7 +96,7 @@ def test_filter_restaurants(test_client):
     assert data["items"][0]["name"] == "Pizza Place"
 
     # Test filtering by location
-    response = test_client.get("/restaurants/filter?location=Downtown")
+    response = test_client.get("/restaurants/filter?city=Downtown")
     assert response.status_code == 200
     data = response.json()
     assert len(data["items"]) == 2
@@ -109,19 +112,22 @@ def test_filter_restaurants_combined(test_client):
     restaurant1 = {
         "name": "Pizza Place",
         "cuisine": "Italian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     restaurant2 = {
         "name": "Sushi Spot",
         "cuisine": "Japanese",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 5.99
     }
     restaurant3 = {
         "name": "Burger Joint",
         "cuisine": "American",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 2.99
     }
 
@@ -130,7 +136,7 @@ def test_filter_restaurants_combined(test_client):
         assert response.status_code == 200
 
     # Test filtering by cuisine and location
-    response = test_client.get("/restaurants/filter?cuisine=Italian&location=Downtown")
+    response = test_client.get("/restaurants/filter?cuisine=Italian&city=Downtown")
     assert response.status_code == 200
     data = response.json()
     assert len(data["items"]) == 1
@@ -148,13 +154,15 @@ def test_filter_restaurants_no_matches(test_client):
     restaurant1 = {
         "name": "Pizza Place",
         "cuisine": "Italian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     restaurant2 = {
         "name": "Sushi Spot",
         "cuisine": "Japanese",
-        "location": "Uptown",
+        "city": "Uptown",
+        "province": "BC",
         "delivery_fee": 5.99
     }
 
@@ -177,7 +185,8 @@ def test_filter_menu_items(test_client):
     restaurant = {
         "name": "Pizza Place",
         "cuisine": "Italian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     response = test_client.post("/restaurants/", json=restaurant)
@@ -216,7 +225,8 @@ def test_filter_menu_items_no_matches(test_client):
     restaurant = {
         "name": "Pizza Place",
         "cuisine": "Italian",
-        "location": "Downtown",
+        "city": "Downtown",
+        "province": "BC",
         "delivery_fee": 3.99
     }
     response = test_client.post("/restaurants/", json=restaurant)
@@ -237,3 +247,4 @@ def test_filter_menu_items_no_matches(test_client):
     assert response.status_code == 200
     data = response.json()
     assert len(data["items"]) == 0
+

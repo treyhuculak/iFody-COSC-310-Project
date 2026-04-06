@@ -50,6 +50,16 @@ class RestaurantController:
         location_restaurants, total = self.repo.get_restaurants_by_location(location, skip, limit)
         response_restaurants = [Restaurant(**r) for r in location_restaurants]
         return self._build_paginated_response(response_restaurants, total, skip, limit)
+    
+    def get_recently_ordered_from_restaurants(self, customer_id: int, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        recent_restaurants, total = self.repo.get_recently_ordered_from_restaurants(customer_id, skip, limit)
+        response_restaurants = [Restaurant(**r) for r in recent_restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
+    
+    def get_get_popular_restaurants_in_location(self, location: str, skip: int = 0, limit: int = 10) -> PaginatedResponse:
+        popular_restaurants, total = self.repo.get_popular_restaurants_in_location(location, skip, limit)
+        response_restaurants = [Restaurant(**r) for r in popular_restaurants]
+        return self._build_paginated_response(response_restaurants, total, skip, limit)
 
     def filter_restaurants(self, cuisine: str = "", location: str = "", max_fee: float = 0, 
                            skip: int = 0, limit: int = 10) -> PaginatedResponse:
@@ -72,6 +82,12 @@ class RestaurantController:
         restaurant_data = restaurant.model_dump()
         # Always use the authenticated owner's ID; ignore any owner_id from the request body
         restaurant_data['owner_id'] = owner_id
+        restaurant_data['city'] = restaurant_data.get('city', '').strip().lower()
+        province = restaurant_data.get('province', '')
+        if hasattr(province, 'value'):
+            province = province.value
+        restaurant_data['province'] = str(province).strip().upper()
+        restaurant_data['cuisine'] = restaurant_data.get('cuisine', '').strip().lower()
         added_restaurant = self.repo.add_restaurant(restaurant_data)
         return Restaurant(**added_restaurant)
 

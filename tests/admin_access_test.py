@@ -160,7 +160,8 @@ def test_non_admin_non_owner_cannot_delete_order_item_from_order(test_client):
 new_restaurant = {
     "name": "Test Restaurant",
     "cuisine": "Test Cuisine",
-    "location": "Kelowna",
+    "city": "Kelowna",
+    "province": "BC",
     "delivery_fee": 5.0,
 }
 
@@ -270,4 +271,5 @@ def test_non_admin_non_owner_cannot_delete_menu_item_from_restaurant(test_client
     assert get_response.status_code == 200
     data = get_response.json()
     assert data["items"][0]["id"] == menu_item_id
+
 
