@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from src.backend.models.offer import Offer
 from src.backend.repositories.offer_repo import OfferRepository
 
@@ -29,11 +31,36 @@ class OfferService:
         '''
         self.offer_repo.del_offer(offer)
 
+    def get_active_offer(self) -> dict | None:
+        '''
+        Retrieves the currently activated Offer instance if available.
+        '''
+        if any([offer["is_active"] for offer in self.offer_suggestions]):
+            return [offer for offer in self.offer_suggestions if offer["is_active"]][0]
+        else:
+            return None
+
     def get_offer_suggestions(self) -> list[Offer]:
         '''
         Retrieves the suggested Offer instances for the users.
         '''
         return self.offer_suggestions
+    
+    def activate_offer(self, offer_id: int) -> dict | None:
+        '''
+        Activates the corresponding Offer instance according to the provided offer_id.
+        Only one offer can be active at a time.
+        '''
+        if offer_id in [offer["offer_id"] for offer in self.offer_suggestions]:
+            if any([offer["is_active"] for offer in self.offer_suggestions]):
+                raise HTTPException(status_code = 409, detail = "Only one offer may be active simultaneously.")
+            else:
+                for i in len(self.offer_suggestions):
+                    if self.offer_suggestions[i]["offer_id"] == offer_id:
+                        self.offer_suggestions[i]["is_active"] = True
+                        return self.offer_suggestions[i]
+        else:
+            return None
     
     def refresh_offer_suggestions(self) -> None:
         '''

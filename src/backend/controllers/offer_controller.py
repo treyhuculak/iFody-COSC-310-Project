@@ -1,5 +1,4 @@
 import datetime
-from fastapi import HTTPException
 from src.backend.models.offer import Offer
 from src.backend.services.offer_service import OfferService
 
@@ -20,27 +19,25 @@ class OfferController:
 
     def add_offer(self, offer: Offer) -> dict | None:
         '''
-        A wrapper function for the add_offer function of the OfferRepository class.
+        A wrapper function for the add_offer function of the OfferService class.
         Adds a new Offer instance to the database.
         '''
         return self.offer_service.add_offer(offer)
     
     def del_offer(self, offer: Offer) -> dict | None:
         '''
-        A wrapper function for the del_offer function of the OfferRepository class.
+        A wrapper function for the del_offer function of the OfferService class.
         Deletes an existing Offer instance from the database.
         '''
         return self.offer_service.del_offer(offer)
 
     def get_active_offer(self) -> dict | None:
         '''
+        A wrapper function for the get_active_offer function of the OfferService class.
         Retrieves the currently activated Offer instance if available.
         '''
-        if any([offer["is_active"] for offer in self.offers]):
-            return [offer for offer in self.offers if offer["is_active"]][0]
-        else:
-            return None
-
+        return self.offer_service.get_active_offer()
+    
     def get_offer_suggestions(self) -> list[Offer]:
         '''
         Retrieves the suggested Offer instances for the users.
@@ -67,19 +64,12 @@ class OfferController:
         
     def activate_offer(self, offer_id: int) -> dict | None:
         '''
+        A wrapper function for the activate_offer function of the OfferService class.
         Activates the corresponding Offer instance according to the provided offer_id.
-        Only one offer can be active at a time.
         '''
-        if offer_id in [offer["offer_id"] for offer in self.offers]:
-            if any([offer["is_active"] for offer in self.offers]):
-                raise HTTPException(status_code = 409, detail = "Only one offer may be active simultaneously.")
-            else:
-                for i in len(self.offers):
-                    if self.offers[i]["offer_id"] == offer_id:
-                        self.offers[i]["is_active"] = True
-                        return self.offers[i]
-        else:
-            return None
+        active_offer = self.offer_service.activate_offer(offer_id)
+        self.offers = self.offer_service.get_offer_suggestions()
+        return active_offer
         
     def deactivate_offer(self, offer_id: int) -> dict | None:
         '''

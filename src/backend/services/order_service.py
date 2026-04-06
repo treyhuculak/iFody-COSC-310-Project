@@ -1,9 +1,8 @@
-from typing import Optional
-
-from src.backend.repositories.order_repo import OrderRepository
-from src.backend.repositories.restaurant_repo import RestaurantRepository
-from src.backend.models.order import OrderCreate, OrderLocation
 import json
+from src.backend.models.order import OrderCreate
+from src.backend.repositories.restaurant_repo import RestaurantRepository
+from src.backend.services.offer_service import OfferService
+from typing import Optional
 
 '''
 This service will handle all the business logic related to orders, such as calculating totals, taxes, and delivery fees. It will interact with the OrderRepository for data persistence and the RestaurantRepository for fetching restaurant-specific information like delivery fees.
@@ -14,9 +13,11 @@ class OrderService:
 
     def __init__(self):
         self.restaurant_repo = RestaurantRepository()
+        self.offer_service = OfferService()
 
     def calculate_order_subtotal(self, order: OrderCreate):
         total_price = 0
+        active_offer = self.offer_service.get_active_offer()
         for item in order.order_items:
             total_price += item.price_at_purchase * item.quantity     
         return total_price
