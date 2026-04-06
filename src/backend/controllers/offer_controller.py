@@ -31,7 +31,16 @@ class OfferController:
         Deletes an existing Offer instance from the database.
         '''
         return self.offer_service.del_offer(offer)
-    
+
+    def get_active_offer(self) -> dict | None:
+        '''
+        Retrieves the currently activated Offer instance if available.
+        '''
+        if any([offer["is_active"] for offer in self.offers]):
+            return [offer for offer in self.offers if offer["is_active"]][0]
+        else:
+            return None
+
     def get_offer_suggestions(self) -> list[Offer]:
         '''
         Retrieves the suggested Offer instances for the users.
