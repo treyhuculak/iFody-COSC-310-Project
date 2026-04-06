@@ -31,6 +31,8 @@ class OfferRepository:
             offer.offer_id = self.offer_id
             self.offer_id += 1
             offer = offer.model_dump()
+            if hasattr(offer["offer_type"], "value"):
+                offer["offer_type"] = offer["offer_type"].value
             offers.append(offer)
         with open(self.offer_database, "w") as file:
             json.dump(offers, file, indent = 4)
@@ -42,6 +44,8 @@ class OfferRepository:
         with open(self.offer_database, "r") as file:
             offers = json.load(file)
             offer = offer.model_dump()
+            if hasattr(offer["offer_type"], "value"):
+                offer["offer_type"] = offer["offer_type"].value
             offers.remove(offer)
         with open(self.offer_database, "w") as file:
             json.dump(offers, file, indent = 4)
