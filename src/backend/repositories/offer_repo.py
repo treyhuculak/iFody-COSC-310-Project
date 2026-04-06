@@ -22,7 +22,7 @@ class OfferRepository:
                 json.dump([], file, indent = 4)
                 self.offer_id = 1
 
-    def add_offer(self, offer: Offer) -> None:
+    def add_offer(self, offer: Offer) -> dict | None:
         '''
         Adds a new Offer instance to the database.
         '''
@@ -33,11 +33,14 @@ class OfferRepository:
             offer = offer.model_dump()
             if hasattr(offer["offer_type"], "value"):
                 offer["offer_type"] = offer["offer_type"].value
+            if offer["title"] in [o["title"] for o in offers]:
+                return None
             offers.append(offer)
         with open(self.offer_database, "w") as file:
             json.dump(offers, file, indent = 4)
+            return offer
 
-    def del_offer(self, offer: Offer) -> None:
+    def del_offer(self, offer: Offer) -> dict | None:
         '''
         Deletes an existing Offer instance from the database.
         '''
@@ -46,9 +49,13 @@ class OfferRepository:
             offer = offer.model_dump()
             if hasattr(offer["offer_type"], "value"):
                 offer["offer_type"] = offer["offer_type"].value
-            offers.remove(offer)
+            try:
+                offers.remove(offer)
+            except ValueError:
+                return None
         with open(self.offer_database, "w") as file:
             json.dump(offers, file, indent = 4)
+            return offer
 
     def get_new_offers(self, amount: int) -> list[Offer]:
         '''

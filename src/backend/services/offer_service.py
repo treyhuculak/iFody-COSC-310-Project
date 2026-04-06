@@ -15,14 +15,14 @@ class OfferService:
         self.offers_each_week = offers_each_week
         self.offer_suggestions = self.offer_repo.get_new_offers(self.offers_each_week)
 
-    def add_offer(self, offer: Offer) -> None:
+    def add_offer(self, offer: Offer) -> dict | None:
         '''
         A wrapper function for the add_offer function of the OfferRepository class.
         Adds a new Offer instance to the database.
         '''
         self.offer_repo.add_offer(offer)
 
-    def del_offer(self, offer: Offer) -> None:
+    def del_offer(self, offer: Offer) -> dict | None:
         '''
         A wrapper function for the del_offer function of the OfferRepository class.
         Deletes an existing Offer instance from the database.
