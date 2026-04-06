@@ -52,7 +52,7 @@ class OfferRepository:
         This is a helper function for getting weekly offers for the users.
         '''
         with open(self.offer_database, "r") as file:
-            offers = json.load(file)
+            offers = json.load(file)[:]
             if len(offers) < amount:
                 offer_suggestions = offers
             else:
