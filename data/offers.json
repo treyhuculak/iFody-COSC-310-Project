@@ -28,12 +28,12 @@
 	{
 		"offer_id": 3,
 		"restaurant_id": 2,
-		"title": "Brisket Plate Deal — $25",
-		"description": "Get the Smoked Brisket Plate for a fixed total of $25.",
+		"title": "Brisket Plate Deal — $15",
+		"description": "Get the Smoked Brisket Plate for a fixed total of $15.",
 		"offer_type": 3,
 		"applied_items": [1],
 		"discount_value": null,
-		"price_ceiling": 25.0,
+		"price_ceiling": 15.0,
 		"start_date": null,
 		"end_date": null,
 		"is_active": false
@@ -106,12 +106,12 @@
 	{
 		"offer_id": 9,
 		"restaurant_id": 5,
-		"title": "Healthy Combo — $20",
-		"description": "Quinoa Power Bowl combo for a fixed total of $20.",
+		"title": "Healthy Combo — $10",
+		"description": "Quinoa Power Bowl combo for a fixed total of $10.",
 		"offer_type": 3,
 		"applied_items": [2],
 		"discount_value": null,
-		"price_ceiling": 20.0,
+		"price_ceiling": 10.0,
 		"start_date": null,
 		"end_date": null,
 		"is_active": false
