@@ -55,9 +55,22 @@ class OfferService:
             if any([offer["is_active"] for offer in self.offer_suggestions]):
                 raise HTTPException(status_code = 409, detail = "Only one offer may be active simultaneously.")
             else:
-                for i in len(self.offer_suggestions):
+                for i in range(len(self.offer_suggestions)):
                     if self.offer_suggestions[i]["offer_id"] == offer_id:
                         self.offer_suggestions[i]["is_active"] = True
+                        return self.offer_suggestions[i]
+        else:
+            return None
+        
+    def deactivate_offer(self, offer_id: int) -> dict | None:
+        '''
+        Deactivates the corresponding Offer instance according to the provided offer_id.
+        '''
+        if offer_id in [offer["offer_id"] for offer in self.offer_suggestions]:
+            for i in range(len(self.offer_suggestions)):
+                if self.offer_suggestions[i]["offer_id"] == offer_id:
+                    if self.offer_suggestions[i]["is_active"]:
+                        self.offer_suggestions[i]["is_active"] = False
                         return self.offer_suggestions[i]
         else:
             return None

@@ -73,13 +73,9 @@ class OfferController:
         
     def deactivate_offer(self, offer_id: int) -> dict | None:
         '''
+        A wrapper function for the deactivate_offer function of the OfferService class.
         Deactivates the corresponding Offer instance according to the provided offer_id.
         '''
-        if offer_id in [offer["offer_id"] for offer in self.offers]:
-            for i in len(self.offers):
-                if self.offers[i]["offer_id"] == offer_id:
-                    if self.offers[i]["is_active"]:
-                        self.offers[i]["is_active"] = False
-                        return self.offers[i]
-        else:
-            return None
+        adjusted_offer = self.offer_service.deactivate_offer(offer_id)
+        self.offers = self.offer_service.get_offer_suggestions()
+        return adjusted_offer

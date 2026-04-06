@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import json
 import pytest
 from src.backend.models.offer import Offer, OfferType
@@ -156,3 +157,46 @@ def test_del_offer(offer_service_init):
     with open("data/draft_offers.json", "r") as file:
         offers = json.load(file)
         assert len(offers) == 4
+
+def test_activate_offer(offer_service_init):
+    '''
+    Tests the activate_offer function of the OfferService class.
+    '''
+    # We activate one Offer instance first and check its is_active field.
+    offer_suggestions = offer_service_init.get_offer_suggestions()
+    offer_chosen = offer_suggestions[0]
+    chosen_offer_id = offer_chosen["offer_id"]
+    active_offer = offer_service_init.activate_offer(chosen_offer_id)
+    assert any([offer["is_active"] for offer in offer_suggestions])
+    assert active_offer == offer_chosen
+    assert offer_suggestions[0]["is_active"]
+    # Since one Offer instance is activated, we cannot activate another one.
+    offer_chosen = offer_suggestions[1]
+    chosen_offer_id = offer_chosen["offer_id"]
+    with pytest.raises(HTTPException):
+        active_offer = offer_service_init.activate_offer(chosen_offer_id)
+    # Here it's the same situation, but we try to activate a different one.
+    offer_chosen = offer_suggestions[2]
+    chosen_offer_id = offer_chosen["offer_id"]
+    with pytest.raises(HTTPException):
+        active_offer = offer_service_init.activate_offer(chosen_offer_id)
+
+def test_deactivate_offer(offer_service_init):
+    '''
+    Tests the activate_offer function of the OfferService class.
+    '''
+    # We activate one Offer instance first and check its is_active field.
+    offer_suggestions = offer_service_init.get_offer_suggestions()
+    offer_chosen_1 = offer_suggestions[0]
+    chosen_offer_id_1 = offer_chosen_1["offer_id"]
+    offer_service_init.activate_offer(chosen_offer_id_1)
+    # Since one Offer instance is activated, we cannot activate another one.
+    offer_chosen_2 = offer_suggestions[1]
+    chosen_offer_id_2 = offer_chosen_2["offer_id"]
+    with pytest.raises(HTTPException):
+        offer_service_init.activate_offer(chosen_offer_id_2)
+    # We deactivate the first Offer instance we selected, now the second Offer instance should be activatable.
+    offer_service_init.deactivate_offer(chosen_offer_id_1)
+    assert offer_chosen_2 == offer_service_init.activate_offer(chosen_offer_id_2)
+    assert offer_chosen_2 == offer_service_init.get_active_offer()
+    assert offer_chosen_2["is_active"]
