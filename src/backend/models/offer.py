@@ -26,6 +26,6 @@ class Offer(BaseModel):
     applied_items: list[int]
     discount_value: float | None = None
     price_ceiling: float | None = None
-    start_date: datetime
-    end_date: datetime
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     is_active: bool
