@@ -53,6 +53,26 @@
   color: #311c0f;
 }
 
+.app-username {
+  color: #4c3224;
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.link-button {
+  background: transparent;
+  border: none;
+  color: #4c3224;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.38rem 0.72rem;
+  border-radius: 999px;
+}
+
+.link-button:hover {
+  background: rgba(255, 107, 53, 0.14);
+}
+
 .app-page-shell {
   min-height: calc(100vh - 64px);
 }

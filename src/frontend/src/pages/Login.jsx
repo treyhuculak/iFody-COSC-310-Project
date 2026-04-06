@@ -10,7 +10,28 @@ export default function Login() {
     e.preventDefault();
     try {
       const data = await login(email, password);
-      setMessage(`Welcome ${data.username}! Role: ${data.role}`);
+      // Persist minimal session info so the app can show username + use recent endpoints
+      if (data?.username) {
+        localStorage.setItem("username", String(data.username));
+      }
+
+      // Try common id/token keys returned by backend
+      const candidateIdKeys = ["id", "user_id", "userId"];
+      for (const k of candidateIdKeys) {
+        if (data && data[k] !== undefined && data[k] !== null) {
+          localStorage.setItem("userId", String(data[k]));
+          break;
+        }
+      }
+
+      if (data?.access_token) {
+        localStorage.setItem("auth_token", String(data.access_token));
+      } else if (data?.token) {
+        localStorage.setItem("auth_token", String(data.token));
+      }
+
+      // Redirect to home so nav updates (reads from localStorage)
+      window.location.href = "/";
     } catch (err) {
       setMessage(err.message);
     }

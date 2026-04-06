@@ -44,6 +44,15 @@
             "role": "customer",
             "is_logged_in": false,
             "is_blocked": true
+        },
+        {
+            "id": 6,
+            "username": "AaronZhu",
+            "email": "aaronzhu@123456.com",
+            "password": "12345@Az",
+            "role": "administrator",
+            "is_logged_in": false,
+            "is_blocked": false
         }
     ]
 }
