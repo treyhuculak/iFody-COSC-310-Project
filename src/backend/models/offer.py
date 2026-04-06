@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel
 
@@ -26,6 +25,6 @@ class Offer(BaseModel):
     applied_items: list[int]
     discount_value: float | None = None
     price_ceiling: float | None = None
-    start_date: datetime | None = None
-    end_date: datetime | None = None
+    start_date: str | None = None
+    end_date: str | None = None
     is_active: bool

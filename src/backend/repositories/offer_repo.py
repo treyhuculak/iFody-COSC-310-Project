@@ -1,3 +1,4 @@
+import datetime
 import json
 import random
 from src.backend.models.offer import Offer
@@ -13,7 +14,7 @@ class OfferRepository:
             with open(self.offer_database, "r") as file:
                 offers = json.load(file)
                 if offers:
-                    self.offer_id = max(offer["offer_id"] for offer in offers["Offers"]) + 1
+                    self.offer_id = max(offer["offer_id"] for offer in offers) + 1
                 else:
                     self.offer_id = 1
         except (FileNotFoundError, json.JSONDecodeError):
@@ -55,5 +56,14 @@ class OfferRepository:
             if len(offers) < amount:
                 offer_suggestions = offers
             else:
-                offer_suggestions = random.choice(offers, k = amount)
+                offer_suggestions = random.sample(offers, k = amount)
+            '''
+            Dates should not be stored directly on the Offer instances in the database.
+            The relevant attributes must be computed and assigned at retrieval time.
+            '''
+            current_date = datetime.datetime.now()
+            offer_deadline = current_date + datetime.timedelta(days = 7)
+            for offer in offer_suggestions:
+                offer["start_date"] = current_date.isoformat()
+                offer["end_date"] = offer_deadline.isoformat()
         return offer_suggestions
