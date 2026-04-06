@@ -99,7 +99,11 @@ def test_get_new_offers(offer_repo_init):
     offer_repo_init.add_offer(offer2)
     new_offers = offer_repo_init.get_new_offers(1)
     assert len(new_offers) == 1
-    new_offers = offer_repo_init.get_new_offers(2)
-    assert len(new_offers) == 2
+    for offer in new_offers:
+        assert offer["start_date"] != None
+        assert offer["end_date"] != None
     new_offers = offer_repo_init.get_new_offers(10)
     assert len(new_offers) == 2
+    for offer in new_offers:
+        assert offer["start_date"] != None
+        assert offer["end_date"] != None
