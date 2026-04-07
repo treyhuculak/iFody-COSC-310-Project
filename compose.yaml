@@ -19,10 +19,9 @@ services:
     depends_on:
       - ollama
     command: >
-      sh -c "bash src/backend/scripts/init_ollama.sh && 
-             uvicorn src.backend.main:app --host 0.0.0.0 --port 8000 &
-             python3 src/backend/scripts/warm_up_ollama.py && 
-             wait"
+      sh -c "(bash src/backend/scripts/init_ollama.sh || true; \
+              python3 src/backend/scripts/warm_up_ollama.py || true) & \
+             exec uvicorn src.backend.main:app --host 0.0.0.0 --port 8000"
     restart: unless-stopped
   
   ollama:

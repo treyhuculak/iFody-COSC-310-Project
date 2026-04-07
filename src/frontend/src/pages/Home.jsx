@@ -319,7 +319,7 @@ export default function Home({
 
             <RestaurantSection
                 title="Popular in this area"
-                subtitle="Reserved for the new popularity endpoint so this section is plug-and-play when merged."
+                subtitle="Top restaurants for your selected location based on order activity."
                 restaurants={popularState.items}
                 isLoading={popularState.loading}
                 endpointReady={popularState.endpointReady}
@@ -330,7 +330,7 @@ export default function Home({
 
             <RestaurantSection
                 title="Your recent favorites"
-                subtitle="Prepared for the upcoming endpoint that returns restaurants from your recent orders."
+                subtitle="Restaurants you ordered from most recently in this account."
                 restaurants={recentState.items}
                 isLoading={recentState.loading}
                 endpointReady={recentState.endpointReady}
