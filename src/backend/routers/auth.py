@@ -53,11 +53,23 @@ def login_user(data: LoginRequest, controller: AuthController = Depends(get_cont
     Returns a simple success message along with the user's email and role.
     '''
     user = controller.login(data.email, data.password)
+    if not isinstance(user, dict):
+        raise HTTPException(status_code=401, detail="Login failed.")
+
+    user_id = user.get("id")
+    username = user.get("username")
+    email = user.get("email")
+    role = user.get("role")
+
+    if user_id is None or username is None or email is None or role is None:
+        raise HTTPException(status_code=500, detail="Login response is missing required user fields.")
+
     return {
         "message": "Logged in successfully.",
-        "username": user["username"],
-        "email": user["email"],
-        "role": user["role"]
+        "id": user_id,
+        "username": username,
+        "email": email,
+        "role": role
     }
 
 @router.post("/logout")
@@ -67,12 +79,22 @@ def logout_user(controller: AuthController = Depends(get_controller)):
     Returns a simple success message along with the user's email and role.
     '''
     user = controller.cur_user
+    if not isinstance(user, dict):
+        raise HTTPException(status_code=401, detail="No active session.")
+
+    username = user.get("username")
+    email = user.get("email")
+    role = user.get("role")
+
+    if username is None or email is None or role is None:
+        raise HTTPException(status_code=500, detail="Logout response is missing required user fields.")
+
     controller.logout()
     return {
         "message": "Logged out successfully.",
-        "username": user["username"],
-        "email": user["email"],
-        "role": user["role"]
+        "username": username,
+        "email": email,
+        "role": role
     }
 
 @router.post("/blocked/{username}")

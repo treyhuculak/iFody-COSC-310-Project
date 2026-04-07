@@ -1,0 +1,136 @@
+@import url("./home.css");
+
+.cart-page .restaurant-section {
+    width: min(1080px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cart-order-list {
+    margin-top: 0.86rem;
+    display: grid;
+    gap: 0.85rem;
+}
+
+.cart-order-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: var(--soft-shadow);
+    padding: 1rem;
+}
+
+.cart-order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    border-bottom: 1px solid rgba(239, 223, 207, 0.85);
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.75rem;
+}
+
+.cart-order-header h3 {
+    margin: 0;
+    color: #2f2218;
+}
+
+.cart-order-header small {
+    color: #735641;
+    font-weight: 700;
+}
+
+.cart-item-list {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.cart-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    border: 1px solid rgba(239, 223, 207, 0.88);
+    border-radius: 12px;
+    background: #fffdf9;
+    padding: 0.8rem;
+}
+
+.cart-item-main {
+    min-width: 0;
+}
+
+.cart-item-name {
+    margin: 0;
+    font-weight: 800;
+    color: #291d13;
+}
+
+.cart-item-meta {
+    margin: 0.25rem 0 0;
+    color: #735641;
+    font-size: 0.9rem;
+}
+
+.cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cart-item-actions input {
+    width: 82px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.56rem 0.62rem;
+    background: #fffcf8;
+    color: var(--ink);
+    font-size: 0.94rem;
+    font-family: inherit;
+}
+
+.cart-item-actions input:focus {
+    outline: 2px solid rgba(255, 107, 53, 0.35);
+    border-color: var(--accent);
+}
+
+.cart-update-button,
+.cart-remove-button {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 0.58rem 0.78rem;
+    color: #fff;
+}
+
+.cart-update-button {
+    background: linear-gradient(135deg, #f98b39, #ff6b35);
+}
+
+.cart-remove-button {
+    background: linear-gradient(135deg, #9c301d, #7a2617);
+}
+
+.cart-update-button:disabled,
+.cart-remove-button:disabled {
+    opacity: 0.68;
+    cursor: wait;
+}
+
+@media (max-width: 780px) {
+    .cart-item-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cart-item-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .cart-item-actions input {
+        width: 100%;
+    }
+}

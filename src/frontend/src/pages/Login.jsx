@@ -1,10 +1,23 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { login } from "../api/auth";
 
 export default function Login() {
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+
+  const redirectTarget = (() => {
+    const query = new URLSearchParams(location.search);
+    const candidate = query.get("redirect") || "/";
+
+    if (!candidate.startsWith("/")) {
+      return "/";
+    }
+
+    return candidate;
+  })();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,6 +26,10 @@ export default function Login() {
       // Persist minimal session info so the app can show username + use recent endpoints
       if (data?.username) {
         localStorage.setItem("username", String(data.username));
+      }
+
+      if (data?.role) {
+        localStorage.setItem("userRole", String(data.role));
       }
 
       // Try common id/token keys returned by backend
@@ -30,8 +47,8 @@ export default function Login() {
         localStorage.setItem("auth_token", String(data.token));
       }
 
-      // Redirect to home so nav updates (reads from localStorage)
-      window.location.href = "/";
+      // Use full reload so app-shell auth state rehydrates from localStorage.
+      window.location.href = redirectTarget;
     } catch (err) {
       setMessage(err.message);
     }
