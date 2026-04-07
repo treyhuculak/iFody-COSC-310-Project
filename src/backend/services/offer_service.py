@@ -22,14 +22,14 @@ class OfferService:
         A wrapper function for the add_offer function of the OfferRepository class.
         Adds a new Offer instance to the database.
         '''
-        self.offer_repo.add_offer(offer)
+        return self.offer_repo.add_offer(offer)
 
     def del_offer(self, offer: Offer) -> dict | None:
         '''
         A wrapper function for the del_offer function of the OfferRepository class.
         Deletes an existing Offer instance from the database.
         '''
-        self.offer_repo.del_offer(offer)
+        return self.offer_repo.del_offer(offer)
 
     def get_active_offer(self) -> dict | None:
         '''
