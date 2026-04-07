@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from src.backend.models.user import InvalidEmailError, InvalidPasswordError
 
 from src.backend.routers import auth
+from src.backend.routers import chatbot
 from src.backend.routers import deliveries
 from src.backend.routers import notification
 from src.backend.routers import offer
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(chatbot.router)
 app.include_router(deliveries.router)
 app.include_router(notification.router)
 app.include_router(offer.router)

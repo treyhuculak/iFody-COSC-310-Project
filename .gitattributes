@@ -1,0 +1,3 @@
+# Ensuring consistent line endings across different OSes
+* text=auto
+*.sh text eol=lf

@@ -54,3 +54,10 @@ pnpm-debug.log*
 # Vite
 .vite/
 src/frontend/dist/
+
+# Ollama's model
+data/models/
+
+# Ollama's SSH keys
+data/id_ed25519
+data/id_ed25519.pub
