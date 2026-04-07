@@ -13,7 +13,9 @@ from src.backend.controllers.payment_controller import PaymentController
 from src.backend.controllers.paypal_controller import PayPalController
 from src.backend.repositories.notification_repo import NotificationRepository
 from src.backend.controllers.notification_controller import NotificationController
-
+from src.backend.services.paypal_service import PayPalService
+from unittest.mock import Mock, patch
+from src.backend.models.paypal_payment import PayPalCreate, PayPalOrderStatus, PayPalLink
 
 @pytest.fixture
 def test_client(tmp_path):
@@ -47,6 +49,112 @@ def test_client(tmp_path):
     app.dependency_overrides.clear()
 
 '''
+Service layer tests
+'''
+def test_create_order(test_client):
+    service = PayPalService()
+
+    create_order = Mock()
+    create_order.json.return_value = {
+        "id": "1",
+        "status": "PAYER_ACTION_REQUIRED",
+        "links": [
+            {
+                "href": "https://paypal.com/checkoutnow?token=ORDER123",
+                "rel": "approve",
+                "method": "GET"
+            }
+        ]
+    }
+    create_order.status_code = 200
+
+    with patch.object(service, "_get_access_token", return_value="some_token") as token:
+        with patch("src.backend.services.paypal_service.requests.post") as request_post:
+            request_post.side_effect = [create_order]
+
+            result = service.create_order(amount=15.99, user_id=1, currency_code="CAD")
+
+            token.assert_called_once()
+
+            assert result.provider_order_id == "1"
+            assert result.provider_status == PayPalOrderStatus.PAYER_ACTION_REQUIRED
+            assert result.links[0].href == "https://paypal.com/checkoutnow?token=ORDER123"
+            assert result.links[0].rel == "approve"
+            assert result.links[0].method == "GET"
+
+def test_create_order_failed_api_request(test_client):
+    service = PayPalService()
+
+    create_order = Mock()
+    create_order.status_code = 400
+
+    with patch.object(service, "_get_access_token", return_value="some_token") as token:
+        with patch("src.backend.services.paypal_service.requests.post", return_value=create_order) as request_post:
+            with pytest.raises(ValueError, match="Failed to create PayPal order"):
+                service.create_order(amount=15.99, user_id=1, currency_code="CAD")
+
+def test_capture_order(test_client):
+    service = PayPalService()
+
+    capture_order = Mock()
+    capture_order.json.return_value = {
+        "id": "1",
+        "status": "COMPLETED"
+    }
+    capture_order.status_code = 200
+
+    with patch.object(service, "_get_access_token", return_value="some_token") as token:
+        with patch("src.backend.services.paypal_service.requests.post") as request_post:
+            request_post.side_effect = [capture_order]
+
+            result = service.capture_order(order_id="1")
+
+            token.assert_called_once()
+
+            # I return the json/dict itself from capture_order. That is why the provider_order_id = id here (what comes from the PayPal API) 
+            assert result['id'] == "1"
+            assert result['status'] == PayPalOrderStatus.COMPLETED
+
+def test_capture_order_failed_api_request(test_client):
+    service = PayPalService()
+
+    capture_order = Mock()
+    capture_order.status_code = 400
+
+    with patch.object(service, "_get_access_token", return_value="some_token") as token:
+        with patch("src.backend.services.paypal_service.requests.post", return_value=capture_order) as request_post:
+            with pytest.raises(ValueError, match="Failed to capture PayPal order"):
+                service.capture_order(order_id="1")            
+
+def test_get_approve_link(test_client):
+    service = PayPalService()
+
+    paypal_object = PayPalCreate(provider_order_id="1", provider_status=PayPalOrderStatus.PAYER_ACTION_REQUIRED, links=[
+        PayPalLink(href="https://paypal.com/checkoutnow?token=1", rel="approve", method="GET"),
+        PayPalLink(href="https://paypal.com/declined", rel="declined", method="GET")
+    ])
+
+    link = service.get_approve_link(paypal_object)
+
+    assert link is not None
+    assert link == "https://paypal.com/checkoutnow?token=1"
+
+def test_get_approve_link_with_no_approved_link(test_client):
+    service = PayPalService()
+
+    paypal_object = PayPalCreate(provider_order_id="1", provider_status=PayPalOrderStatus.PAYER_ACTION_REQUIRED, links=[
+        PayPalLink(href="https://paypal.com/checkoutnow?token=1", rel="declined", method="GET"),
+        PayPalLink(href="https://paypal.com/declined", rel="declined", method="GET")
+    ])
+
+    with pytest.raises(ValueError, match="Approve link not found"):
+        service.get_approve_link(paypal_object)  
+
+'''
+PayPal Router testing
+'''
+
+'''
 This test touches the real paypal sandbox. I only created this test to make sure the full integration + API communication would work (our system + paypal API) 
 Do not test this without having access to the sandbox (you will need access to login as a mock personal account created by the sandbox itself)
 Moreover, it should be noted that we need to watch out for the personal account funds (we can edit this in the sandbox), since without enough funds, the test will not go through
@@ -71,7 +179,7 @@ def test_full_live_paypal_flow_manual_approval(test_client):
 
     input("After approving the payment in the PayPal sandbox browser page, press Enter here to continue: ")
 
-    capture_response = test_client.post(f"/transaction/paypal/capture/{paypal_started['id']}")
+    capture_response = test_client.post(f"/transaction/paypal/capture/{paypal_started["id"]}")
     assert capture_response.status_code == 200
     paypal_captured = capture_response.json()
 

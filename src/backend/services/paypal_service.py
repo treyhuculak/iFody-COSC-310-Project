@@ -126,6 +126,7 @@ class PayPalService:
             # Paypal documentation usually have approve as the rel string, but some newer doc says to use payer-action
             if rel in {"payer-action", "approve"}:
                 flag = True
+                break
 
         if not flag:
             raise ValueError("Approve link not found")
