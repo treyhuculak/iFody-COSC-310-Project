@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime
 from fastapi import HTTPException
 
-from src.backend.models.order import OrderCreate, OrderLocation, OrderStatus
+from src.backend.models.order import OrderCreate, OrderStatus
 from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository

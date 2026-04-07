@@ -21,7 +21,7 @@ class UserRepository:
                 # Because there are no instances in the database, we reset the current_id variable to 1.
                 self.current_id = 1
 
-    def add_user(self, user: dict[str, Union[str, int, bool]]) -> dict:
+    def add_user(self, user: dict[str, Union[str, int, bool]]) -> None:
         '''
         Acts as the SaveUser functionality for adding Admin/Customer/RestaurantOwner instances to the database.
         '''
