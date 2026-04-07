@@ -298,22 +298,6 @@ export default function Cart() {
                                                                     )
                                                                 }
                                                             />
-
-                                                            <button
-                                                                type="button"
-                                                                className="cart-update-button"
-                                                                disabled={isPending}
-                                                                onClick={() =>
-                                                                    handleUpdateQuantity(
-                                                                        order,
-                                                                        orderItem,
-                                                                        Number(draftQuantity)
-                                                                    )
-                                                                }
-                                                            >
-                                                                {isPending ? "Saving..." : "Update"}
-                                                            </button>
-
                                                             <button
                                                                 type="button"
                                                                 className="cart-remove-button"
