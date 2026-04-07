@@ -22,10 +22,13 @@ class PayPalService:
         self.client_secret = os.getenv("PAYPAL_CLIENT_SECRET")
         self.base_url = os.getenv("PAYPAL_BASE_URL", "https://api-m.sandbox.paypal.com")
 
+        '''
+        # For debugging purposes
         if not self.client_id:
             raise ValueError("Missing PAYPAL_CLIENT_ID in environment variables")
         if not self.client_secret:
             raise ValueError("Missing PAYPAL_CLIENT_SECRET in environment variables")
+            '''
         
     '''
     Helper function to get the access token for the business account
