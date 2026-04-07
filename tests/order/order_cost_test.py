@@ -9,6 +9,7 @@ from src.backend.models.order_item import OrderItem
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.controllers.order_controller import OrderController
 from src.backend.services.order_service import OrderService
+from src.backend.models.offer import OfferType
 from src.backend.repositories.notification_repo import NotificationRepository
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.repositories.user_repo import UserRepository
@@ -82,6 +83,45 @@ def test_calculate_order_subtotal():
     
     total = order_service.calculate_order_subtotal(order)
     assert total == 25.0
+
+
+def test_calculate_order_subtotal_with_discount():
+    order_service = OrderService()
+    # Apply a 10% discount for the restaurant
+    with patch('src.backend.services.order_service.OfferService.get_active_offer', return_value={
+        "offer_type": OfferType.DISCOUNT.value,
+        "restaurant_id": 1,
+        "discount_value": 10
+    }):
+        total = order_service.calculate_order_subtotal(order)
+        assert total == 22.5
+
+
+def test_calculate_order_subtotal_with_free_item():
+    order_service = OrderService()
+    # Make item with id 1 free
+    with patch('src.backend.services.order_service.OfferService.get_active_offer', return_value={
+        "offer_type": OfferType.FREE_ITEM.value,
+        "restaurant_id": 1,
+        "applied_items": [1]
+    }):
+        total = order_service.calculate_order_subtotal(order)
+        # Original total 25.0 minus item 1 price 10.0 -> 15.0
+        assert total == 15.0
+
+
+def test_calculate_order_subtotal_with_price_ceiling():
+    order_service = OrderService()
+    # Apply a price ceiling of 8.0 for item 1 (reduces price by 2.0)
+    with patch('src.backend.services.order_service.OfferService.get_active_offer', return_value={
+        "offer_type": OfferType.PRICE_CEILING.value,
+        "restaurant_id": 1,
+        "applied_items": [1],
+        "price_ceiling": 8.0
+    }):
+        total = order_service.calculate_order_subtotal(order)
+        # 25.0 - (10.0 - 8.0) == 23.0
+        assert total == 23.0
 
 def test_calculate_tax():
     order_service = OrderService()
