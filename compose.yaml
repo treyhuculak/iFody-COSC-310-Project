@@ -15,6 +15,19 @@ services:
       - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    command: >
+      sh -c "bash src/backend/scripts/init_ollama.sh && uvicorn src.backend.main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped
+  
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./data:/root/.ollama
     restart: unless-stopped
 
   frontend:
@@ -28,3 +41,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  ollama_data:

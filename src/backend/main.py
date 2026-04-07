@@ -11,6 +11,7 @@ from src.backend.routers import notification
 from src.backend.routers import auth
 from src.backend.routers import transactions
 from src.backend.routers import deliveries
+from src.backend.routers import chatbot
 
 app = FastAPI()
 
@@ -29,6 +30,7 @@ app.include_router(payments.router)
 app.include_router(notification.router)
 app.include_router(transactions.router)
 app.include_router(deliveries.router)
+app.include_router(chatbot.router)
 
 @app.exception_handler(InvalidEmailError)
 async def email_error_handler(request, exc: InvalidEmailError):
