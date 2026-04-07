@@ -50,6 +50,6 @@ def chat(user_message: str) -> str:
             "prompt": prompt,
             "stream": False
         },
-        timeout=60.0
+        timeout=200.0
     )
     return response.json()["response"] 
