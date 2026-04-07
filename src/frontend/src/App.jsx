@@ -1,50 +1,87 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import {
+  BrowserRouter,
+  NavLink,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import "./App.css";
-import { searchRestaurantsByName } from "./api/restaurants";
+import {
+  searchRestaurantMenuItems,
+  searchRestaurantsByName,
+} from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import RestaurantDetails from "./pages/RestaurantDetails";
 import Register from "./pages/Register";
 
 export default function App() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState("");
+  return (
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
+  );
+}
+
+function AppShell() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [restaurantSearchQuery, setRestaurantSearchQuery] = useState("");
+  const [restaurantSearchResults, setRestaurantSearchResults] = useState([]);
+  const [restaurantSearchLoading, setRestaurantSearchLoading] = useState(false);
+  const [restaurantSearchError, setRestaurantSearchError] = useState("");
+
+  const [menuSearchQuery, setMenuSearchQuery] = useState("");
+  const [menuSearchResults, setMenuSearchResults] = useState([]);
+  const [menuSearchLoading, setMenuSearchLoading] = useState(false);
+  const [menuSearchError, setMenuSearchError] = useState("");
+
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState(null);
+
   const [username, setUsername] = useState(() => {
     try {
       return localStorage.getItem("username");
-    } catch (err) {
+    } catch {
       return null;
     }
   });
 
+  const restaurantPathMatch = /^\/restaurants\/(\d+)\/?$/.exec(location.pathname);
+  const activeRestaurantId = restaurantPathMatch
+    ? Number(restaurantPathMatch[1])
+    : null;
+  const isRestaurantPage =
+    activeRestaurantId !== null && Number.isInteger(activeRestaurantId);
+
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (isRestaurantPage || !restaurantSearchQuery.trim()) {
       return;
     }
 
     const abortController = new AbortController();
     const timer = setTimeout(() => {
-      searchRestaurantsByName(searchQuery, {
+      searchRestaurantsByName(restaurantSearchQuery, {
         limit: 10,
         signal: abortController.signal,
       })
         .then((items) => {
-          setSearchResults(items);
-          setSearchLoading(false);
-          setSearchError("");
+          setRestaurantSearchResults(items);
+          setRestaurantSearchLoading(false);
+          setRestaurantSearchError("");
         })
         .catch((error) => {
           if (error.name === "AbortError") {
             return;
           }
 
-          setSearchResults([]);
-          setSearchLoading(false);
-          setSearchError(error.message || "Search is unavailable.");
+          setRestaurantSearchResults([]);
+          setRestaurantSearchLoading(false);
+          setRestaurantSearchError(error.message || "Search is unavailable.");
         });
     }, 220);
 
@@ -52,25 +89,93 @@ export default function App() {
       clearTimeout(timer);
       abortController.abort();
     };
-  }, [searchQuery]);
+  }, [restaurantSearchQuery, isRestaurantPage]);
 
-  const handleSearchQueryChange = (value) => {
-    setSearchQuery(value);
-
-    if (!value.trim()) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchError("");
+  useEffect(() => {
+    if (!isRestaurantPage || !menuSearchQuery.trim()) {
       return;
     }
 
-    setSearchLoading(true);
-    setSearchError("");
+    const abortController = new AbortController();
+    const timer = setTimeout(() => {
+      searchRestaurantMenuItems({
+        restaurantId: activeRestaurantId,
+        name: menuSearchQuery,
+        limit: 12,
+        signal: abortController.signal,
+      })
+        .then((items) => {
+          setMenuSearchResults(items);
+          setMenuSearchLoading(false);
+          setMenuSearchError("");
+        })
+        .catch((error) => {
+          if (error.name === "AbortError") {
+            return;
+          }
+
+          setMenuSearchResults([]);
+          setMenuSearchLoading(false);
+          setMenuSearchError(error.message || "Search is unavailable.");
+        });
+    }, 220);
+
+    return () => {
+      clearTimeout(timer);
+      abortController.abort();
+    };
+  }, [activeRestaurantId, menuSearchQuery, isRestaurantPage]);
+
+  useEffect(() => {
+    setMenuSearchQuery("");
+    setMenuSearchResults([]);
+    setMenuSearchLoading(false);
+    setMenuSearchError("");
+    setSelectedMenuItemId(null);
+  }, [activeRestaurantId]);
+
+  const handleSearchQueryChange = (value) => {
+    if (isRestaurantPage) {
+      setMenuSearchQuery(value);
+
+      if (!value.trim()) {
+        setMenuSearchResults([]);
+        setMenuSearchLoading(false);
+        setMenuSearchError("");
+        setSelectedMenuItemId(null);
+        return;
+      }
+
+      setMenuSearchLoading(true);
+      setMenuSearchError("");
+      return;
+    }
+
+    setRestaurantSearchQuery(value);
+
+    if (!value.trim()) {
+      setRestaurantSearchResults([]);
+      setRestaurantSearchLoading(false);
+      setRestaurantSearchError("");
+      return;
+    }
+
+    setRestaurantSearchLoading(true);
+    setRestaurantSearchError("");
   };
 
   const handleRestaurantSelect = (restaurant) => {
     setSelectedRestaurantId(restaurant?.id ?? null);
-    setSearchQuery(restaurant?.name || "");
+    setRestaurantSearchQuery(restaurant?.name || "");
+
+    if (restaurant?.id) {
+      navigate(`/restaurants/${restaurant.id}`);
+    }
+  };
+
+  const handleMenuItemSelect = (menuItem) => {
+    setSelectedMenuItemId(menuItem?.id ?? null);
+    setMenuSearchQuery(menuItem?.name || "");
   };
 
   const handleLogout = async () => {
@@ -93,7 +198,7 @@ export default function App() {
       keysToRemove.forEach((k) => {
         try {
           localStorage.removeItem(k);
-        } catch (e) {
+        } catch {
           // ignore
         }
       });
@@ -103,26 +208,47 @@ export default function App() {
     }
   };
 
+  const activeSearchQuery = isRestaurantPage
+    ? menuSearchQuery
+    : restaurantSearchQuery;
+  const activeSearchResults = isRestaurantPage
+    ? menuSearchResults
+    : restaurantSearchResults;
+  const activeSearchLoading = isRestaurantPage
+    ? menuSearchLoading
+    : restaurantSearchLoading;
+  const activeSearchError = isRestaurantPage
+    ? menuSearchError
+    : restaurantSearchError;
+
   return (
-    <BrowserRouter>
+    <>
       <nav className="app-nav">
         <div className="app-nav-main">
           <div className="app-brand">iFody</div>
 
           <SearchDropdown
             className="app-nav-search"
-            inputId="app-restaurant-search"
-            query={searchQuery}
+            inputId={isRestaurantPage ? "app-menu-search" : "app-restaurant-search"}
+            query={activeSearchQuery}
             onQueryChange={handleSearchQueryChange}
-            results={searchResults}
-            isLoading={searchLoading}
-            onSelect={handleRestaurantSelect}
-            placeholder="Search restaurants"
-            loadingText="Searching restaurants..."
-            emptyText="No matching restaurants found."
-            getItemPrimaryText={(restaurant) => restaurant.name}
-            getItemSecondaryText={(restaurant) =>
-              `${restaurant.cuisine} • ${restaurant.location}`
+            results={activeSearchResults}
+            isLoading={activeSearchLoading}
+            onSelect={isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect}
+            placeholder={isRestaurantPage ? "Find menu items" : "Search restaurants"}
+            loadingText={
+              isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."
+            }
+            emptyText={
+              isRestaurantPage
+                ? "No matching menu items found."
+                : "No matching restaurants found."
+            }
+            getItemPrimaryText={(item) => item.name}
+            getItemSecondaryText={(item) =>
+              isRestaurantPage
+                ? `$${Number(item.price ?? 0).toFixed(2)}`
+                : `${item.cuisine} • ${item.location}`
             }
           />
 
@@ -146,7 +272,7 @@ export default function App() {
           </div>
         </div>
 
-        {searchError ? <p className="app-nav-error">{searchError}</p> : null}
+        {activeSearchError ? <p className="app-nav-error">{activeSearchError}</p> : null}
       </nav>
 
       <div className="app-page-shell">
@@ -155,9 +281,19 @@ export default function App() {
             path="/"
             element={
               <Home
-                navSearchResults={searchResults}
+                navSearchResults={restaurantSearchResults}
                 selectedRestaurantId={selectedRestaurantId}
                 onRestaurantSelect={handleRestaurantSelect}
+              />
+            }
+          />
+          <Route
+            path="/restaurants/:restaurantId"
+            element={
+              <RestaurantDetails
+                navMenuSearchResults={menuSearchResults}
+                menuSearchQuery={menuSearchQuery}
+                highlightedMenuItemId={selectedMenuItemId}
               />
             }
           />
@@ -165,6 +301,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
         </Routes>
       </div>
-    </BrowserRouter>
+
+    </>
   );
 }

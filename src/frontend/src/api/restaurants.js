@@ -44,15 +44,59 @@ async function request(path, { signal, headers, ...options } = {}) {
 }
 
 function normalizeRestaurant(raw = {}) {
+    const city = raw.city || "";
+    const fallbackLocation = city || "Location unavailable";
+
     return {
         id: raw.id,
         name: raw.name || "Unknown restaurant",
         cuisine: raw.cuisine || "Cuisine not listed",
-        location: raw.location || "Location unavailable",
+        location: raw.location || fallbackLocation,
+        city,
+        province: raw.province || "",
         delivery_fee: Number(raw.delivery_fee ?? 0),
         is_available: Boolean(raw.is_available),
         owner_id: raw.owner_id,
         menu_items: Array.isArray(raw.menu_items) ? raw.menu_items : [],
+    };
+}
+
+function normalizeMenuItem(raw = {}) {
+    return {
+        id: raw.id,
+        name: raw.name || "Unnamed menu item",
+        description: raw.description || "",
+        price: Number(raw.price ?? 0),
+    };
+}
+
+function normalizeMenuItemCollection(payload) {
+    if (Array.isArray(payload)) {
+        return payload.map(normalizeMenuItem);
+    }
+
+    if (Array.isArray(payload?.items)) {
+        return payload.items.map(normalizeMenuItem);
+    }
+
+    return [];
+}
+
+function normalizeMenuItemPaginatedResponse(payload) {
+    const items = normalizeMenuItemCollection(payload);
+    const pageSize = Number(payload?.page_size ?? items.length ?? 0);
+    const total = Number(payload?.total ?? items.length ?? 0);
+
+    return {
+        items,
+        total,
+        page: Number(payload?.page ?? 1),
+        page_size: pageSize,
+        total_pages:
+            Number(payload?.total_pages) ||
+            (pageSize > 0 ? Math.ceil(total / pageSize) : 0),
+        has_next: Boolean(payload?.has_next),
+        has_prev: Boolean(payload?.has_prev),
     };
 }
 
@@ -116,6 +160,41 @@ export async function fetchRestaurants({
     const query = toQueryString({ skip, limit });
     const payload = await request(`/restaurants?${query}`, { signal });
     return normalizePaginatedResponse(payload);
+}
+
+export async function fetchRestaurantById(restaurantId, { signal } = {}) {
+    const payload = await request(`/restaurants/${restaurantId}`, { signal });
+    return normalizeRestaurant(payload);
+}
+
+export async function fetchRestaurantMenuItems({
+    restaurantId,
+    skip = 0,
+    limit = 100,
+    signal,
+} = {}) {
+    const query = toQueryString({ skip, limit });
+    const payload = await request(`/restaurants/${restaurantId}/menu?${query}`, { signal });
+    return normalizeMenuItemPaginatedResponse(payload);
+}
+
+export async function searchRestaurantMenuItems({
+    restaurantId,
+    name,
+    skip = 0,
+    limit = 20,
+    signal,
+} = {}) {
+    const trimmedName = String(name || "").trim();
+    if (!trimmedName) {
+        return [];
+    }
+
+    const query = toQueryString({ name: trimmedName, skip, limit });
+    const payload = await request(`/restaurants/${restaurantId}/menu/search?${query}`, {
+        signal,
+    });
+    return normalizeMenuItemCollection(payload);
 }
 
 export async function searchRestaurantsByName(name, { limit = 8, signal } = {}) {
@@ -186,7 +265,9 @@ export async function fetchRecentlyOrderedRestaurants({
 
 export function parseUserIdFromStorage() {
     const candidateKeys = [
+        "id",
         "userId",
+        "user_id",
         "currentUserId",
         "x-user-id",
         "auth_user_id",
