@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
   NavLink,
@@ -8,11 +8,14 @@ import {
   useNavigate,
 } from "react-router-dom";
 import "./App.css";
+import { getCartItemCount } from "./api/orders";
 import {
+  parseUserIdFromStorage,
   searchRestaurantMenuItems,
   searchRestaurantsByName,
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
+import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import RestaurantDetails from "./pages/RestaurantDetails";
@@ -42,6 +45,7 @@ function AppShell() {
 
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [selectedMenuItemId, setSelectedMenuItemId] = useState(null);
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   const [username, setUsername] = useState(() => {
     try {
@@ -57,6 +61,36 @@ function AppShell() {
     : null;
   const isRestaurantPage =
     activeRestaurantId !== null && Number.isInteger(activeRestaurantId);
+
+  const refreshCartCount = useCallback(async () => {
+    const userId = parseUserIdFromStorage();
+    if (!userId) {
+      setCartItemCount(0);
+      return;
+    }
+
+    try {
+      const count = await getCartItemCount(userId);
+      setCartItemCount(count);
+    } catch {
+      setCartItemCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshCartCount();
+  }, [location.pathname, refreshCartCount, username]);
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      refreshCartCount();
+    };
+
+    window.addEventListener("cart:updated", handleCartUpdate);
+    return () => {
+      window.removeEventListener("cart:updated", handleCartUpdate);
+    };
+  }, [refreshCartCount]);
 
   useEffect(() => {
     if (isRestaurantPage || !restaurantSearchQuery.trim()) {
@@ -179,7 +213,17 @@ function AppShell() {
   };
 
   const handleLogout = async () => {
-    const keysToRemove = ["username", "userId", "auth_token", "token", "currentUserId"];
+    const keysToRemove = [
+      "username",
+      "userId",
+      "user_id",
+      "id",
+      "auth_token",
+      "token",
+      "currentUserId",
+      "userRole",
+      "active_order_ids_by_restaurant",
+    ];
     try {
       const token = localStorage.getItem("auth_token") || localStorage.getItem("token");
       const headers = { "Content-Type": "application/json" };
@@ -203,6 +247,7 @@ function AppShell() {
         }
       });
       setUsername(null);
+      setCartItemCount(0);
       // reload to ensure all components read cleared storage
       window.location.href = "/";
     }
@@ -256,6 +301,12 @@ function AppShell() {
             <NavLink to="/" end>
               Home
             </NavLink>
+            <NavLink to="/cart" className="cart-link" aria-label="View cart">
+              Cart
+              <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
+                {cartItemCount}
+              </span>
+            </NavLink>
             {username ? (
               <>
                 <span className="app-username">Hi, {username}</span>
@@ -297,6 +348,7 @@ function AppShell() {
               />
             }
           />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
