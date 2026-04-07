@@ -104,12 +104,20 @@ class TransactionRepository:
             raise HTTPException(status_code=500, detail=f"Transaction missing id field: {e}")
         
     def update_transaction(self, transaction_id: int, transaction: dict) -> Optional[dict]:
-        with open(self.file_path, 'r') as j:
-            data = json.load(j)
-            for i, t in enumerate(data):
-                if t["id"] == transaction_id:
-                    data[i] = transaction
-                    with open(self.file_path, 'w') as f:
-                        json.dump(data, f, indent=4)
-                    return transaction
-        return None
+        try:
+            with open(self.file_path, 'r') as j:
+                data = json.load(j)
+                for i, t in enumerate(data):
+                    if t["id"] == transaction_id:
+                        data[i] = transaction
+                        with open(self.file_path, 'w') as f:
+                            json.dump(data, f, indent=4)
+                        return transaction
+            raise HTTPException(status_code=404, detail=f"Transaction with id {transaction_id} not found.")
+                 
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"File {self.file_path} not found.")
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=500, detail=f"Error decoding JSON: {e}")
+        except KeyError as e:
+            raise HTTPException(status_code=500, detail=f"Transaction missing id field: {e}")

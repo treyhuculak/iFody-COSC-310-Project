@@ -60,7 +60,7 @@ def test_create_order(test_client):
         "status": "PAYER_ACTION_REQUIRED",
         "links": [
             {
-                "href": "https://paypal.com/checkoutnow?token=ORDER123",
+                "href": "https://paypal.com/checkoutnow",
                 "rel": "approve",
                 "method": "GET"
             }
@@ -78,7 +78,7 @@ def test_create_order(test_client):
 
             assert result.provider_order_id == "1"
             assert result.provider_status == PayPalOrderStatus.PAYER_ACTION_REQUIRED
-            assert result.links[0].href == "https://paypal.com/checkoutnow?token=ORDER123"
+            assert result.links[0].href == "https://paypal.com/checkoutnow"
             assert result.links[0].rel == "approve"
             assert result.links[0].method == "GET"
 
@@ -130,14 +130,14 @@ def test_get_approve_link(test_client):
     service = PayPalService()
 
     paypal_object = PayPalCreate(provider_order_id="1", provider_status=PayPalOrderStatus.PAYER_ACTION_REQUIRED, links=[
-        PayPalLink(href="https://paypal.com/checkoutnow?token=1", rel="approve", method="GET"),
+        PayPalLink(href="https://paypal.com/approved", rel="approve", method="GET"),
         PayPalLink(href="https://paypal.com/declined", rel="declined", method="GET")
     ])
 
     link = service.get_approve_link(paypal_object)
 
     assert link is not None
-    assert link == "https://paypal.com/checkoutnow?token=1"
+    assert link == "https://paypal.com/approved"
 
 def test_get_approve_link_with_no_approved_link(test_client):
     service = PayPalService()
@@ -149,10 +149,6 @@ def test_get_approve_link_with_no_approved_link(test_client):
 
     with pytest.raises(ValueError, match="Approve link not found"):
         service.get_approve_link(paypal_object)  
-
-'''
-PayPal Router testing
-'''
 
 '''
 This test touches the real paypal sandbox. I only created this test to make sure the full integration + API communication would work (our system + paypal API) 
@@ -179,7 +175,7 @@ def test_full_live_paypal_flow_manual_approval(test_client):
 
     input("After approving the payment in the PayPal sandbox browser page, press Enter here to continue: ")
 
-    capture_response = test_client.post(f"/transaction/paypal/capture/{paypal_started["id"]}")
+    capture_response = test_client.post(f"/transaction/paypal/capture/{paypal_started['id']}")
     assert capture_response.status_code == 200
     paypal_captured = capture_response.json()
 
@@ -187,7 +183,10 @@ def test_full_live_paypal_flow_manual_approval(test_client):
     assert paypal_captured["is_successful"] is True
     assert paypal_captured["provider_status"] == "COMPLETED"
 
-    paypal_transaction = test_client.transaction_repo.get_transaction_by_id(paypal_started["id"])
+    paypal_transaction_response = test_client.get(f"/transaction/paypal/{paypal_started['id']}")
+    assert paypal_transaction_response.status_code == 200
+    paypal_transaction = paypal_transaction_response.json()
+    
     assert paypal_transaction is not None
     assert paypal_transaction["is_successful"] is True
     assert paypal_transaction["provider_status"] == "COMPLETED"

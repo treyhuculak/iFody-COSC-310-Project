@@ -62,6 +62,6 @@ def delete_paypal_transaction(transaction_id: int, controller: TransactionContro
 def get_paypal_transaction(transaction_id: int, controller: TransactionController = Depends(get_controller)):
     return controller.get_transaction(transaction_id)
 
-@router.post("/paypal/capture/{transaction_id}", response_model=dict | None)
+@router.post("/paypal/capture/{transaction_id}", response_model=PayPal)
 def capture_paypal_transaction(transaction_id: int, controller: PayPalController = Depends(get_paypal_controller)):
     return controller.capture_paypal_transaction(transaction_id)
