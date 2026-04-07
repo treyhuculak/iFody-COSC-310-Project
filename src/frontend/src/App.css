@@ -38,6 +38,30 @@
   justify-self: end;
 }
 
+.cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.cart-badge {
+  min-width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(95, 67, 48, 0.15);
+  color: #4c3224;
+}
+
+.cart-badge.has-items {
+  background: #ff6b35;
+  color: #fff;
+}
+
 .app-links a {
   text-decoration: none;
   color: #4c3224;
