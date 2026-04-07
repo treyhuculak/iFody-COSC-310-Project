@@ -33,12 +33,14 @@ class OrderService:
                             if item.item_id == free_item_id:
                                 if total_price - item.price_at_purchase > 0:
                                     total_price -= item.price_at_purchase
+                                    break
             else:
                 if active_offer["restaurant_id"] == order.restaurant_id:
                     for applied_item_id in active_offer["applied_items"]:
                         for item in order.order_items:
                             if item.item_id == applied_item_id:
                                 total_price -= (item.price_at_purchase - active_offer["price_ceiling"])
+                                break
 
         return total_price
 
