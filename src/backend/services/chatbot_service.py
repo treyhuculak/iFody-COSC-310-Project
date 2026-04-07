@@ -20,7 +20,7 @@ def find_all_restaurants_and_menu_items() -> str:
         if not r.get('is_available', True):
             continue
 
-        all_options += f"\nRestaurant: {r['name']}, Cuisine: {r['cuisine']}, Location: {r['location']}, Delivery fee: ${r['delivery_fee']}\n"
+        all_options += f"\nRestaurant: {r.get('name', 'Unknown')}, Cuisine: {r.get('cuisine', 'Unknown')}, City: {r.get('city', 'Unknown')}, Province: {r.get('province', 'Unknown')}, Delivery fee: ${r.get('delivery_fee', 0)}\n"
         for item in r.get('menu_items', []):
             all_options += f"  - {item['name']}: {item['description']}, ${item['price']}\n"
 
