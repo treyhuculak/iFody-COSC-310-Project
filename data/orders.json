@@ -302,7 +302,7 @@
     },
     {
         "id": 15,
-        "customer_id": 1,
+        "customer_id": 2,
         "restaurant_id": 1,
         "status": "preparing",
         "location": "BC",

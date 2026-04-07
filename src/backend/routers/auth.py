@@ -55,6 +55,7 @@ def login_user(data: LoginRequest, controller: AuthController = Depends(get_cont
     user = controller.login(data.email, data.password)
     return {
         "message": "Logged in successfully.",
+        "id": user["id"],
         "username": user["username"],
         "email": user["email"],
         "role": user["role"]

@@ -6,6 +6,7 @@ import SearchDropdown from "./components/search/SearchDropdown";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Order from "./pages/Order";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -163,6 +164,7 @@ export default function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/order/:orderId" element={<Order />} />
         </Routes>
       </div>
     </BrowserRouter>
