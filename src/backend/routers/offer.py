@@ -21,7 +21,7 @@ def add_offer(offer: Offer, controller: OfferController = Depends(get_controller
     '''
     result = controller.add_offer(offer)
     if result is None:
-        raise HTTPException(status_code = 400, detail = "Offer with this title already exists.")
+        raise HTTPException(status_code = 409, detail = "Offer with this title already exists.")
     return result
 
 @router.delete("/offers")
