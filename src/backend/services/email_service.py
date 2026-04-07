@@ -35,11 +35,4 @@ class EmailService:
             print(f"Error sending the email: {e}")
 
 
-if __name__ =="__main__":
-    recipient = "jhlbolsonaro@gmail.com"
-    subject = "Test Email"
-    body = "this is a test email sent using python and gmail smtp."
-    es = EmailService()
-    es.send_email(recipient, subject, body)
-
 
