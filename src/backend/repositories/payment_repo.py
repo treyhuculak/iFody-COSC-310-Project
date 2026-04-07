@@ -57,7 +57,7 @@ class PaymentRepository:
                 new_id = max([payment['id'] for payment in data], default=0) + 1
                 payment_data['id'] = new_id
 
-                if(payment_data["method"] != PaymentOptions.CASH.value):
+                if(payment_data["method"] in [PaymentOptions.CREDIT_CARD.value, PaymentOptions.DEBIT_CARD.value]):
                     # Only retain 4 last digits for best practises
                     payment_data['last4'] = "".join([payment_data['card_digits'][-4], payment_data['card_digits'][-3], payment_data['card_digits'][-2], payment_data['card_digits'][-1]])
                     
@@ -73,7 +73,7 @@ class PaymentRepository:
         except FileNotFoundError:
             # create a new file and store the payment data
             payment_data['id'] = 1
-            if(payment_data["method"] != PaymentOptions.CASH.value):
+            if(payment_data["method"] in [PaymentOptions.CREDIT_CARD.value, PaymentOptions.DEBIT_CARD.value]):
                 payment_data['last4'] = "".join([payment_data['card_digits'][-4], payment_data['card_digits'][-3], payment_data['card_digits'][-2], payment_data['card_digits'][-1]])
                     
                 # Removing critical user information (best practise)

@@ -1,4 +1,4 @@
-from src.backend.models.payment import Payment, PaymentCreate
+from src.backend.models.payment_transaction import PaymentTransaction
 from enum import Enum
 from pydantic import BaseModel
 
@@ -15,13 +15,14 @@ class PayPalLink(BaseModel):
     rel: str
     method: str
 
-class PayPalBase(PaymentCreate):
+class PayPalCreate(BaseModel):
     provider_order_id: str
     provider_status: PayPalOrderStatus
     links: list[PayPalLink] = []
 
-class PayPalCreate(PayPalBase):
-    pass
 
-class PayPal(Payment):
-    pass
+class PayPal(PaymentTransaction):
+    provider_order_id: str
+    provider_status: PayPalOrderStatus
+    links: list[PayPalLink] = []
+    approve_url: str
