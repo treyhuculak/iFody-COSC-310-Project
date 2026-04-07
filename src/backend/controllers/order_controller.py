@@ -7,12 +7,14 @@ from src.backend.models.order_item import OrderItemCreate
 from src.backend.repositories.order_repo import OrderRepository
 from src.backend.repositories.restaurant_repo import RestaurantRepository
 from src.backend.services.order_service import OrderService
+from src.backend.services.email_service import EmailService
 from src.backend.models.menu_item import MenuItem
 from src.backend.models.review import Review, ReviewCreate
 from src.backend.models.user import Role
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.models.notification import NotificationCreate, NotificationType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
+from src.backend.repositories.user_repo import UserRepository
 from src.backend.models.delivery import DeliveryCreate
 from src.backend.controllers.delivery_controller import DeliveryController
 
@@ -22,7 +24,9 @@ class OrderController:
         self.notif_controller = notif_controller or NotificationController()
         self.delivery_controller = delivery_controller or DeliveryController()
         self.order_service = OrderService()
+        self.email_service = EmailService()
         self.restaurant_repo = RestaurantRepository()
+        self.user_repo = UserRepository()
 
     def _get_owner_id(self, restaurant_id: int) -> int:
         restaurant_info = self.restaurant_repo.get_restaurant_by_id(restaurant_id)
@@ -178,6 +182,27 @@ class OrderController:
         elif(new_status == OrderStatus.DELIVERED.value):
             delivery = self.delivery_controller.get_delivery_by_order_id(order_id)
             self.delivery_controller.assign_delivered_at_time(delivery["id"], datetime.now().isoformat())
+            customer_id = order["customer_id"]
+            user_info = self.user_repo.get_user_by_id(customer_id)
+            email = user_info["email"]
+            subject = "Order has been delivered"
+            items_text = "\n".join([f"  - Item #{item['item_id']} x{item['quantity']}  ${item['price_at_purchase']:.2f}" for item in order['order_items']])
+            body = f"""
+            Dear {user_info['username']},
+            
+            Your order (id: {order_id}) has been delivered (YAY).
+            
+            Subtotal: ${order['subtotal_price']:.2f}. 
+            Tax: ${order['tax']:.2f}.
+            Delivery Fee: ${order['delivery_fee']:.2f}.
+            Total Price: ${order['total_price']:.2f}
+            
+            Items: {items_text}.
+
+            Thank you for using iFody. We hope you enjoyed our service! :)
+            
+            """
+            self.email_service.send_email(email, subject, body)
         
         try:
             status_enum = OrderStatus(new_status)
