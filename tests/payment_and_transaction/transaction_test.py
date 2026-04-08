@@ -40,6 +40,7 @@ def test_client(tmp_path):
     app.dependency_overrides[get_transaction_controller] = lambda: transaction_controller
 
     with TestClient(app) as client:
+        client.transaction_repo = transaction_repo
         yield client
 
     app.dependency_overrides.clear()
@@ -350,6 +351,33 @@ def test_get_all_transactions_by_invalid_user_id(test_client):
     get_response = test_client.get(f"/transaction/user_transactions/{user_id}")
     assert get_response.status_code == 404
 
+def test_update_transaction(test_client):
+    # First add payment methods
+    # The controller should return the new payment dict, which the router translates to a 200 response
+    payment_response_1 = test_client.post("/payment/cash", params={"active": True}, json=cash_payment) 
+    assert payment_response_1.status_code == 200
+    payment_id_1 = payment_response_1.json()["id"]
 
+    transaction_payload_1 = {
+        "payment_method_id": payment_id_1,
+        "order_id": 10,
+        "amount": 25.50
+    }
 
+    # The controller should return the new transaction dict, which the router translates to a 200 response
+    response_1 = test_client.post("/transaction/", json=transaction_payload_1)
+    assert response_1.status_code == 200
+    data_1 = response_1.json()
+
+    data_1['amount'] = 30.50
+
+    result = test_client.transaction_repo.update_transaction(data_1['id'], data_1)
+
+    # Now try to retrieve transaction
+    get_response = test_client.get(f"/transaction/{data_1['id']}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["payment_method_id"] == data_1["payment_method_id"]
+    assert data["order_id"] == data_1["order_id"]
+    assert data["amount"] == data_1["amount"]
 

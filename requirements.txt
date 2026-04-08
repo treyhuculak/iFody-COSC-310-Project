@@ -45,3 +45,4 @@ uvloop==0.21.0; platform_system != "Windows"
 watchfiles==1.1.0
 websockets==16.0
 bcrypt
+requests==2.33.1
