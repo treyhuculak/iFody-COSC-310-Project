@@ -11,9 +11,9 @@ class OrderService:
     '''
     TAX_RATES = 'data/tax_rates.json'
 
-    def __init__(self):
+    def __init__(self, temp_weekly_offers: str = None):
         self.restaurant_repo = RestaurantRepository()
-        self.offer_service = OfferService()
+        self.offer_service = OfferService(temp_weekly_offers)
 
     def calculate_order_subtotal(self, order: OrderCreate):
         total_price = 0
