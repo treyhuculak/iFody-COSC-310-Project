@@ -18,6 +18,7 @@ import SearchDropdown from "./components/search/SearchDropdown";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Payment from "./pages/Payment";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Register from "./pages/Register";
 
@@ -349,6 +350,7 @@ function AppShell() {
             }
           />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/payment" element={<Payment />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>

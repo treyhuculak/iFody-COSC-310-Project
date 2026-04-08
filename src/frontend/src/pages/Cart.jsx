@@ -65,14 +65,16 @@ export default function Cart() {
             });
 
             setQuantityDrafts((prev) => {
-                const nextDrafts = { ...prev };
+                const nextDrafts = {};
                 orders.forEach((order) => {
                     (order.order_items || []).forEach((item) => {
-                        nextDrafts[buildItemDraftKey(order.id, item.item_id)] = item.quantity;
+                        const key = buildItemDraftKey(order.id, item.item_id);
+                        nextDrafts[key] = key in prev ? prev[key] : item.quantity;
                     });
                 });
                 return nextDrafts;
             });
+
         } catch (error) {
             if (error?.status === 401) {
                 redirectToLogin();
@@ -108,7 +110,34 @@ export default function Cart() {
         };
     }, [loadCart]);
 
-    const totalItemCount = useMemo(() => countItemsInOrders(cartState.orders), [cartState.orders]);
+    const totalItemCount = useMemo(() => {
+        return cartState.orders.reduce((total, order) => {
+            return total + (order.order_items || []).reduce((sum, orderItem) => {
+                const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
+                return sum + (quantityDrafts[itemKey] ?? orderItem.quantity);
+            }, 0);
+        }, 0);
+    }, [cartState.orders, quantityDrafts]);
+
+
+    const grandTotal = useMemo(() => {
+        return cartState.orders.reduce((sum, order) => {
+            const taxRate = order.subtotal_price > 0 ? order.tax / order.subtotal_price : 0;
+            const draftSubtotal = (order.order_items || []).reduce((orderSum, orderItem) => {
+                const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
+                const menuItem = cartState.restaurantsById[order.restaurant_id]?.menu_items?.find(
+                    (item) => item.id === orderItem.item_id
+                );
+                const price = Number(menuItem?.price ?? orderItem.price_at_purchase);
+                const qty = quantityDrafts[itemKey] ?? orderItem.quantity;
+                return orderSum + price * qty;
+            }, 0);
+            return sum + draftSubtotal + draftSubtotal * taxRate + Number(order.delivery_fee);
+        }, 0);
+    }, [cartState.orders, cartState.restaurantsById, quantityDrafts]);
+
+
+
 
     const resolveMenuItem = useCallback(
         (order, orderItem) => {
@@ -127,8 +156,8 @@ export default function Cart() {
     const handleQuantityDraftChange = (orderId, itemId, rawValue) => {
         const parsed = Number(rawValue);
         const normalized = Number.isNaN(parsed)
-            ? 0
-            : Math.min(Math.max(0, Math.floor(parsed)), 99);
+            ? 1
+            : Math.min(Math.max(1, Math.floor(parsed)), 99);
 
         setQuantityDrafts((prev) => ({
             ...prev,
@@ -176,6 +205,20 @@ export default function Cart() {
         }
     };
 
+    const handleCheckout = async () => {
+        for (const order of cartState.orders) {
+            for (const orderItem of (order.order_items || [])) {
+                const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
+                const draftQty = quantityDrafts[itemKey] ?? orderItem.quantity;
+                if (Number(draftQty) !== orderItem.quantity) {
+                    await handleUpdateQuantity(order, orderItem, Number(draftQty));
+                }
+            }
+        }
+        navigate("/payment");
+    };
+
+
     return (
         <main className="home-page cart-page">
             <section className="hero-banner">
@@ -206,91 +249,110 @@ export default function Cart() {
                         </p>
                     </div>
                 ) : (
-                    <div className="cart-order-list">
-                        {cartState.orders.map((order) => {
-                            const restaurant = cartState.restaurantsById[order.restaurant_id];
+                    <>
+                        <div className="cart-order-list">
+                            {cartState.orders.map((order) => {
+                                const restaurant = cartState.restaurantsById[order.restaurant_id];
 
-                            return (
-                                <article key={order.id} className="cart-order-card">
-                                    <header className="cart-order-header">
-                                        <h3>{restaurant?.name || `Restaurant #${order.restaurant_id}`}</h3>
-                                        <small>Order #{order.id}</small>
-                                    </header>
+                                return (
+                                    <article key={order.id} className="cart-order-card">
+                                        <header className="cart-order-header">
+                                            <h3>{restaurant?.name || `Restaurant #${order.restaurant_id}`}</h3>
+                                            <small>Order #{order.id}</small>
+                                        </header>
 
-                                    <div className="cart-item-list">
-                                        {(order.order_items || []).map((orderItem) => {
-                                            const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
-                                            const menuItem = resolveMenuItem(order, orderItem);
-                                            const itemName =
-                                                menuItem?.name || `Menu item #${orderItem.item_id}`;
-                                            const itemPrice = Number(
-                                                menuItem?.price ?? orderItem.price_at_purchase
-                                            );
-                                            const draftQuantity =
-                                                quantityDrafts[itemKey] ?? orderItem.quantity;
-                                            const isPending = pendingItemKey === itemKey;
+                                        <div className="cart-item-list">
+                                            {(order.order_items || []).map((orderItem) => {
+                                                const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
+                                                const menuItem = resolveMenuItem(order, orderItem);
+                                                const itemName =
+                                                    menuItem?.name || `Menu item #${orderItem.item_id}`;
+                                                const itemPrice = Number(
+                                                    menuItem?.price ?? orderItem.price_at_purchase
+                                                );
+                                                const draftQuantity =
+                                                    quantityDrafts[itemKey] ?? orderItem.quantity;
+                                                const isPending = pendingItemKey === itemKey;
 
-                                            return (
-                                                <div key={itemKey} className="cart-item-row">
-                                                    <div className="cart-item-main">
-                                                        <p className="cart-item-name">{itemName}</p>
-                                                        <p className="cart-item-meta">
-                                                            ${itemPrice.toFixed(2)} each
-                                                        </p>
+                                                return (
+                                                    <div key={itemKey} className="cart-item-row">
+                                                        <div className="cart-item-main">
+                                                            <p className="cart-item-name">{itemName}</p>
+                                                            <p className="cart-item-meta">
+                                                                ${itemPrice.toFixed(2)} each &mdash; ${(itemPrice * draftQuantity).toFixed(2)}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="cart-item-actions">
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                step="1"
+                                                                value={draftQuantity}
+                                                                disabled={isPending}
+                                                                onChange={(event) =>
+                                                                    handleQuantityDraftChange(
+                                                                        order.id,
+                                                                        orderItem.item_id,
+                                                                        event.target.value
+                                                                    )
+                                                                }
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className="cart-remove-button"
+                                                                disabled={isPending}
+                                                                onClick={() =>
+                                                                    handleUpdateQuantity(order, orderItem, 0)
+                                                                }
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
                                                     </div>
-
-                                                    <div className="cart-item-actions">
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            step="1"
-                                                            value={draftQuantity}
-                                                            disabled={isPending}
-                                                            onChange={(event) =>
-                                                                handleQuantityDraftChange(
-                                                                    order.id,
-                                                                    orderItem.item_id,
-                                                                    event.target.value
-                                                                )
-                                                            }
-                                                        />
-
-                                                        <button
-                                                            type="button"
-                                                            className="cart-update-button"
-                                                            disabled={isPending}
-                                                            onClick={() =>
-                                                                handleUpdateQuantity(
-                                                                    order,
-                                                                    orderItem,
-                                                                    Number(draftQuantity)
-                                                                )
-                                                            }
-                                                        >
-                                                            {isPending ? "Saving..." : "Update"}
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            className="cart-remove-button"
-                                                            disabled={isPending}
-                                                            onClick={() =>
-                                                                handleUpdateQuantity(order, orderItem, 0)
-                                                            }
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </article>
-                            );
-                        })}
-                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        <footer className="cart-order-footer">
+                                            {(() => {
+                                                const taxRate = order.subtotal_price > 0 ? order.tax / order.subtotal_price : 0;
+                                                const draftSubtotal = (order.order_items || []).reduce((sum, orderItem) => {
+                                                    const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
+                                                    const menuItem = resolveMenuItem(order, orderItem);
+                                                    const price = Number(menuItem?.price ?? orderItem.price_at_purchase);
+                                                    const qty = quantityDrafts[itemKey] ?? orderItem.quantity;
+                                                    return sum + price * qty;
+                                                }, 0);
+                                                const draftTax = draftSubtotal * taxRate;
+                                                const draftTotal = draftSubtotal + draftTax + order.delivery_fee;
+                                                return (
+                                                    <>
+                                                        <p className="cart-summary-row">Subtotal: ${draftSubtotal.toFixed(2)}</p>
+                                                        <p className="cart-summary-row">Tax: ${draftTax.toFixed(2)}</p>
+                                                        <p className="cart-summary-row">Delivery fee: ${Number(order.delivery_fee).toFixed(2)}</p>
+                                                    </>
+                                                );
+                                            })()}
+                                        </footer>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                        {cartState.orders.length > 0 && (
+                            <div className="cart-grand-total">
+                                Grand total: <strong>${grandTotal.toFixed(2)}</strong>
+                                <button
+                                    type="button"
+                                    className="cart-checkout-button"
+                                    onClick={handleCheckout}
+                                >
+                                    Proceed to Checkout
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </section>
-        </main>
+        </main >
     );
 }
