@@ -15,6 +15,7 @@ import {
   searchRestaurantsByName,
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
+import ChatbotWindow from "./components/home/ChatbotWindow";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -367,6 +368,7 @@ function AppShell() {
         {activeSearchError ? <p className="app-nav-error">{activeSearchError}</p> : null}
       </nav>
 
+      <ChatbotWindow />
       <div className="app-page-shell">
         <Routes>
           <Route
