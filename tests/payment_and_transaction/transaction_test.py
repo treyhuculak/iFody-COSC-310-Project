@@ -349,7 +349,3 @@ def test_get_all_transactions_by_invalid_user_id(test_client):
     # Now try to retrieve transactions should give 404 since no transactions exists for user_id == 999
     get_response = test_client.get(f"/transaction/user_transactions/{user_id}")
     assert get_response.status_code == 404
-
-
-
-

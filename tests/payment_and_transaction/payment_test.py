@@ -423,5 +423,3 @@ def test_switch_active_payment_method(test_client):
     assert data["method"] == PaymentOptions.CASH.value
     assert data["user_id"] == 2
     assert data["is_active"] == False
-    
-

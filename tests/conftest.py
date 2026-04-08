@@ -13,7 +13,6 @@ from src.backend.repositories.user_repo import UserRepository
 from src.backend.controllers.restaurant_controller import RestaurantController
 import src.backend.utils.auth_dependencies as auth_dependencies
 
-
 @pytest.fixture
 def test_client(tmp_path):
     """
