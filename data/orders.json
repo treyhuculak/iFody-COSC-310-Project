@@ -366,7 +366,7 @@
         "location": "BC",
         "order_items": [
             {
-                "quantity": 2,
+                "quantity": 3,
                 "item_id": 1,
                 "order_id": 19,
                 "price_at_purchase": 14.25
@@ -384,10 +384,10 @@
                 "price_at_purchase": 5.25
             }
         ],
-        "subtotal_price": 47.5,
-        "tax": 5.7,
+        "subtotal_price": 61.75,
+        "tax": 7.41,
         "delivery_fee": 2.49,
-        "total_price": 55.690000000000005,
+        "total_price": 71.64999999999999,
         "id": 19,
         "timestamp": "2026-04-08T03:57:20.587385"
     },
@@ -398,16 +398,16 @@
         "location": "BC",
         "order_items": [
             {
-                "quantity": 3,
+                "quantity": 4,
                 "item_id": 1,
                 "order_id": 20,
                 "price_at_purchase": 16.95
             }
         ],
-        "subtotal_price": 50.849999999999994,
-        "tax": 6.101999999999999,
+        "subtotal_price": 67.8,
+        "tax": 8.136,
         "delivery_fee": 3.79,
-        "total_price": 60.74199999999999,
+        "total_price": 79.726,
         "id": 20,
         "timestamp": "2026-04-08T03:58:07.685116"
     }

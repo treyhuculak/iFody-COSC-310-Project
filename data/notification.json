@@ -348,5 +348,25 @@
         "order_id": 20,
         "id": 35,
         "created_at": "2026-04-08T04:15:11.651912"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Butter Chicken to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 36,
+        "created_at": "2026-04-08T18:37:07.176890"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Grilled Chicken Salad to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 37,
+        "created_at": "2026-04-08T18:37:16.650320"
     }
 ]
