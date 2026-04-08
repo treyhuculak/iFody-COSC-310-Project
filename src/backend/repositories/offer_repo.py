@@ -4,11 +4,12 @@ import random
 from src.backend.models.offer import Offer
 
 class OfferRepository:
-    def __init__(self, database: str = None) -> None:
+    def __init__(self, database: str = None, weekly_offers_file = None) -> None:
         '''
         Initializes the OfferRepository instance.
         '''
         self.offer_database = database or "data/offers.json"
+        self.weekly_offers_file = weekly_offers_file or "data/weekly_offers.json"
 
         try:
             with open(self.offer_database, "r") as file:
@@ -21,6 +22,9 @@ class OfferRepository:
             with open(self.offer_database, "w") as file:
                 json.dump([], file, indent = 4)
                 self.offer_id = 1
+        finally:
+            with open(self.weekly_offers_file, "w") as file:
+                json.dump([], file, indent = 4)
 
     def add_offer(self, offer: Offer) -> dict | None:
         '''
@@ -62,19 +66,30 @@ class OfferRepository:
         Retrieves a specified number of Offer instances from the database.
         This is a helper function for getting weekly offers for the users.
         '''
-        with open(self.offer_database, "r") as file:
-            offers = json.load(file)[:]
-            if len(offers) < amount:
-                offer_suggestions = offers
+        with open(self.weekly_offers_file, "r") as file:
+            offers = json.load(file)
+            if offers:
+                return offers
             else:
-                offer_suggestions = random.sample(offers, k = amount)
-            '''
-            Dates should not be stored directly on the Offer instances in the database.
-            The relevant attributes must be computed and assigned at retrieval time.
-            '''
-            current_date = datetime.datetime.now()
-            offer_deadline = current_date + datetime.timedelta(days = 7)
-            for offer in offer_suggestions:
-                offer["start_date"] = current_date.isoformat()
-                offer["end_date"] = offer_deadline.isoformat()
-        return offer_suggestions
+                with open(self.offer_database, "r") as file:
+                    offers = json.load(file)[:]
+                    if len(offers) < amount:
+                        offer_suggestions = offers
+                    else:
+                        offer_suggestions = random.sample(offers, k = amount)
+                    '''
+                    Dates should not be stored directly on the Offer instances in the database.
+                    The relevant attributes must be computed and assigned at retrieval time.
+                    '''
+                    current_date = datetime.datetime.now()
+                    offer_deadline = current_date + datetime.timedelta(days = 7)
+                    for offer in offer_suggestions:
+                        offer["start_date"] = current_date.isoformat()
+                        offer["end_date"] = offer_deadline.isoformat()
+                with open(self.weekly_offers_file, "w") as file:
+                    '''
+                    We need a way to keep track of the Offer instances.
+                    The self.weekly_offers_file file stores the new Offer instances.
+                    '''
+                    json.dump(offer_suggestions, file, indent = 4)
+                return offer_suggestions
