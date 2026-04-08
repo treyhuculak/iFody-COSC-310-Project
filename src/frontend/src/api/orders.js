@@ -124,6 +124,14 @@ function parseRestaurantIdFromOrderMapKey(orderMapKey) {
     return restaurantId;
 }
 
+export async function deleteOrder(orderId, userId, { signal } = {}) {
+    return request(`/orders/${orderId}`, {
+        signal,
+        method: "DELETE",
+        headers: buildUserHeaders(userId),
+    });
+}
+
 async function fetchOrderById(orderId, userId, { signal } = {}) {
     return request(`/orders/${orderId}`, {
         signal,
@@ -166,6 +174,14 @@ async function decrementOrderItemFromOrder({ orderId, userId, itemId, signal } =
         method: "DELETE",
         headers: buildUserHeaders(userId),
     });
+}
+
+export async function fetchPendingOrders({ userId, signal } = {}) {
+    if (!userId) return [];
+    const res = await fetch(`${API_URL}/orders/customer/${userId}`, { signal });
+    if (!res.ok) return [];
+    const all = await res.json().catch(() => []);
+    return (all || []).filter((o) => o.status === "pending");
 }
 
 export async function fetchActiveCartOrders({ userId, signal } = {}) {

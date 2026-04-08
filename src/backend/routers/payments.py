@@ -21,6 +21,11 @@ def add_payment(payment: PaymentCreate, active: bool, controller: PaymentControl
     new_payment = controller.add_payment_method(payment, active)
     return new_payment
 
+@router.post("/paypal", response_model=Payment)
+def add_payment(payment: PaymentCreate, active: bool, controller: PaymentController = Depends(get_controller)):
+    new_payment = controller.add_payment_method(payment, active)
+    return new_payment
+
 @router.put("/active/{user_id}/{payment_id}")
 def update_active_payment(user_id: int, payment_id: int, controller: PaymentController = Depends(get_controller)):
     controller.switch_active_payment_method(user_id, payment_id)
@@ -36,11 +41,20 @@ def delete_payment(payment_id: int, controller: PaymentController = Depends(get_
     deleted_payment = controller.delete_payment_method(payment_id)
     return deleted_payment
 
+@router.delete("/paypal/{payment_id}", response_model=Payment)
+def delete_payment(payment_id: int, controller: PaymentController = Depends(get_controller)):
+    deleted_payment = controller.delete_payment_method(payment_id)
+    return deleted_payment
+
 @router.get("/card/{payment_id}", response_model=CardPaymentResponse)
 def get_payment(payment_id: int, controller: PaymentController = Depends(get_controller)):
     return controller.get_payment(payment_id)
 
 @router.get("/cash/{payment_id}", response_model=Payment)
+def get_payment(payment_id: int, controller: PaymentController = Depends(get_controller)):
+    return controller.get_payment(payment_id)
+
+@router.get("/paypal/{payment_id}", response_model=Payment)
 def get_payment(payment_id: int, controller: PaymentController = Depends(get_controller)):
     return controller.get_payment(payment_id)
 

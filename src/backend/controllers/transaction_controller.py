@@ -5,6 +5,8 @@ from fastapi import HTTPException
 from src.backend.repositories.transaction_repo import TransactionRepository
 from src.backend.repositories.payment_repo import PaymentRepository
 from src.backend.models.payment import PaymentOptions
+from src.backend.repositories.order_repo import OrderRepository
+from src.backend.models.order import OrderStatus
 from src.backend.models.payment_transaction import PaymentTransactionCreate
 from src.backend.services.payment_service import PaymentService
 from src.backend.models.notification import NotificationType, NotificationCreate
@@ -20,8 +22,10 @@ class TransactionController:
         
         self.payment_repo = payment_repo or PaymentRepository()
         self.transaction_repo = repo or TransactionRepository()
+        self.order_repo = OrderRepository()
         self.notif_controller = notif_controller or NotificationController()
         self.payment_service = PaymentService()
+        
 
     def get_payment_by_id(self, payment_id: int):
         payment = self.payment_repo.get_payment_by_id(payment_id)
@@ -87,7 +91,10 @@ class TransactionController:
                         order_id = transaction_info['order_id']
                     )
                     self.notif_controller.create_notif(unsuccessful_payment_notif)
-                
+
+            new_status = OrderStatus.PAYMENT_CONFIRMED if transaction_info['is_successful'] else OrderStatus.PAYMENT_FAILED
+            self.order_repo.update_order_status(transaction_info['order_id'], new_status.value)
+            
             transaction_info['user_id'] = payment['user_id']
                 
             return self.transaction_repo.create_transaction(transaction_info)

@@ -1,0 +1,147 @@
+@import url("./home.css");
+
+.orders-page .restaurant-section {
+    width: min(1080px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.orders-section-title {
+    margin: 0 0 0.75rem;
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: clamp(1.1rem, 0.9rem + 0.8vw, 1.5rem);
+    color: #2f2218;
+}
+
+.orders-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.order-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: var(--soft-shadow);
+    padding: 1rem 1.1rem;
+}
+
+.order-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(239, 223, 207, 0.85);
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.75rem;
+}
+
+.order-card-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #2f2218;
+}
+
+.order-card-meta {
+    font-size: 0.85rem;
+    color: #735641;
+}
+
+.order-status-badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 0.26rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.order-status-badge.status-active {
+    background: rgba(255, 107, 53, 0.15);
+    color: var(--deep-accent);
+}
+
+.order-status-badge.status-delivered {
+    background: rgba(15, 123, 108, 0.15);
+    color: #075f53;
+}
+
+.order-status-badge.status-failed {
+    background: rgba(156, 48, 29, 0.12);
+    color: #7a2617;
+}
+
+.order-items-list {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.order-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.92rem;
+    color: #3d2b1a;
+}
+
+.order-item-name {
+    font-weight: 700;
+    flex: 1;
+}
+
+.order-item-qty {
+    color: #735641;
+    font-size: 0.85rem;
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.order-item-price {
+    font-weight: 700;
+    color: #2f2218;
+    min-width: 4rem;
+    text-align: right;
+}
+
+.order-card-footer {
+    border-top: 1px solid rgba(239, 223, 207, 0.85);
+    padding-top: 0.65rem;
+    text-align: right;
+    font-size: 0.9rem;
+    color: #735641;
+}
+
+.order-summary-row {
+    margin: 0;
+    padding: 0.12rem 0;
+}
+
+.order-summary-total {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #2f2218;
+}
+
+.order-eta {
+    margin: 0.4rem 0 0;
+    font-size: 0.88rem;
+    color: var(--deep-accent);
+    font-weight: 700;
+}
+
+.orders-separator {
+    margin: 1.75rem 0 1rem;
+}
+
+.orders-empty {
+    margin-top: 0.8rem;
+    border-radius: 14px;
+    border: 1px dashed rgba(95, 67, 48, 0.35);
+    background: rgba(255, 245, 232, 0.7);
+    padding: 1.2rem;
+    color: #5d4633;
+    text-align: center;
+}
