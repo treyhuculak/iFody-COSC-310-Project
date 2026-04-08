@@ -178,7 +178,10 @@ async function decrementOrderItemFromOrder({ orderId, userId, itemId, signal } =
 
 export async function fetchPendingOrders({ userId, signal } = {}) {
     if (!userId) return [];
-    const res = await fetch(`${API_URL}/orders/customer/${userId}`, { signal });
+    const res = await fetch(`${API_URL}/orders/customer/${userId}`, {
+        signal,
+        headers: buildUserHeaders(userId),
+    });
     if (!res.ok) return [];
     const all = await res.json().catch(() => []);
     return (all || []).filter((o) => o.status === "pending");

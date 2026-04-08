@@ -10,5 +10,17 @@
         "method": "paypal",
         "is_active": true,
         "id": 2
+    },
+    {
+        "user_id": 7,
+        "method": "cash",
+        "is_active": false,
+        "id": 3
+    },
+    {
+        "user_id": 7,
+        "method": "paypal",
+        "is_active": true,
+        "id": 5
     }
 ]
