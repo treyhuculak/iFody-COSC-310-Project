@@ -184,7 +184,15 @@ export async function fetchPendingOrders({ userId, signal } = {}) {
     });
     if (!res.ok) return [];
     const all = await res.json().catch(() => []);
-    return (all || []).filter((o) => o.status === "pending");
+
+    return (all || []).filter(
+        (o) =>
+            o.status === "pending" ||
+            o.status === "awaiting payment" ||
+            o.status === "payment failed" ||
+            o.status === "payment confirmed" ||
+            o.status === "preparing"
+    );
 }
 
 export async function fetchActiveCartOrders({ userId, signal } = {}) {

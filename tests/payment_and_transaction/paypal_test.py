@@ -154,7 +154,7 @@ def test_get_approve_link_with_no_approved_link(test_client):
 This test touches the real paypal sandbox. I only created this test to make sure the full integration + API communication would work (our system + paypal API) 
 Do not test this without having access to the sandbox (you will need access to login as a mock personal account created by the sandbox itself)
 Moreover, it should be noted that we need to watch out for the personal account funds (we can edit this in the sandbox), since without enough funds, the test will not go through
-
+'''
 def test_full_live_paypal_flow_manual_approval(test_client):
     payment_response = test_client.post("/payment/paypal", params={"active": True}, json={"user_id": 1, "method": PaymentOptions.PAYPAL.value})
     assert payment_response.status_code == 200
@@ -190,4 +190,3 @@ def test_full_live_paypal_flow_manual_approval(test_client):
     assert paypal_transaction is not None
     assert paypal_transaction["is_successful"] is True
     assert paypal_transaction["provider_status"] == "COMPLETED"
-'''

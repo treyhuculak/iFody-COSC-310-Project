@@ -273,3 +273,8 @@
 .cart-no-payment-box {
     margin-top: 8px;
 }
+
+.cart-order-status {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+}

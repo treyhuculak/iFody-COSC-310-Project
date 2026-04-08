@@ -519,8 +519,14 @@ export default function Cart() {
                                 return (
                                     <article key={order.id} className="cart-order-card">
                                         <header className="cart-order-header">
-                                            <h3>{restaurant?.name || `Restaurant #${order.restaurant_id}`}</h3>
-                                            <small>Order #{order.id}</small>
+                                            <div>
+                                                <h3>{restaurant?.name || `Restaurant #${order.restaurant_id}`}</h3>
+                                                <small>Order #{order.id}</small>
+                                                <p className="cart-order-status">
+                                                    Status: <strong>{order.status}</strong>
+                                                </p>
+                                            </div>
+
                                             {(order.order_items || []).length === 0 && (
                                                 <button
                                                     type="button"

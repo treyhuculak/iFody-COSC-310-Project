@@ -115,5 +115,28 @@
         "user_id": 7,
         "is_successful": true,
         "id": 9
+    },
+    {
+        "payment_method_id": 2,
+        "order_id": 18,
+        "amount": 209.17,
+        "provider_order_id": "8HG33700NP907803W",
+        "provider_status": "COMPLETED",
+        "links": [
+            {
+                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/8HG33700NP907803W",
+                "rel": "self",
+                "method": "GET"
+            },
+            {
+                "href": "https://www.sandbox.paypal.com/checkoutnow?token=8HG33700NP907803W",
+                "rel": "payer-action",
+                "method": "GET"
+            }
+        ],
+        "approve_url": "https://www.sandbox.paypal.com/checkoutnow?token=8HG33700NP907803W",
+        "user_id": 1,
+        "is_successful": true,
+        "id": 10
     }
 ]

@@ -488,5 +488,295 @@
         "order_id": 22,
         "id": 49,
         "created_at": "2026-04-08T04:55:32.260323"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Butter Chicken to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 50,
+        "created_at": "2026-04-08T19:15:07.797760"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Butter Chicken to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 51,
+        "created_at": "2026-04-08T19:15:13.792107"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Butter Chicken to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 52,
+        "created_at": "2026-04-08T19:15:14.713178"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 53,
+        "created_at": "2026-04-08T19:15:27.262427"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 54,
+        "created_at": "2026-04-08T19:15:28.025723"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 55,
+        "created_at": "2026-04-08T19:15:28.698755"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 56,
+        "created_at": "2026-04-08T19:15:29.083771"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 57,
+        "created_at": "2026-04-08T19:15:29.430898"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 58,
+        "created_at": "2026-04-08T19:15:29.843833"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Tomato Basil Soup to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 59,
+        "created_at": "2026-04-08T19:15:53.160935"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Tomato Basil Soup to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 60,
+        "created_at": "2026-04-08T19:15:54.024278"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Tomato Basil Soup to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 61,
+        "created_at": "2026-04-08T19:15:54.420724"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Tomato Basil Soup to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 62,
+        "created_at": "2026-04-08T19:15:54.863110"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Grilled Chicken Salad to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 63,
+        "created_at": "2026-04-08T19:39:48.365040"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Grilled Chicken Salad to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 64,
+        "created_at": "2026-04-08T19:39:48.705636"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 5 has been cancelled by the customer after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 5,
+        "id": 65,
+        "created_at": "2026-04-08T19:57:36.395026"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 5 has been cancelled after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 5,
+        "id": 66,
+        "created_at": "2026-04-08T19:57:36.441491"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 7 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 7,
+        "id": 67,
+        "created_at": "2026-04-08T19:57:38.450559"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 7 has been successfully cancelled before confirmation",
+        "is_read": false,
+        "order_id": 7,
+        "id": 68,
+        "created_at": "2026-04-08T19:57:38.497467"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 9 has been cancelled by the customer after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 9,
+        "id": 69,
+        "created_at": "2026-04-08T19:57:40.464221"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 9 has been cancelled after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 9,
+        "id": 70,
+        "created_at": "2026-04-08T19:57:40.512494"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 20 has been cancelled by the customer after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 20,
+        "id": 71,
+        "created_at": "2026-04-08T19:57:45.810301"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 20 has been cancelled after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 20,
+        "id": 72,
+        "created_at": "2026-04-08T19:57:45.859641"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Customer's payment failed. Order with ID 11 has been cancelled.",
+        "is_read": false,
+        "order_id": 11,
+        "id": 73,
+        "created_at": "2026-04-08T19:57:57.275173"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Payment Failed. Please review payment method. Order 11 has been cancelled",
+        "is_read": false,
+        "order_id": 11,
+        "id": 74,
+        "created_at": "2026-04-08T19:57:57.334997"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 15 has been cancelled by the customer after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 15,
+        "id": 75,
+        "created_at": "2026-04-08T19:57:59.396459"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 15 has been cancelled after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 15,
+        "id": 76,
+        "created_at": "2026-04-08T19:57:59.452009"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 19 has been cancelled by the customer after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 19,
+        "id": 77,
+        "created_at": "2026-04-08T19:58:05.977512"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 19 has been cancelled after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 19,
+        "id": 78,
+        "created_at": "2026-04-08T19:58:06.022102"
     }
 ]
