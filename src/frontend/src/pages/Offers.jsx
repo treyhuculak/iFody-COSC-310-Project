@@ -20,6 +20,12 @@ export default function Offers() {
   const [state, setState] = useState({ loading: true, error: "", offers: [] });
   const [pending, setPending] = useState(null);
 
+  const TYPE_LABELS = {
+    1: "Discount",
+    2: "Free Item",
+    3: "Price Ceiling",
+  };
+
   const redirectToLogin = useCallback(() => {
     const redirectPath = `${location.pathname}${location.search}`;
     const query = new URLSearchParams({ redirect: redirectPath }).toString();
@@ -100,7 +106,7 @@ export default function Offers() {
               <p className="offer-desc">{offer.description}</p>
 
               <div className="offer-meta">
-                <div className="offer-type">Type: {String(offer.offer_type)}</div>
+                <div className="offer-type">Type: {TYPE_LABELS[offer.offer_type] ?? String(offer.offer_type)}</div>
                 <div className="offer-actions">
                   <button
                     className={offer.is_active ? "offer-deactivate-button" : "offer-activate-button"}

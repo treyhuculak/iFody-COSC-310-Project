@@ -43,3 +43,7 @@ export async function deactivateOffer(offerId) {
     headers: authHeaders(),
   });
 }
+
+export async function fetchActiveOffer({ signal } = {}) {
+  return request(`/offers/active`, { signal, headers: authHeaders() });
+}
