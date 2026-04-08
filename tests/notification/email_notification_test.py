@@ -1,5 +1,6 @@
 import pytest, json
 from fastapi.testclient import TestClient
+from unittest.mock import patch, ANY
 from src.backend.services.email_service import EmailService
 from src.backend.models.user import Role
 from src.backend.models.order import OrderStatus, OrderLocation
@@ -106,83 +107,62 @@ def test_client(tmp_path):
     app.dependency_overrides.clear()
 
 
-def test_email_sent_on_delivery(test_client, mocker):
+def test_email_sent_on_delivery(test_client):
     client = test_client
 
-    mock_email = mocker.patch("src.backend.services.email_service.EmailService.send_email")
-
-    #creating an order 
-    new_order = {
-        "customer_id": 1,
-        "restaurant_id": 1,
-        "status": OrderStatus.PREPARING_ORDER.value,
-        "location": OrderLocation.BRITISH_COLUMBIA.value,
-        "order_items": [{
-            "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
-        }]
-    }
-    response = client.post("/orders/", json=new_order)
-    assert response.status_code == 200
-    order_id = response.json()["id"]
-
-    #creating a delivery by changing order status to out for delivery
-    delivery_response = client.put(f"/orders/{order_id}/status",
-        params={
-            "new_status": OrderStatus.OUT_FOR_DELIVERY.value,
-            "role": "manager"
+    with patch("src.backend.services.email_service.EmailService.send_email") as mock_email:
+        new_order = {
+            "customer_id": 1,
+            "restaurant_id": 1,
+            "status": OrderStatus.PREPARING_ORDER.value,
+            "location": OrderLocation.BRITISH_COLUMBIA.value,
+            "order_items": [{
+                "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
+            }]
         }
-    )
+        response = client.post("/orders/", json=new_order)
+        assert response.status_code == 200
+        order_id = response.json()["id"]
 
-    #finalizing delivery and sending email
-    delivered_response = client.put(f"/orders/{order_id}/status", 
-        params={
-            "new_status": OrderStatus.DELIVERED.value,
-            "role": "manager"
-        }
-    )
+        client.put(f"/orders/{order_id}/status",
+            params={"new_status": OrderStatus.OUT_FOR_DELIVERY.value, "role": "manager"}
+        )
+        client.put(f"/orders/{order_id}/status",
+            params={"new_status": OrderStatus.DELIVERED.value, "role": "manager"}
+        )
 
-    mock_email.assert_called_once_with("testcustomer@123.com", "Order has been delivered", mocker.ANY)
+        mock_email.assert_called_once_with("testcustomer@123.com", "Order has been delivered", ANY)
+
+
 
 
 def test_unsuccessful_email_sent_on_delivery(test_client, mocker):
     client = test_client
 
-    mock_email = mocker.patch("src.backend.services.email_service.EmailService.send_email")
+    client = test_client
 
-    #creating an order 
-    new_order = {
-        "customer_id": 3,
-        "restaurant_id": 1,
-        "status": OrderStatus.PREPARING_ORDER.value,
-        "location": OrderLocation.BRITISH_COLUMBIA.value,
-        "order_items": [{
-            "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
-        }]
-    }
-    response = client.post("/orders/", json=new_order)
-    assert response.status_code == 200
-    order_id = response.json()["id"]
+    with patch("src.backend.services.email_service.EmailService.send_email") as mock_email:
+        mock_email.side_effect = Exception("SMTP error")
 
-    #creating a delivery by changing order status to out for delivery
-    delivery_response = client.put(f"/orders/{order_id}/status",
-        params={
-            "new_status": OrderStatus.OUT_FOR_DELIVERY.value,
-            "role": "manager"
+        new_order = {
+            "customer_id": 3,
+            "restaurant_id": 1,
+            "status": OrderStatus.PREPARING_ORDER.value,
+            "location": OrderLocation.BRITISH_COLUMBIA.value,
+            "order_items": [{
+                "item_id": 101, "quantity": 2, "price_at_purchase": 5.0
+            }]
         }
-    )
-    assert delivery_response.status_code == 200
+        response = client.post("/orders/", json=new_order)
+        assert response.status_code == 200
+        order_id = response.json()["id"]
 
-    #create mock email exception
-    mock_email.side_effect = Exception("SMTP error")
-
-    #finalizing delivery and sending email
-    delivered_response = client.put(f"/orders/{order_id}/status", 
-        params={
-            "new_status": OrderStatus.DELIVERED.value,
-            "role": "manager"
-        }
-    )
-    assert delivered_response.status_code == 200
-
-    mock_email.assert_called_once()
+        client.put(f"/orders/{order_id}/status",
+            params={"new_status": OrderStatus.OUT_FOR_DELIVERY.value, "role": "manager"}
+        )
+        delivered_response = client.put(f"/orders/{order_id}/status",
+            params={"new_status": OrderStatus.DELIVERED.value, "role": "manager"}
+        )
+        assert delivered_response.status_code == 200
+        mock_email.assert_called_once()
     
