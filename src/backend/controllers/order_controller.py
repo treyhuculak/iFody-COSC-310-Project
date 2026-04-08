@@ -202,7 +202,10 @@ class OrderController:
             Thank you for using iFody. We hope you enjoyed our service! :)
             
             """
-            self.email_service.send_email(email, subject, body)
+            try:
+                self.email_service.send_email(email, subject, body)
+            except Exception as e:
+                print(f"Failed to send email: {e}")
         
         try:
             status_enum = OrderStatus(new_status)
