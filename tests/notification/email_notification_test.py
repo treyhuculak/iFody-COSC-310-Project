@@ -1,7 +1,6 @@
 import pytest, json
 from fastapi.testclient import TestClient
 from unittest.mock import patch, ANY
-from src.backend.services.email_service import EmailService
 from src.backend.models.user import Role
 from src.backend.models.order import OrderStatus, OrderLocation
 from src.backend.controllers.order_controller import OrderController
@@ -136,7 +135,7 @@ def test_email_sent_on_delivery(test_client):
 
 
 
-def test_unsuccessful_email_sent_on_delivery(test_client, mocker):
+def test_unsuccessful_email_sent_on_delivery(test_client):
     client = test_client
 
     client = test_client
