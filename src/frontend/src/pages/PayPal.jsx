@@ -22,7 +22,7 @@ function normalizeOrdersFromState(state) {
   return ids
     .map((id) => ({
       id: Number(id),
-      total: Number(totals[id] ?? totals[String(id)] ?? 0),
+      total: Number(Number(totals[id] ?? totals[String(id)] ?? 0).toFixed(2)),
     }))
     .filter((order) => Number.isInteger(order.id) && order.id > 0);
 }
@@ -126,7 +126,7 @@ export default function PayPalPage() {
     try {
       const transaction = await startPaypalTransaction({
         order_id: Number(form.order_id),
-        amount: Number(form.amount),
+        amount: Number(Number(form.amount).toFixed(2)),
         payment_method_id: Number(form.payment_method_id),
       });
       setSelectedTransaction(transaction);
@@ -238,11 +238,8 @@ export default function PayPalPage() {
                 <input
                   name="amount"
                   type="number"
-                  min="0.01"
-                  step="0.01"
                   value={form.amount}
-                  onChange={handleFormChange}
-                  required
+                  readOnly
                 />
               </label>
 

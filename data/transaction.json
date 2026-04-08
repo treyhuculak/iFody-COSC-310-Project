@@ -92,5 +92,28 @@
         "user_id": 7,
         "is_successful": true,
         "id": 8
+    },
+    {
+        "payment_method_id": 5,
+        "order_id": 23,
+        "amount": 15.87,
+        "provider_order_id": "0RM216354C112904A",
+        "provider_status": "COMPLETED",
+        "links": [
+            {
+                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0RM216354C112904A",
+                "rel": "self",
+                "method": "GET"
+            },
+            {
+                "href": "https://www.sandbox.paypal.com/checkoutnow?token=0RM216354C112904A",
+                "rel": "payer-action",
+                "method": "GET"
+            }
+        ],
+        "approve_url": "https://www.sandbox.paypal.com/checkoutnow?token=0RM216354C112904A",
+        "user_id": 7,
+        "is_successful": true,
+        "id": 9
     }
 ]
