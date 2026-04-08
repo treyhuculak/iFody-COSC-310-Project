@@ -31,7 +31,7 @@ class PaymentController:
         try:
             # Now serialize the payment for storage (if card option was given, serialize card info instead)
             payment_info = None
-            if(payment.method == PaymentOptions.CASH):
+            if(payment.method == PaymentOptions.CASH or payment.method == PaymentOptions.PAYPAL):
                 payment_info = payment.model_dump(mode="json")
             
             elif (payment.method in [PaymentOptions.CREDIT_CARD, PaymentOptions.DEBIT_CARD]):

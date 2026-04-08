@@ -29,6 +29,15 @@ def test_client(tmp_path):
 
     app.dependency_overrides.clear()
 
+paypal_payment = {
+        "user_id": 2,
+        "method": PaymentOptions.PAYPAL.value
+}
+
+invalid_paypal_payment = {
+    "method": PaymentOptions.PAYPAL.value
+}
+
 cash_payment = {
     "user_id": 2,
     "method": PaymentOptions.CASH.value
@@ -424,4 +433,70 @@ def test_switch_active_payment_method(test_client):
     assert data["user_id"] == 2
     assert data["is_active"] == False
     
+'''
+Paypal tests
+'''
+def test_add_paypal_payment(test_client):
+    # The controller should return the new payment dict, which the router translates to a 200 response
+    response = test_client.post("/payment/paypal", params={"active": True}, json=paypal_payment) 
+    assert response.status_code == 200
+    data = response.json()
 
+    assert data["method"] == PaymentOptions.PAYPAL.value
+    assert data["user_id"] == 2
+    assert data["is_active"] == True
+    assert "id" in data
+
+def test_add_invalid_paypal_payment(test_client):
+    # The controller should return the new payment dict, which the router translates to a 200 response
+    response = test_client.post("/payment/paypal", params={"active": True}, json=invalid_paypal_payment) 
+    assert response.status_code == 422
+
+def test_delete_paypal_payment(test_client):
+    response = test_client.post("/payment/paypal/", params={"active": True}, json=paypal_payment)
+    assert response.status_code == 200
+
+    payment_id = response.json()["id"]
+
+    # Delete payment method
+    delete_response = test_client.delete(f"/payment/paypal/{payment_id}")
+    assert delete_response.status_code == 200
+
+    # After deletion, trying to get the payment method should return a 404
+    get_response = test_client.get(f"/payment/paypal/{payment_id}")
+    assert get_response.status_code == 404
+
+def test_delete_paypal_payment_with_invalid_id(test_client):
+    response = test_client.post("/payment/paypal/", params={"active": True}, json=paypal_payment)
+    assert response.status_code == 200
+
+    payment_id = 999
+
+    # Delete payment method should give 404 since no payment exists with that payment id
+    delete_response = test_client.delete(f"/payment/paypal/{payment_id}")
+    assert delete_response.status_code == 404
+
+def test_get_paypal_payment_by_id(test_client):
+    # First add a payment method
+    response = test_client.post("/payment/paypal/", params={"active": True}, json=paypal_payment)
+    assert response.status_code == 200
+    payment_id = response.json()["id"]
+
+    # Now try to retrieve payment
+    get_response = test_client.get(f"/payment/paypal/{payment_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["method"] == PaymentOptions.PAYPAL.value
+    assert data["user_id"] == 2
+    assert data["is_active"] == True
+    assert "id" in data
+
+def test_get_paypal_payment_by_invalid_id(test_client):
+    # First add a payment method
+    response = test_client.post("/payment/paypal/", params={"active": True}, json=paypal_payment)
+    assert response.status_code == 200
+    payment_id = 999
+
+    # Now try to retrieve payment should give 404 since no paymnet exists with that payment id
+    get_response = test_client.get(f"/payment/paypal/{payment_id}")
+    assert get_response.status_code == 404
