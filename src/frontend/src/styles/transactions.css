@@ -1,0 +1,197 @@
+@import url("./home.css");
+
+.transactions-page .restaurant-section,
+.transactions-page .hero-banner,
+.paypal-page .restaurant-section,
+.paypal-page .hero-banner {
+  width: min(1080px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.transactions-grid {
+  width: min(1080px, 100%);
+  margin: 0 auto 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.transaction-form-card,
+.transaction-list-card,
+.transaction-inspect-card,
+.checkout-timer-card,
+.paypal-approval-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--soft-shadow);
+}
+
+.transaction-form-card,
+.transaction-list-card,
+.transaction-inspect-card {
+  padding: 1rem 1.1rem;
+}
+
+.transaction-form,
+.transaction-detail-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.transaction-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #513829;
+}
+
+.transaction-form input,
+.transaction-form select {
+  width: 100%;
+  border: 1px solid #e8d7c5;
+  border-radius: 12px;
+  padding: 0.7rem 0.82rem;
+  background: #fffdfa;
+  color: #2f2218;
+  font: inherit;
+}
+
+.transaction-form input:focus,
+.transaction-form select:focus {
+  outline: 2px solid rgba(255, 107, 53, 0.3);
+  border-color: #ff6b35;
+}
+
+.transaction-form-actions,
+.transaction-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.transaction-form button,
+.transaction-row-actions button,
+.checkout-timer-card button,
+.paypal-approval-card button,
+.paypal-inline-link {
+  border: none;
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  font-weight: 700;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.transaction-form button,
+.transaction-row-actions button,
+.paypal-approval-card button,
+.paypal-inline-link {
+  background: #ff6b35;
+  color: #fff;
+}
+
+.secondary-button {
+  background: rgba(255, 107, 53, 0.12) !important;
+  color: #522f1b !important;
+}
+
+.danger-button {
+  background: #7f2a1b !important;
+  color: #fff !important;
+}
+
+.transaction-form button:disabled,
+.transaction-row-actions button:disabled,
+.paypal-approval-card button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.transaction-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.transaction-row-card {
+  border: 1px solid rgba(232, 215, 197, 0.95);
+  border-radius: 14px;
+  padding: 0.9rem 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(255, 252, 248, 0.88);
+}
+
+.transaction-row-card h3,
+.paypal-approval-card h3 {
+  margin: 0 0 0.2rem;
+  color: #2f2218;
+}
+
+.transaction-row-card p,
+.transaction-detail-grid p,
+.checkout-timer-card p,
+.paypal-helper-text {
+  margin: 0;
+  color: #6b4e3d;
+}
+
+.checkout-timer-card {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.transaction-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.paypal-detail-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.paypal-approval-card {
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.paypal-approve-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  text-decoration: none;
+  font-weight: 800;
+  color: #fff;
+  background: #0070ba;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+}
+
+@media (max-width: 860px) {
+  .transactions-grid,
+  .transaction-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-row-card,
+  .checkout-timer-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+.transactions-grid-single {
+  grid-template-columns: 1fr;
+}

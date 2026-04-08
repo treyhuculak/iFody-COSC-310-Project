@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
     fetchPopularRestaurants,
     fetchRecentlyOrderedRestaurants,
@@ -32,6 +33,7 @@ export default function Home({
     selectedRestaurantId = null,
     onRestaurantSelect,
 }) {
+    const location = useLocation();
     const [filters, setFilters] = useState(DEFAULT_FILTERS);
     const [catalogRestaurants, setCatalogRestaurants] = useState([]);
     const [localSelectedRestaurantId, setLocalSelectedRestaurantId] = useState(null);
@@ -192,6 +194,24 @@ export default function Home({
         return Array.from(values).sort((a, b) => a.localeCompare(b));
     }, [catalogRestaurants, restaurantsState.items]);
 
+
+    const paypalNotice = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        const status = params.get("paypal_status");
+        const message = params.get("paypal_message");
+        const token = params.get("token");
+
+        if (!status && !message) {
+            return null;
+        }
+
+        return {
+            status: status || "info",
+            message: message || (status === "approved" ? "PayPal approval completed" : "PayPal payment was cancelled."),
+            token,
+        };
+    }, [location.search]);
+
     const recommendationPool = useMemo(() => {
         const filteredNavSearchItems = navSearchResults.filter((restaurant) =>
             matchesRestaurantFilters(restaurant, filters)
@@ -290,6 +310,14 @@ export default function Home({
     return (
         <main className="home-page">
             <section className="hero-banner">
+                {paypalNotice ? (
+                    <div className={`home-paypal-notice ${paypalNotice.status === "cancelled" ? "is-cancelled" : "is-approved"}`}>
+                        <p>{paypalNotice.message}</p>
+                        <div className="home-paypal-notice-actions">
+                            <Link to={`/paypal${paypalNotice.token ? `?token=${encodeURIComponent(paypalNotice.token)}` : ""}`}>Open PayPal page</Link>
+                        </div>
+                    </div>
+                ) : null}
                 <p className="hero-kicker">Customer Home</p>
                 <h1>Order from places that fit your taste in seconds.</h1>
                 <p className="hero-subtitle">

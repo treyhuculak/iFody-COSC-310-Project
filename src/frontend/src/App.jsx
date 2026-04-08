@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BrowserRouter,
   NavLink,
@@ -19,10 +19,12 @@ import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import OrderHistory from "./pages/OrderHistory";
-import Payment from "./pages/Payment";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Register from "./pages/Register";
 import Settings from "./pages/Settings";
+import Payment from "./pages/Payment";
+import Transactions from "./pages/Transaction";
+import PayPalPage from "./pages/PayPal";
 
 export default function App() {
   return (
@@ -49,6 +51,8 @@ function AppShell() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [selectedMenuItemId, setSelectedMenuItemId] = useState(null);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
+  const paymentDropdownRef = useRef(null);
 
   const [username, setUsername] = useState(() => {
     try {
@@ -94,6 +98,16 @@ function AppShell() {
       window.removeEventListener("cart:updated", handleCartUpdate);
     };
   }, [refreshCartCount]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (paymentDropdownRef.current && !paymentDropdownRef.current.contains(e.target)) {
+        setPaymentDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (isRestaurantPage || !restaurantSearchQuery.trim()) {
@@ -304,6 +318,28 @@ function AppShell() {
             <NavLink to="/" end>
               Home
             </NavLink>
+            <div className="nav-dropdown" ref={paymentDropdownRef}>
+              <button
+                className="nav-dropdown-trigger link-button"
+                onClick={() => setPaymentDropdownOpen((prev) => !prev)}
+                aria-expanded={paymentDropdownOpen}
+              >
+                Payments <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
+              </button>
+              {paymentDropdownOpen && (
+                <div className="nav-dropdown-menu">
+                  <NavLink to="/payment" onClick={() => setPaymentDropdownOpen(false)}>
+                    Payment Methods
+                  </NavLink>
+                  <NavLink to="/transactions" onClick={() => setPaymentDropdownOpen(false)}>
+                    Transactions
+                  </NavLink>
+                  <NavLink to="/paypal" onClick={() => setPaymentDropdownOpen(false)}>
+                    PayPal
+                  </NavLink>
+                </div>
+              )}
+            </div>
             <NavLink to="/cart" className="cart-link" aria-label="View cart">
               Cart
               <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
@@ -355,6 +391,8 @@ function AppShell() {
           />
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/paypal" element={<PayPalPage />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/login" element={<Login />} />

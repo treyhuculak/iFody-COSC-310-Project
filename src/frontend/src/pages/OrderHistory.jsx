@@ -108,7 +108,9 @@ export default function OrderHistory() {
         if (!userId) return 0;
         try {
             const all = await fetchAllOrders(userId);
-            const filtered = (all || []).filter((o) => o.status !== "pending");
+            const filtered = (all || []).filter(
+    (o) => o.status === "delivered" || o.status === "payment failed"
+);
 
             const live = filtered.filter(isLiveOrder);
             const done = filtered.filter((o) => !isLiveOrder(o));
