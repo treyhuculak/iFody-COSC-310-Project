@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     countItemsInOrders,
+    deleteOrder,
+    fetchPendingOrders,
     fetchActiveCartOrders,
     setCartItemQuantity,
 } from "../api/orders";
@@ -41,7 +43,7 @@ export default function Cart() {
         setCartState((prev) => ({ ...prev, loading: true, error: "" }));
 
         try {
-            const orders = await fetchActiveCartOrders({ userId });
+            const orders = await fetchPendingOrders({ userId });
             const restaurantIds = [...new Set(orders.map((order) => order.restaurant_id))];
 
             const restaurants = await Promise.all(
@@ -205,6 +207,15 @@ export default function Cart() {
         }
     };
 
+    const handleDeleteOrder = async (orderId) => {
+        try {
+            await deleteOrder(orderId, userId);
+            await loadCart();
+        } catch (error) {
+            setCartState((prev) => ({ ...prev, error: error.message || "Could not delete order." }));
+        }
+    };
+
     const handleCheckout = async () => {
         for (const order of cartState.orders) {
             for (const orderItem of (order.order_items || [])) {
@@ -215,7 +226,14 @@ export default function Cart() {
                 }
             }
         }
-        navigate("/payment");
+        navigate("/payment", {
+            state: {
+                orderIds: cartState.orders.map((o) => o.id),
+                orderTotals: Object.fromEntries(
+                    cartState.orders.map((o) => [o.id, Number(o.total_price || 1)])
+                ),
+            },
+        });
     };
 
 
@@ -259,6 +277,15 @@ export default function Cart() {
                                         <header className="cart-order-header">
                                             <h3>{restaurant?.name || `Restaurant #${order.restaurant_id}`}</h3>
                                             <small>Order #{order.id}</small>
+                                            {(order.order_items || []).length === 0 && (
+                                                <button
+                                                    type="button"
+                                                    className="cart-remove-button"
+                                                    onClick={() => handleDeleteOrder(order.id)}
+                                                >
+                                                    Delete order
+                                                </button>
+                                            )}
                                         </header>
 
                                         <div className="cart-item-list">

@@ -85,6 +85,9 @@ class OrderController:
             raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
         return order
         
+    def get_orders_by_customer_id(self, customer_id: int):
+        return self.order_repo.get_orders_by_customer_id(customer_id)
+
     def delete_order(self, order_id: int, user_id: int, user_role: Role):
         order = self.get_order(order_id)
 

@@ -26,6 +26,10 @@ def delete_order(order_id: int, controller: OrderController = Depends(get_contro
     deleted_order = controller.delete_order(order_id, current_user["id"], current_user["role"])
     return deleted_order
 
+@router.get("/customer/{customer_id}", response_model=List[Order])
+def get_orders_by_customer(customer_id: int, controller: OrderController = Depends(get_controller)):
+    return controller.get_orders_by_customer_id(customer_id)
+
 @router.get("/{order_id}", response_model=Order)
 def get_order(order_id: int, controller: OrderController = Depends(get_controller)):
     return controller.get_order(order_id)

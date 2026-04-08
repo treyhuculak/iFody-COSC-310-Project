@@ -1,0 +1,116 @@
+@import url("./home.css");
+
+.payment-form {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.payment-options {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.payment-options legend {
+    font-weight: 700;
+    color: #2f2218;
+    padding: 0 0.4rem;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #2f2218;
+    background: #fffdf9;
+    transition: border-color 0.15s;
+}
+
+.payment-option.selected {
+    border-color: var(--accent);
+    background: #fff8f4;
+}
+
+.payment-option input[type="radio"] {
+    accent-color: var(--accent);
+}
+
+.card-fields {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.card-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2f2218;
+}
+
+.card-fields input {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fffcf8;
+    color: var(--ink);
+}
+
+.card-fields input:focus {
+    outline: 2px solid rgba(255, 107, 53, 0.35);
+    border-color: var(--accent);
+}
+
+.card-fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.payment-submit-button {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 0.85rem;
+    color: #fff;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #f98b39, #ff6b35);
+}
+
+.payment-submit-button:disabled {
+    opacity: 0.68;
+    cursor: wait;
+}
+
+.status-success {
+    color: #1a7a3c;
+    background: #eafaf1;
+    border: 1px solid #a3d9b1;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+}
+
+.payment-active-badge {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: #fff3ed;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.1rem 0.45rem;
+}

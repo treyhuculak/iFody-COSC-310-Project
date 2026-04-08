@@ -88,5 +88,35 @@
         "order_id": 17,
         "id": 9,
         "created_at": "2026-04-07T17:27:03.751649"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 10 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 10,
+        "id": 10,
+        "created_at": "2026-04-08T01:10:59.935181"
+    },
+    {
+        "user_id": 1,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 10 has been successfully cancelled before confirmation",
+        "is_read": false,
+        "order_id": 10,
+        "id": 11,
+        "created_at": "2026-04-08T01:10:59.962226"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #2",
+        "is_read": false,
+        "order_id": 2,
+        "id": 12,
+        "created_at": "2026-04-08T01:11:01.743537"
     }
 ]

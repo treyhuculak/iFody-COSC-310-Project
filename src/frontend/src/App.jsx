@@ -18,9 +18,11 @@ import SearchDropdown from "./components/search/SearchDropdown";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import OrderHistory from "./pages/OrderHistory";
 import Payment from "./pages/Payment";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Register from "./pages/Register";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -310,6 +312,8 @@ function AppShell() {
             </NavLink>
             {username ? (
               <>
+                <NavLink to="/orders">Order History</NavLink>
+                <NavLink to="/settings">Settings</NavLink>
                 <span className="app-username">Hi, {username}</span>
                 <button className="link-button" onClick={handleLogout}>
                   Logout
@@ -351,6 +355,8 @@ function AppShell() {
           />
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/orders" element={<OrderHistory />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
