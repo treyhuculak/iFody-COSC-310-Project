@@ -16,6 +16,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - OLLAMA_URL=http://ollama:11434
+    env_file:
+      - .env
     depends_on:
       - ollama
     command: >
@@ -44,6 +46,8 @@ services:
       - VITE_BACKEND_PROXY_TARGET=http://backend:8000
     depends_on:
       - backend
+    env_file:
+      - .env
     restart: unless-stopped
 
 volumes:

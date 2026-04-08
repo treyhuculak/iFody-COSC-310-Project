@@ -24,25 +24,6 @@
         "total_price": 26.39
     },
     {
-        "id": 2,
-        "customer_id": 1,
-        "restaurant_id": 2,
-        "status": "pending",
-        "location": "BC",
-        "order_items": [
-            {
-                "quantity": 2,
-                "item_id": 2,
-                "price_at_purchase": 14.25
-            }
-        ],
-        "timestamp": "2026-03-11T12:10:00",
-        "subtotal_price": 28.5,
-        "tax": 3.42,
-        "delivery_fee": 4.49,
-        "total_price": 36.410000000000004
-    },
-    {
         "id": 3,
         "customer_id": 1,
         "restaurant_id": 3,
@@ -86,25 +67,6 @@
         "total_price": 28.63
     },
     {
-        "id": 5,
-        "customer_id": 1,
-        "restaurant_id": 4,
-        "status": "preparing",
-        "location": "BC",
-        "order_items": [
-            {
-                "quantity": 1,
-                "item_id": 1,
-                "price_at_purchase": 16.95
-            }
-        ],
-        "timestamp": "2026-01-30T14:55:00",
-        "subtotal_price": 16.95,
-        "tax": 2.03,
-        "delivery_fee": 3.79,
-        "total_price": 22.77
-    },
-    {
         "id": 6,
         "customer_id": 1,
         "restaurant_id": 2,
@@ -129,25 +91,6 @@
         "total_price": 31.26
     },
     {
-        "id": 7,
-        "customer_id": 1,
-        "restaurant_id": 1,
-        "status": "awaiting payment",
-        "location": "BC",
-        "order_items": [
-            {
-                "quantity": 1,
-                "item_id": 3,
-                "price_at_purchase": 13.95
-            }
-        ],
-        "timestamp": "2026-02-14T11:40:00",
-        "subtotal_price": 13.95,
-        "tax": 1.67,
-        "delivery_fee": 3.99,
-        "total_price": 19.61
-    },
-    {
         "id": 8,
         "customer_id": 1,
         "restaurant_id": 5,
@@ -170,44 +113,6 @@
         "tax": 2.28,
         "delivery_fee": 2.49,
         "total_price": 23.77
-    },
-    {
-        "id": 9,
-        "customer_id": 1,
-        "restaurant_id": 3,
-        "status": "payment confirmed",
-        "location": "BC",
-        "order_items": [
-            {
-                "quantity": 1,
-                "item_id": 3,
-                "price_at_purchase": 17.25
-            }
-        ],
-        "timestamp": "2026-01-18T19:05:00",
-        "subtotal_price": 17.25,
-        "tax": 2.07,
-        "delivery_fee": 2.99,
-        "total_price": 22.31
-    },
-    {
-        "id": 11,
-        "customer_id": 1,
-        "restaurant_id": 1,
-        "status": "payment failed",
-        "location": "BC",
-        "order_items": [
-            {
-                "quantity": 1,
-                "item_id": 1,
-                "price_at_purchase": 16.5
-            }
-        ],
-        "timestamp": "2026-02-08T08:50:00",
-        "subtotal_price": 16.5,
-        "tax": 1.98,
-        "delivery_fee": 3.99,
-        "total_price": 22.47
     },
     {
         "id": 12,
@@ -282,25 +187,6 @@
         "total_price": 18.66
     },
     {
-        "id": 15,
-        "customer_id": 1,
-        "restaurant_id": 1,
-        "status": "preparing",
-        "location": "BC",
-        "order_items": [
-            {
-                "quantity": 2,
-                "item_id": 5,
-                "price_at_purchase": 6.75
-            }
-        ],
-        "timestamp": "2026-03-31T18:05:00",
-        "subtotal_price": 13.5,
-        "tax": 1.62,
-        "delivery_fee": 3.99,
-        "total_price": 19.11
-    },
-    {
         "customer_id": 4,
         "restaurant_id": 2,
         "status": "pending",
@@ -339,5 +225,89 @@
         "total_price": 19.229999999999997,
         "id": 17,
         "timestamp": "2026-04-07T17:27:03.601354"
+    },
+    {
+        "customer_id": 1,
+        "restaurant_id": 1,
+        "status": "payment confirmed",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 8,
+                "item_id": 1,
+                "order_id": 18,
+                "price_at_purchase": 16.5
+            },
+            {
+                "quantity": 2,
+                "item_id": 2,
+                "order_id": 18,
+                "price_at_purchase": 15.25
+            },
+            {
+                "quantity": 1,
+                "item_id": 5,
+                "order_id": 18,
+                "price_at_purchase": 6.75
+            },
+            {
+                "quantity": 1,
+                "item_id": 3,
+                "order_id": 18,
+                "price_at_purchase": 13.95
+            }
+        ],
+        "subtotal_price": 183.2,
+        "tax": 21.983999999999998,
+        "delivery_fee": 3.99,
+        "total_price": 209.174,
+        "id": 18,
+        "timestamp": "2026-04-08T03:35:33.114963"
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 2,
+        "status": "payment confirmed",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 1,
+                "order_id": 21,
+                "price_at_purchase": 19.95
+            },
+            {
+                "quantity": 1,
+                "item_id": 2,
+                "order_id": 21,
+                "price_at_purchase": 14.25
+            }
+        ],
+        "subtotal_price": 34.2,
+        "tax": 4.104,
+        "delivery_fee": 4.49,
+        "total_price": 42.794000000000004,
+        "id": 21,
+        "timestamp": "2026-04-08T04:40:07.868556"
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 5,
+        "status": "pending",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 3,
+                "order_id": 23,
+                "price_at_purchase": 11.95
+            }
+        ],
+        "subtotal_price": 11.95,
+        "tax": 1.434,
+        "delivery_fee": 2.49,
+        "total_price": 15.873999999999999,
+        "id": 23,
+        "timestamp": "2026-04-08T04:55:16.601725"
     }
 ]

@@ -53,6 +53,15 @@
             "role": "administrator",
             "is_logged_in": false,
             "is_blocked": false
+        },
+        {
+            "id": 7,
+            "username": "jumbles",
+            "email": "jhlbolsonaro@gmail.com",
+            "password": "123@Abc123",
+            "role": "customer",
+            "is_logged_in": true,
+            "is_blocked": false
         }
     ]
 }

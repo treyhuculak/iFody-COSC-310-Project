@@ -104,6 +104,53 @@
   min-height: calc(100vh - 64px);
 }
 
+/* ── Payments dropdown ─────────────────────────────────────────────────── */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.nav-dropdown-caret {
+  font-size: 0.65rem;
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  z-index: 300;
+  min-width: 160px;
+  background: #fffdf9;
+  border: 1px solid #e8d7c5;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(72, 36, 13, 0.14);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  color: #4c3224;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 0;
+  transition: background-color 0.12s ease;
+}
+
+.nav-dropdown-menu a:hover,
+.nav-dropdown-menu a.active {
+  background: rgba(255, 107, 53, 0.1);
+  color: #311c0f;
+}
+
 .app-nav-error {
   width: min(1180px, 100%);
   margin: 0 auto;
