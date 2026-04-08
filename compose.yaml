@@ -44,6 +44,8 @@ services:
       - VITE_BACKEND_PROXY_TARGET=http://backend:8000
     depends_on:
       - backend
+    env_file:
+      - .env
     restart: unless-stopped
 
 volumes:

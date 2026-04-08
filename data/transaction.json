@@ -30,5 +30,13 @@
         "is_successful": true,
         "user_id": 1,
         "id": 4
+    },
+    {
+        "payment_method_id": 1,
+        "order_id": 20,
+        "amount": 22.773999999999997,
+        "is_successful": true,
+        "user_id": 1,
+        "id": 5
     }
 ]

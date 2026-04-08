@@ -248,5 +248,105 @@
         "order_id": 20,
         "id": 25,
         "created_at": "2026-04-08T03:58:07.900170"
+    },
+    {
+        "user_id": 1,
+        "type": "order in progress",
+        "title": "Successful Cash Payment",
+        "message": "Your cash payment for order 20 was successful",
+        "is_read": false,
+        "order_id": 20,
+        "id": 26,
+        "created_at": "2026-04-08T04:10:03.580390"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Chicken Katsu Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 27,
+        "created_at": "2026-04-08T04:13:38.750498"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Matcha Cheesecake to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 28,
+        "created_at": "2026-04-08T04:13:42.487983"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Veggie Teriyaki Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 29,
+        "created_at": "2026-04-08T04:13:43.478141"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #18",
+        "is_read": false,
+        "order_id": 18,
+        "id": 30,
+        "created_at": "2026-04-08T04:13:44.470333"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Quinoa Power Bowl to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 31,
+        "created_at": "2026-04-08T04:13:54.562536"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Tomato Basil Soup to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 32,
+        "created_at": "2026-04-08T04:13:55.766472"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Grilled Chicken Salad to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 33,
+        "created_at": "2026-04-08T04:13:56.860476"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Butter Chicken to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 34,
+        "created_at": "2026-04-08T04:14:18.041015"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Butter Chicken to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 35,
+        "created_at": "2026-04-08T04:15:11.651912"
     }
 ]

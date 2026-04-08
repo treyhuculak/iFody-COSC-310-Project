@@ -39,6 +39,7 @@ export default function Cart() {
     const [checkoutMessage, setCheckoutMessage] = useState("");
     const [pendingCheckout, setPendingCheckout] = useState(null);
     const timerRef = useRef(null);
+    const checkoutTriggeredRef = useRef(false);
 
     const [quantityDrafts, setQuantityDrafts] = useState({});
     const [pendingItemKey, setPendingItemKey] = useState("");
@@ -307,17 +308,21 @@ export default function Cart() {
             clearInterval(timerRef.current);
             timerRef.current = null;
         }
+        checkoutTriggeredRef.current = false;
         setCheckoutCountdown(null);
         setPendingCheckout(null);
     };
 
     const cancelPendingCheckout = () => {
         clearPendingCheckout();
+        checkoutTriggeredRef.current = false;
         setCheckoutBusy(false);
         setCheckoutMessage("Checkout cancelled before any transaction was created.");
     };
 
     const finalizeStandardCheckout = async (checkoutPayload) => {
+        if (checkoutTriggeredRef.current) return;
+        checkoutTriggeredRef.current = true;
         setCheckoutBusy(true);
         setCartState((prev) => ({ ...prev, error: "" }));
         setCheckoutMessage("");
