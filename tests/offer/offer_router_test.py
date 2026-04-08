@@ -78,7 +78,11 @@ def test_client(tmp_path):
         )
     )
 
-    draft_offer_repo = OfferRepository(str(draft_offer_database))
+    draft_weekly_offers_file = tmp_path / "data/temp_weekly_offers.json"
+    draft_weekly_offers_file.parent.mkdir(parents = True, exist_ok = True)
+    draft_offer_database.write_text("[]")
+
+    draft_offer_repo = OfferRepository(str(draft_offer_database), str(draft_weekly_offers_file))
     draft_offer_service = OfferService(draft_offer_repo, 3)
     draft_controller = OfferController(draft_offer_service)
 

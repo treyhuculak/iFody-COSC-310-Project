@@ -60,6 +60,12 @@ class OfferRepository:
         with open(self.offer_database, "w") as file:
             json.dump(offers, file, indent = 4)
             return offer
+        
+    def get_weekly_offers_file(self) -> str:
+        '''
+        Retrieves the temporary database for storing the new weekly Offer instances.
+        '''
+        return self.weekly_offers_file
 
     def get_new_offers(self, amount: int) -> list[Offer]:
         '''
