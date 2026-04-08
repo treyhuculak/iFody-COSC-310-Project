@@ -2,11 +2,11 @@ const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 const POPULAR_RESTAURANTS_ENDPOINT =
     import.meta.env.VITE_POPULAR_RESTAURANTS_ENDPOINT ||
-    "/restaurants/recommendations/popular";
+    "/restaurants/popular";
 
 const RECENT_RESTAURANTS_ENDPOINT =
     import.meta.env.VITE_RECENT_RESTAURANTS_ENDPOINT ||
-    "/restaurants/recommendations/recent";
+    "/restaurants/recent";
 
 function toQueryString(params) {
     const query = new URLSearchParams();
@@ -212,10 +212,19 @@ export async function fetchPopularRestaurants({
     limit = 6,
     signal,
 } = {}) {
-    const query = toQueryString({ location, limit });
-    const path = query
-        ? `${POPULAR_RESTAURANTS_ENDPOINT}?${query}`
-        : POPULAR_RESTAURANTS_ENDPOINT;
+    const normalizedLocation = String(location || "").trim().toLowerCase();
+
+    if (!normalizedLocation) {
+        return {
+            items: [],
+            endpointReady: true,
+        };
+    }
+
+    const query = toQueryString({ skip: 0, limit });
+    const path = `${POPULAR_RESTAURANTS_ENDPOINT}/${encodeURIComponent(
+        normalizedLocation
+    )}?${query}`;
 
     try {
         const payload = await request(path, { signal });
@@ -238,23 +247,44 @@ export async function fetchRecentlyOrderedRestaurants({
     limit = 6,
     signal,
 } = {}) {
-    const query = toQueryString({ location, limit });
-    const path = query
-        ? `${RECENT_RESTAURANTS_ENDPOINT}?${query}`
-        : RECENT_RESTAURANTS_ENDPOINT;
+    if (userId === undefined || userId === null || userId === "") {
+        return {
+            items: [],
+            endpointReady: true,
+        };
+    }
+
+    const query = toQueryString({ skip: 0, limit });
+    const path = `${RECENT_RESTAURANTS_ENDPOINT}?${query}`;
 
     const headers = {};
-    if (userId !== undefined && userId !== null && userId !== "") {
-        headers["x-user-id"] = String(userId);
-    }
+    headers["x-user-id"] = String(userId);
 
     try {
         const payload = await request(path, { signal, headers });
+        const normalizedItems = normalizeRestaurantCollection(payload);
+        const normalizedLocation = String(location || "").trim().toLowerCase();
+
+        const filteredItems = normalizedLocation
+            ? normalizedItems.filter((restaurant) => {
+                  const restaurantLocation = String(
+                      restaurant.city || restaurant.location || ""
+                  )
+                      .trim()
+                      .toLowerCase();
+                  return restaurantLocation === normalizedLocation;
+              })
+            : normalizedItems;
+
         return {
-            items: normalizeRestaurantCollection(payload),
+            items: filteredItems,
             endpointReady: true,
         };
     } catch (error) {
+        if (error?.status === 400 || error?.status === 422) {
+            return { items: [], endpointReady: true };
+        }
+
         if (isNotReadyEndpoint(error)) {
             return { items: [], endpointReady: false };
         }
