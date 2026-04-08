@@ -41,6 +41,10 @@ export default function Login() {
         }
       }
 
+      if (data?.email) {
+        localStorage.setItem("email", String(data.email));
+      }
+
       if (data?.access_token) {
         localStorage.setItem("auth_token", String(data.access_token));
       } else if (data?.token) {

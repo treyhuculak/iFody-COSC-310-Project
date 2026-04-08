@@ -1,0 +1,85 @@
+@import url("./home.css");
+
+.settings-page .restaurant-section {
+    width: min(680px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.settings-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: var(--soft-shadow);
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.settings-card h2 {
+    margin: 0 0 1rem;
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: 1.15rem;
+    color: #2f2218;
+    border-bottom: 1px solid rgba(239, 223, 207, 0.85);
+    padding-bottom: 0.6rem;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(239, 223, 207, 0.5);
+    font-size: 0.96rem;
+    color: #3d2b1a;
+}
+
+.settings-row:last-child {
+    border-bottom: none;
+}
+
+.settings-label {
+    min-width: 90px;
+    font-weight: 700;
+    color: #735641;
+    font-size: 0.87rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.settings-value {
+    color: #2f2218;
+}
+
+.settings-link {
+    display: inline-block;
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.settings-link:hover {
+    color: var(--deep-accent);
+    text-decoration: underline;
+}
+
+.settings-logout-button {
+    margin-top: 0.5rem;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 0.72rem;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #fff;
+    background: linear-gradient(135deg, #9c301d, #7a2617);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-logout-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(122, 38, 23, 0.35);
+}

@@ -66,6 +66,7 @@
   text-decoration: none;
   color: #4c3224;
   font-weight: 600;
+  font-size: 0.9rem;
   border-radius: 999px;
   padding: 0.38rem 0.72rem;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -88,6 +89,8 @@
   border: none;
   color: #4c3224;
   font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
   cursor: pointer;
   padding: 0.38rem 0.72rem;
   border-radius: 999px;
