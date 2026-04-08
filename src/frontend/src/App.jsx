@@ -21,6 +21,7 @@ import Login from "./pages/Login";
 import Payment from "./pages/Payment";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Register from "./pages/Register";
+import Offers from "./pages/Offers";
 
 export default function App() {
   return (
@@ -302,6 +303,9 @@ function AppShell() {
             <NavLink to="/" end>
               Home
             </NavLink>
+            {username ? (
+              <NavLink to="/offers">Offers</NavLink>
+            ) : null}
             <NavLink to="/cart" className="cart-link" aria-label="View cart">
               Cart
               <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
@@ -351,6 +355,7 @@ function AppShell() {
           />
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/offers" element={<Offers />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
