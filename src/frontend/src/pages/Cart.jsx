@@ -4,6 +4,7 @@ import {
     countItemsInOrders,
     deleteOrder,
     fetchPendingOrders,
+    fetchActiveCartOrders,
     setCartItemQuantity,
 } from "../api/orders";
 import { fetchRestaurantById, parseUserIdFromStorage } from "../api/restaurants";

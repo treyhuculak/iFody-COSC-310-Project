@@ -4,14 +4,15 @@ from fastapi.responses import JSONResponse
 
 from src.backend.models.user import InvalidEmailError, InvalidPasswordError
 
-from src.backend.routers import restaurants
+from src.backend.routers import auth
+from src.backend.routers import chatbot
+from src.backend.routers import deliveries
+from src.backend.routers import notification
+from src.backend.routers import offer
 from src.backend.routers import orders
 from src.backend.routers import payments
-from src.backend.routers import notification
-from src.backend.routers import auth
+from src.backend.routers import restaurants
 from src.backend.routers import transactions
-from src.backend.routers import deliveries
-from src.backend.routers import chatbot
 
 app = FastAPI()
 
@@ -24,13 +25,14 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
-app.include_router(restaurants.router)
+app.include_router(chatbot.router)
+app.include_router(deliveries.router)
+app.include_router(notification.router)
+app.include_router(offer.router)
 app.include_router(orders.router)
 app.include_router(payments.router)
-app.include_router(notification.router)
+app.include_router(restaurants.router)
 app.include_router(transactions.router)
-app.include_router(deliveries.router)
-app.include_router(chatbot.router)
 
 @app.exception_handler(InvalidEmailError)
 async def email_error_handler(request, exc: InvalidEmailError):
