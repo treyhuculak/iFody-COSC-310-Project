@@ -348,5 +348,145 @@
         "order_id": 20,
         "id": 35,
         "created_at": "2026-04-08T04:15:11.651912"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 21 has been received.",
+        "is_read": false,
+        "order_id": 21,
+        "id": 36,
+        "created_at": "2026-04-08T04:40:07.872558"
+    },
+    {
+        "user_id": 7,
+        "type": "new order received",
+        "title": "Order Confirmed",
+        "message": "Your order at Maple Smokehouse has been received, and is awaiting payment",
+        "is_read": false,
+        "order_id": 21,
+        "id": 37,
+        "created_at": "2026-04-08T04:40:07.893681"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Smoked Brisket Plate to order #21",
+        "is_read": false,
+        "order_id": 21,
+        "id": 38,
+        "created_at": "2026-04-08T04:40:07.948816"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #21",
+        "is_read": false,
+        "order_id": 21,
+        "id": 39,
+        "created_at": "2026-04-08T04:40:10.469004"
+    },
+    {
+        "user_id": 7,
+        "type": "order in progress",
+        "title": "Successful Cash Payment",
+        "message": "Your cash payment for order 21 was successful",
+        "is_read": false,
+        "order_id": 21,
+        "id": 40,
+        "created_at": "2026-04-08T04:40:39.182363"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 22 has been received.",
+        "is_read": false,
+        "order_id": 22,
+        "id": 41,
+        "created_at": "2026-04-08T04:40:57.462417"
+    },
+    {
+        "user_id": 7,
+        "type": "new order received",
+        "title": "Order Confirmed",
+        "message": "Your order at Roma Table has been received, and is awaiting payment",
+        "is_read": false,
+        "order_id": 22,
+        "id": 42,
+        "created_at": "2026-04-08T04:40:57.464176"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Caesar Salad to order #22",
+        "is_read": false,
+        "order_id": 22,
+        "id": 43,
+        "created_at": "2026-04-08T04:40:57.480559"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Chicken Alfredo to order #22",
+        "is_read": false,
+        "order_id": 22,
+        "id": 44,
+        "created_at": "2026-04-08T04:40:58.462183"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 23 has been received.",
+        "is_read": false,
+        "order_id": 23,
+        "id": 45,
+        "created_at": "2026-04-08T04:55:16.620532"
+    },
+    {
+        "user_id": 7,
+        "type": "new order received",
+        "title": "Order Confirmed",
+        "message": "Your order at Harbor Greens has been received, and is awaiting payment",
+        "is_read": false,
+        "order_id": 23,
+        "id": 46,
+        "created_at": "2026-04-08T04:55:16.622576"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Turkey Wrap to order #23",
+        "is_read": false,
+        "order_id": 23,
+        "id": 47,
+        "created_at": "2026-04-08T04:55:16.658813"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 22 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 22,
+        "id": 48,
+        "created_at": "2026-04-08T04:55:32.259505"
+    },
+    {
+        "user_id": 7,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order 22 has been successfully cancelled before confirmation",
+        "is_read": false,
+        "order_id": 22,
+        "id": 49,
+        "created_at": "2026-04-08T04:55:32.260323"
     }
 ]

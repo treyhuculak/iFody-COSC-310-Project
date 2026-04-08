@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   createCardPayment,
   createCashPayment,
@@ -246,7 +246,7 @@ export default function Payments() {
     setBusyAction(`delete-${payment.id}`);
 
     try {
-      await deletePaymentMethod(payment.id, payment.method);
+      await deletePaymentMethod(payment.id, payment.method, userId);
 
       if (selectedPayment?.id === payment.id) {
         setSelectedPayment(null);
@@ -273,13 +273,6 @@ export default function Payments() {
 
       {error ? <p className="status-error">{error}</p> : null}
       {successMessage ? <p className="status-success">{successMessage}</p> : null}
-
-      <section className="restaurant-section" style={{ marginBottom: "1rem" }}>
-        <div className="transaction-form-actions">
-          <Link to="/transactions" className="payment-nav-link">Go to Transactions</Link>
-          <Link to="/paypal" className="payment-nav-link">Go to PayPal</Link>
-        </div>
-      </section>
 
       <section className="payments-grid">
         <article className="payment-form-card">

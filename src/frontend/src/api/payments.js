@@ -34,6 +34,13 @@ async function request(path, { signal, headers, ...options } = {}) {
   return payload;
 }
 
+function buildUserHeaders(userId) {
+  return {
+    "x-user-id": String(userId),
+    "Content-Type": "application/json",
+  };
+}
+
 export function normalizePaymentMethod(raw = {}) {
   const method = String(raw.method || "").toLowerCase();
 
@@ -80,7 +87,10 @@ export function getPaymentLabel(method) {
 }
 
 export async function fetchPaymentMethodsByUser(userId, { signal } = {}) {
-  const payload = await request(`/payment/${userId}`, { signal });
+  const payload = await request(`/payment/${userId}`, {
+    signal,
+    headers: buildUserHeaders(userId),
+  });
 
   if (!Array.isArray(payload)) {
     return [];
@@ -90,7 +100,10 @@ export async function fetchPaymentMethodsByUser(userId, { signal } = {}) {
 }
 
 export async function fetchActivePaymentMethod(userId, { signal } = {}) {
-  const payload = await request(`/payment/active/${userId}`, { signal });
+  const payload = await request(`/payment/active/${userId}`, {
+    signal,
+    headers: buildUserHeaders(userId),
+  });
   return normalizePaymentMethod(payload);
 }
 
@@ -167,21 +180,23 @@ export async function setActivePaymentMethod(userId, paymentId, { signal } = {})
   return request(`/payment/active/${userId}/${paymentId}`, {
     signal,
     method: "PUT",
+    headers: buildUserHeaders(userId),
   });
 }
 
-export async function deletePaymentMethod(paymentId, method, { signal } = {}) {
+export async function deletePaymentMethod(paymentId, method, userId, { signal } = {}) {
   const typeSegment = getPaymentTypeSegment(method);
   const payload = await request(`/payment/${typeSegment}/${paymentId}`, {
     signal,
     method: "DELETE",
+    headers: userId ? buildUserHeaders(userId) : { "Content-Type": "application/json" },
   });
 
   return normalizePaymentMethod(payload);
 }
 
 export async function updatePaymentMethod(paymentId, payload) {
-    const response = await fetch(`${API_BASE_URL}/payment/${paymentId}`, {
+    const response = await fetch(`${API_URL}/payment/${paymentId}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",

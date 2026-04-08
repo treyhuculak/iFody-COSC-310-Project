@@ -83,7 +83,7 @@ class PayPalService:
                         "experience_context": {
                             # Links to where the user should be sent after clicking the confirmation/return paypal button and the cancel paypal button
                             # Also grabbed from https://developer.paypal.com/docs/api/orders/v2/ confirm order section
-                            "return_url": f"{self.frontend_url}/?paypal_status=approved&paypal_message=PayPal%20approval%20completed",
+                            "return_url": f"{self.frontend_url}/paypal?paypal_status=approved&paypal_message=PayPal%20approval%20completed",
                             "cancel_url": f"{self.frontend_url}/?paypal_status=cancelled&paypal_message=PayPal%20payment%20was%20cancelled.",
                             "user_action": "PAY_NOW"
                         }
