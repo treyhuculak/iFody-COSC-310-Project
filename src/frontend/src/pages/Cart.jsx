@@ -1,14 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-    countItemsInOrders,
     deleteOrder,
     fetchPendingOrders,
-    fetchActiveCartOrders,
     setCartItemQuantity,
 } from "../api/orders";
+import {
+    fetchPaymentMethodsByUser,
+    getPaymentLabel,
+    updatePaymentMethod,
+} from "../api/payments";
 import { fetchRestaurantById, parseUserIdFromStorage } from "../api/restaurants";
+import { createTransaction } from "../api/transactions";
 import "../styles/cart.css";
+
+const CHECKOUT_SECONDS = 10;
 
 function buildItemDraftKey(orderId, itemId) {
     return `${orderId}:${itemId}`;
@@ -25,6 +31,14 @@ export default function Cart() {
         orders: [],
         restaurantsById: {},
     });
+
+    const [paymentMethods, setPaymentMethods] = useState([]);
+    const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState("");
+    const [checkoutBusy, setCheckoutBusy] = useState(false);
+    const [checkoutCountdown, setCheckoutCountdown] = useState(null);
+    const [checkoutMessage, setCheckoutMessage] = useState("");
+    const [pendingCheckout, setPendingCheckout] = useState(null);
+    const timerRef = useRef(null);
 
     const [quantityDrafts, setQuantityDrafts] = useState({});
     const [pendingItemKey, setPendingItemKey] = useState("");
@@ -76,7 +90,6 @@ export default function Cart() {
                 });
                 return nextDrafts;
             });
-
         } catch (error) {
             if (error?.status === 401) {
                 redirectToLogin();
@@ -92,6 +105,42 @@ export default function Cart() {
         }
     }, [redirectToLogin, userId]);
 
+    const loadPaymentMethods = useCallback(async () => {
+        if (!userId) return;
+
+        try {
+            const methods = await fetchPaymentMethodsByUser(userId);
+            const safeMethods = Array.isArray(methods) ? methods : [];
+
+            setPaymentMethods(safeMethods);
+
+            setSelectedPaymentMethodId((prev) => {
+                if (prev && safeMethods.some((item) => String(item.id) === String(prev))) {
+                    return String(prev);
+                }
+
+                const activeMethod = safeMethods.find((item) => item.is_active);
+                if (activeMethod) return String(activeMethod.id);
+
+                if (safeMethods.length > 0) return String(safeMethods[0].id);
+
+                return "";
+            });
+        } catch (error) {
+            if (error?.status === 401) {
+                redirectToLogin();
+                return;
+            }
+
+            setPaymentMethods([]);
+            setSelectedPaymentMethodId("");
+            setCartState((prev) => ({
+                ...prev,
+                error: prev.error || error.message || "Could not load payment methods.",
+            }));
+        }
+    }, [redirectToLogin, userId]);
+
     useEffect(() => {
         if (!userId) {
             redirectToLogin();
@@ -99,7 +148,8 @@ export default function Cart() {
         }
 
         loadCart();
-    }, [loadCart, redirectToLogin, userId]);
+        loadPaymentMethods();
+    }, [loadCart, loadPaymentMethods, redirectToLogin, userId]);
 
     useEffect(() => {
         const handleCartUpdated = () => {
@@ -112,6 +162,14 @@ export default function Cart() {
         };
     }, [loadCart]);
 
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        };
+    }, []);
+
     const totalItemCount = useMemo(() => {
         return cartState.orders.reduce((total, order) => {
             return total + (order.order_items || []).reduce((sum, orderItem) => {
@@ -121,25 +179,39 @@ export default function Cart() {
         }, 0);
     }, [cartState.orders, quantityDrafts]);
 
-
     const grandTotal = useMemo(() => {
         return cartState.orders.reduce((sum, order) => {
-            const taxRate = order.subtotal_price > 0 ? order.tax / order.subtotal_price : 0;
+            const taxRate =
+                Number(order.subtotal_price) > 0
+                    ? Number(order.tax) / Number(order.subtotal_price)
+                    : 0;
+
             const draftSubtotal = (order.order_items || []).reduce((orderSum, orderItem) => {
                 const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
                 const menuItem = cartState.restaurantsById[order.restaurant_id]?.menu_items?.find(
                     (item) => item.id === orderItem.item_id
                 );
-                const price = Number(menuItem?.price ?? orderItem.price_at_purchase);
-                const qty = quantityDrafts[itemKey] ?? orderItem.quantity;
+                const price = Number(menuItem?.price ?? orderItem.price_at_purchase ?? 0);
+                const qty = Number(quantityDrafts[itemKey] ?? orderItem.quantity ?? 0);
                 return orderSum + price * qty;
             }, 0);
-            return sum + draftSubtotal + draftSubtotal * taxRate + Number(order.delivery_fee);
+
+            return (
+                sum +
+                draftSubtotal +
+                draftSubtotal * taxRate +
+                Number(order.delivery_fee || 0)
+            );
         }, 0);
     }, [cartState.orders, cartState.restaurantsById, quantityDrafts]);
 
-
-
+    const selectedPaymentMethod = useMemo(() => {
+        return (
+            paymentMethods.find(
+                (item) => String(item.id) === String(selectedPaymentMethodId)
+            ) || null
+        );
+    }, [paymentMethods, selectedPaymentMethodId]);
 
     const resolveMenuItem = useCallback(
         (order, orderItem) => {
@@ -148,9 +220,7 @@ export default function Cart() {
                 return null;
             }
 
-            return (
-                restaurant.menu_items.find((item) => item.id === orderItem.item_id) || null
-            );
+            return restaurant.menu_items.find((item) => item.id === orderItem.item_id) || null;
         },
         [cartState.restaurantsById]
     );
@@ -175,7 +245,7 @@ export default function Cart() {
             id: orderItem.item_id,
             name: menuItem?.name || `Item #${orderItem.item_id}`,
             description: menuItem?.description || "",
-            price: Number(menuItem?.price ?? orderItem.price_at_purchase),
+            price: Number(menuItem?.price ?? orderItem.price_at_purchase ?? 0),
         };
 
         setPendingItemKey(itemKey);
@@ -212,30 +282,198 @@ export default function Cart() {
             await deleteOrder(orderId, userId);
             await loadCart();
         } catch (error) {
-            setCartState((prev) => ({ ...prev, error: error.message || "Could not delete order." }));
+            setCartState((prev) => ({
+                ...prev,
+                error: error.message || "Could not delete order.",
+            }));
         }
     };
 
-    const handleCheckout = async () => {
+    const syncDraftQuantities = async () => {
         for (const order of cartState.orders) {
-            for (const orderItem of (order.order_items || [])) {
+            for (const orderItem of order.order_items || []) {
                 const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
                 const draftQty = quantityDrafts[itemKey] ?? orderItem.quantity;
-                if (Number(draftQty) !== orderItem.quantity) {
+
+                if (Number(draftQty) !== Number(orderItem.quantity)) {
                     await handleUpdateQuantity(order, orderItem, Number(draftQty));
                 }
             }
         }
-        navigate("/payment", {
-            state: {
-                orderIds: cartState.orders.map((o) => o.id),
-                orderTotals: Object.fromEntries(
-                    cartState.orders.map((o) => [o.id, Number(o.total_price || 1)])
-                ),
-            },
-        });
     };
 
+    const clearPendingCheckout = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+        setCheckoutCountdown(null);
+        setPendingCheckout(null);
+    };
+
+    const cancelPendingCheckout = () => {
+        clearPendingCheckout();
+        setCheckoutBusy(false);
+        setCheckoutMessage("Checkout cancelled before any transaction was created.");
+    };
+
+    const finalizeStandardCheckout = async (checkoutPayload) => {
+        setCheckoutBusy(true);
+        setCartState((prev) => ({ ...prev, error: "" }));
+        setCheckoutMessage("");
+
+        try {
+            const createdTransactions = [];
+
+            for (const order of checkoutPayload.orders) {
+                const created = await createTransaction({
+                    payment_method_id: checkoutPayload.payment_method_id,
+                    order_id: order.id,
+                    amount: Number(order.total),
+                });
+                createdTransactions.push(created);
+            }
+
+            clearPendingCheckout();
+            navigate("/transactions", {
+                state: {
+                    message:
+                        createdTransactions.length === 1
+                            ? `Transaction #${createdTransactions[0].id} was created from checkout.`
+                            : `${createdTransactions.length} transactions were created from checkout.`,
+                },
+            });
+        } catch (error) {
+            clearPendingCheckout();
+            setCartState((prev) => ({
+                ...prev,
+                error: error.message || "Could not create the checkout transaction.",
+            }));
+        } finally {
+            setCheckoutBusy(false);
+        }
+    };
+
+    const handlePaymentMethodChange = async (event) => {
+        const newMethodId = String(event.target.value);
+        setSelectedPaymentMethodId(newMethodId);
+
+        const chosenMethod = paymentMethods.find(
+            (item) => String(item.id) === newMethodId
+        );
+
+        if (!chosenMethod) return;
+
+        try {
+            const payload = {
+                user_id: chosenMethod.user_id,
+                method: chosenMethod.method,
+                is_active: true,
+            };
+
+            if (chosenMethod.card_type !== undefined) payload.card_type = chosenMethod.card_type;
+            if (chosenMethod.card_number !== undefined) payload.card_number = chosenMethod.card_number;
+            if (chosenMethod.expiry_date !== undefined) payload.expiry_date = chosenMethod.expiry_date;
+            if (chosenMethod.cv2 !== undefined) payload.cv2 = chosenMethod.cv2;
+            if (chosenMethod.paypal_email !== undefined) payload.paypal_email = chosenMethod.paypal_email;
+
+            await updatePaymentMethod(chosenMethod.id, payload);
+
+            setPaymentMethods((prev) =>
+                prev.map((method) => ({
+                    ...method,
+                    is_active: String(method.id) === newMethodId,
+                }))
+            );
+        } catch (error) {
+            setCartState((prev) => ({
+                ...prev,
+                error: error.message || "Could not set default payment method.",
+            }));
+        }
+    };
+
+    const handleCheckout = async () => {
+        setCheckoutMessage("");
+        setCartState((prev) => ({ ...prev, error: "" }));
+
+        if (paymentMethods.length === 0) {
+            setCartState((prev) => ({
+                ...prev,
+                error: "Add a payment method first using the Manage payments button.",
+            }));
+            return;
+        }
+
+        if (!selectedPaymentMethod) {
+            setCartState((prev) => ({
+                ...prev,
+                error: "Choose a payment method before checkout.",
+            }));
+            return;
+        }
+
+        await syncDraftQuantities();
+
+        const checkoutOrders = cartState.orders.map((order) => ({
+            id: order.id,
+            total: Number(order.total_price || 0),
+        }));
+
+        if (checkoutOrders.length === 0) {
+            setCartState((prev) => ({
+                ...prev,
+                error: "Your cart is empty.",
+            }));
+            return;
+        }
+
+        if (selectedPaymentMethod.method === "paypal") {
+            navigate("/paypal", {
+                state: {
+                    orderIds: checkoutOrders.map((order) => order.id),
+                    orderTotals: Object.fromEntries(
+                        checkoutOrders.map((order) => [order.id, order.total])
+                    ),
+                    preferredPaymentMethodId: Number(selectedPaymentMethod.id),
+                },
+            });
+            return;
+        }
+
+        clearPendingCheckout();
+        setPendingCheckout({
+            payment_method_id: Number(selectedPaymentMethod.id),
+            payment_label: getPaymentLabel(selectedPaymentMethod.method),
+            orders: checkoutOrders,
+        });
+        setCheckoutCountdown(CHECKOUT_SECONDS);
+        setCheckoutMessage(
+            "Checkout started. You have 10 seconds to cancel before transactions are created."
+        );
+
+        timerRef.current = setInterval(() => {
+            setCheckoutCountdown((prev) => {
+                if (prev === null) return null;
+
+                if (prev <= 1) {
+                    if (timerRef.current) {
+                        clearInterval(timerRef.current);
+                        timerRef.current = null;
+                    }
+
+                    finalizeStandardCheckout({
+                        payment_method_id: Number(selectedPaymentMethod.id),
+                        orders: checkoutOrders,
+                    });
+
+                    return 0;
+                }
+
+                return prev - 1;
+            });
+        }, 1000);
+    };
 
     return (
         <main className="home-page cart-page">
@@ -248,6 +486,7 @@ export default function Cart() {
             </section>
 
             {cartState.error ? <p className="status-error">{cartState.error}</p> : null}
+            {checkoutMessage ? <p className="status-success">{checkoutMessage}</p> : null}
 
             <section className="restaurant-section">
                 <div className="section-heading">
@@ -292,10 +531,9 @@ export default function Cart() {
                                             {(order.order_items || []).map((orderItem) => {
                                                 const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
                                                 const menuItem = resolveMenuItem(order, orderItem);
-                                                const itemName =
-                                                    menuItem?.name || `Menu item #${orderItem.item_id}`;
+                                                const itemName = menuItem?.name || `Menu item #${orderItem.item_id}`;
                                                 const itemPrice = Number(
-                                                    menuItem?.price ?? orderItem.price_at_purchase
+                                                    menuItem?.price ?? orderItem.price_at_purchase ?? 0
                                                 );
                                                 const draftQuantity =
                                                     quantityDrafts[itemKey] ?? orderItem.quantity;
@@ -306,7 +544,8 @@ export default function Cart() {
                                                         <div className="cart-item-main">
                                                             <p className="cart-item-name">{itemName}</p>
                                                             <p className="cart-item-meta">
-                                                                ${itemPrice.toFixed(2)} each &mdash; ${(itemPrice * draftQuantity).toFixed(2)}
+                                                                ${itemPrice.toFixed(2)} each &mdash; $
+                                                                {(itemPrice * draftQuantity).toFixed(2)}
                                                             </p>
                                                         </div>
 
@@ -316,7 +555,11 @@ export default function Cart() {
                                                                 min="1"
                                                                 step="1"
                                                                 value={draftQuantity}
-                                                                disabled={isPending}
+                                                                disabled={
+                                                                    isPending ||
+                                                                    checkoutBusy ||
+                                                                    checkoutCountdown !== null
+                                                                }
                                                                 onChange={(event) =>
                                                                     handleQuantityDraftChange(
                                                                         order.id,
@@ -328,7 +571,11 @@ export default function Cart() {
                                                             <button
                                                                 type="button"
                                                                 className="cart-remove-button"
-                                                                disabled={isPending}
+                                                                disabled={
+                                                                    isPending ||
+                                                                    checkoutBusy ||
+                                                                    checkoutCountdown !== null
+                                                                }
                                                                 onClick={() =>
                                                                     handleUpdateQuantity(order, orderItem, 0)
                                                                 }
@@ -340,23 +587,48 @@ export default function Cart() {
                                                 );
                                             })}
                                         </div>
+
                                         <footer className="cart-order-footer">
                                             {(() => {
-                                                const taxRate = order.subtotal_price > 0 ? order.tax / order.subtotal_price : 0;
-                                                const draftSubtotal = (order.order_items || []).reduce((sum, orderItem) => {
-                                                    const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
-                                                    const menuItem = resolveMenuItem(order, orderItem);
-                                                    const price = Number(menuItem?.price ?? orderItem.price_at_purchase);
-                                                    const qty = quantityDrafts[itemKey] ?? orderItem.quantity;
-                                                    return sum + price * qty;
-                                                }, 0);
+                                                const taxRate =
+                                                    Number(order.subtotal_price) > 0
+                                                        ? Number(order.tax) / Number(order.subtotal_price)
+                                                        : 0;
+
+                                                const draftSubtotal = (order.order_items || []).reduce(
+                                                    (sum, orderItem) => {
+                                                        const itemKey = buildItemDraftKey(
+                                                            order.id,
+                                                            orderItem.item_id
+                                                        );
+                                                        const menuItem = resolveMenuItem(order, orderItem);
+                                                        const price = Number(
+                                                            menuItem?.price ??
+                                                                orderItem.price_at_purchase ??
+                                                                0
+                                                        );
+                                                        const qty = Number(
+                                                            quantityDrafts[itemKey] ?? orderItem.quantity ?? 0
+                                                        );
+                                                        return sum + price * qty;
+                                                    },
+                                                    0
+                                                );
+
                                                 const draftTax = draftSubtotal * taxRate;
-                                                const draftTotal = draftSubtotal + draftTax + order.delivery_fee;
+
                                                 return (
                                                     <>
-                                                        <p className="cart-summary-row">Subtotal: ${draftSubtotal.toFixed(2)}</p>
-                                                        <p className="cart-summary-row">Tax: ${draftTax.toFixed(2)}</p>
-                                                        <p className="cart-summary-row">Delivery fee: ${Number(order.delivery_fee).toFixed(2)}</p>
+                                                        <p className="cart-summary-row">
+                                                            Subtotal: ${draftSubtotal.toFixed(2)}
+                                                        </p>
+                                                        <p className="cart-summary-row">
+                                                            Tax: ${draftTax.toFixed(2)}
+                                                        </p>
+                                                        <p className="cart-summary-row">
+                                                            Delivery fee: $
+                                                            {Number(order.delivery_fee || 0).toFixed(2)}
+                                                        </p>
                                                     </>
                                                 );
                                             })()}
@@ -365,21 +637,102 @@ export default function Cart() {
                                 );
                             })}
                         </div>
+
                         {cartState.orders.length > 0 && (
                             <div className="cart-grand-total">
-                                Grand total: <strong>${grandTotal.toFixed(2)}</strong>
-                                <button
-                                    type="button"
-                                    className="cart-checkout-button"
-                                    onClick={handleCheckout}
-                                >
-                                    Proceed to Checkout
-                                </button>
+                                <div className="cart-payment-panel">
+                                    <div className="cart-payment-header-row">
+                                        <label
+                                            className="cart-payment-label"
+                                            htmlFor="cart-payment-method"
+                                        >
+                                            Payment method for checkout
+                                        </label>
+
+                                        <Link
+                                            to="/payment"
+                                            className="cart-manage-payments-button"
+                                        >
+                                            Manage payments
+                                        </Link>
+                                    </div>
+
+                                    {paymentMethods.length > 0 ? (
+                                        <>
+                                            <select
+                                                id="cart-payment-method"
+                                                className="cart-payment-select"
+                                                value={selectedPaymentMethodId}
+                                                onChange={handlePaymentMethodChange}
+                                                disabled={
+                                                    checkoutBusy || checkoutCountdown !== null
+                                                }
+                                            >
+                                                {paymentMethods.map((payment) => (
+                                                    <option key={payment.id} value={payment.id}>
+                                                        #{payment.id} — {getPaymentLabel(payment.method)}
+                                                        {payment.is_active ? " (default)" : ""}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <p className="cart-payment-helper">
+                                                {selectedPaymentMethod?.method === "paypal"
+                                                    ? "PayPal checkout opens the PayPal page so you can approve and capture the payment."
+                                                    : "Standard checkout creates transactions after the 10-second countdown ends."}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <div className="cart-no-payment-box">
+                                            <p className="cart-payment-helper">
+                                                No payment methods found yet. Click “Manage payments” to add one.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="cart-checkout-row">
+                                    <span>
+                                        Grand total: <strong>${grandTotal.toFixed(2)}</strong>
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="cart-checkout-button"
+                                        onClick={handleCheckout}
+                                        disabled={checkoutBusy || cartState.loading}
+                                    >
+                                        {checkoutBusy
+                                            ? "Creating transactions..."
+                                            : selectedPaymentMethod?.method === "paypal"
+                                            ? "Continue to PayPal"
+                                            : "Proceed to Checkout"}
+                                    </button>
+                                </div>
+
+                                {checkoutCountdown !== null && pendingCheckout ? (
+                                    <div className="cart-checkout-timer-card">
+                                        <p>
+                                            Checkout with <strong>{pendingCheckout.payment_label}</strong> will create
+                                            <strong> {pendingCheckout.orders.length}</strong>
+                                            {pendingCheckout.orders.length === 1
+                                                ? " transaction"
+                                                : " transactions"}{" "}
+                                            in <strong>{checkoutCountdown}s</strong>.
+                                        </p>
+                                        <button
+                                            type="button"
+                                            className="cart-remove-button"
+                                            onClick={cancelPendingCheckout}
+                                        >
+                                            Cancel checkout
+                                        </button>
+                                    </div>
+                                ) : null}
                             </div>
                         )}
                     </>
                 )}
             </section>
-        </main >
+        </main>
     );
 }

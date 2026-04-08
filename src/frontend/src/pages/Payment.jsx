@@ -1,284 +1,579 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  createCardPayment,
+  createCashPayment,
+  createPaypalPayment,
+  deletePaymentMethod,
+  fetchActivePaymentMethod,
+  fetchPaymentDetails,
+  fetchPaymentMethodsByUser,
+  getPaymentLabel,
+  setActivePaymentMethod,
+} from "../api/payments";
 import { parseUserIdFromStorage } from "../api/restaurants";
-import "../styles/payment.css";
+import "../styles/payments.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const initialCardForm = {
+  method: "credit_card",
+  card_digits: "",
+  expiration_month: "",
+  expiration_year: "",
+  CVV: "",
+  name_on_card: "",
+  active: false,
+};
 
-async function fetchPaymentMethods(userId) {
-    const res = await fetch(`${API_URL}/payment/${userId}`);
-    if (res.status === 404) return [];
-    if (!res.ok) throw new Error("Failed to load payment methods.");
-    return res.json();
-}
+const initialSimpleForm = {
+  active: false,
+};
 
-async function createCardPayment(userId, cardForm, method) {
-    const res = await fetch(`${API_URL}/payment/card?active=true`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            user_id: userId,
-            method,
-            name_on_card: cardForm.name_on_card,
-            card_digits: cardForm.card_digits,
-            expiration_month: Number(cardForm.expiration_month),
-            expiration_year: Number(cardForm.expiration_year),
-            CVV: cardForm.CVV,
-        }),
-    });
-    const payload = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(payload?.detail || `Payment failed (${res.status}).`);
-    return payload;
-}
+export default function Payments() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const userId = parseUserIdFromStorage();
 
-async function createCashPayment(userId) {
-    const res = await fetch(`${API_URL}/payment/cash?active=true`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, method: "cash" }),
-    });
-    const payload = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(payload?.detail || `Payment failed (${res.status}).`);
-    return payload;
-}
+  const [payments, setPayments] = useState([]);
+  const [activePayment, setActivePayment] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
-async function processPayment(orderId, paymentMethodId, amount) {
-    const res = await fetch(`${API_URL}/transaction/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_method_id: paymentMethodId, order_id: orderId, amount }),
-    });
-    const payload = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(payload?.detail || "Payment failed.");
-    if (!payload.is_successful) throw new Error("Payment was declined. Please check your card details.");
-    return payload;
-}
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [busyAction, setBusyAction] = useState("");
 
-function formatMethodLabel(p) {
-    if (p.method === "cash") return "Cash";
-    const brand = p.card_brand && p.card_brand !== "brand_not_found" ? p.card_brand : "";
-    return `${brand} •••• ${p.last4}  (${p.expiration_month}/${p.expiration_year})`.trim();
-}
+  const [cardForm, setCardForm] = useState(initialCardForm);
+  const [cashForm, setCashForm] = useState(initialSimpleForm);
+  const [paypalForm, setPaypalForm] = useState(initialSimpleForm);
 
-async function deletePaymentMethod(p) {
-    const endpoint = p.method === "cash"
-        ? `${API_URL}/payment/cash/${p.id}`
-        : `${API_URL}/payment/card/${p.id}`;
-    const res = await fetch(endpoint, { method: "DELETE" });
-    if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        throw new Error(payload?.detail || "Failed to delete payment method.");
+  const redirectToLogin = useCallback(() => {
+    const redirectPath = `${location.pathname}${location.search}`;
+    const query = new URLSearchParams({ redirect: redirectPath }).toString();
+    navigate(`/login?${query}`);
+  }, [location.pathname, location.search, navigate]);
+
+  const clearMessages = () => {
+    setError("");
+    setSuccessMessage("");
+  };
+
+  const loadPayments = useCallback(async () => {
+    if (!userId) {
+      return;
     }
-}
 
-export default function Payment() {
-    const navigate = useNavigate();
-    const { state } = useLocation();
-    const orderIds = state?.orderIds || [];
-    const orderTotals = state?.orderTotals || {};
-    const userId = parseUserIdFromStorage();
+    setLoading(true);
+    setError("");
 
-    const [savedMethods, setSavedMethods] = useState([]);
-    const [loadingMethods, setLoadingMethods] = useState(true);
-    const [selectedMethodId, setSelectedMethodId] = useState(null);
-    const [addingNew, setAddingNew] = useState(false);
-    const [newMethod, setNewMethod] = useState("credit_card");
-    const [cardForm, setCardForm] = useState({
-        name_on_card: "",
-        card_digits: "",
-        expiration_month: "",
-        expiration_year: "",
-        CVV: "",
+    try {
+      const methods = await fetchPaymentMethodsByUser(userId);
+      setPayments(methods);
+
+      if (methods.length > 0) {
+        try {
+          const active = await fetchActivePaymentMethod(userId);
+          setActivePayment(active);
+        } catch {
+          setActivePayment(methods.find((item) => item.is_active) || null);
+        }
+      } else {
+        setActivePayment(null);
+      }
+    } catch (err) {
+      if (err?.status === 401) {
+        redirectToLogin();
+        return;
+      }
+      setError(err.message || "Failed to load payment methods.");
+      setPayments([]);
+      setActivePayment(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [redirectToLogin, userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      redirectToLogin();
+      return;
+    }
+
+    loadPayments();
+  }, [loadPayments, redirectToLogin, userId]);
+
+  const sortedPayments = useMemo(() => {
+    return [...payments].sort((a, b) => {
+      if (a.is_active && !b.is_active) return -1;
+      if (!a.is_active && b.is_active) return 1;
+      return Number(a.id) - Number(b.id);
     });
+  }, [payments]);
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState(false);
+  const handleCardInputChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setCardForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-    useEffect(() => {
-        if (!userId) return;
-        fetchPaymentMethods(userId)
-            .then((methods) => {
-                setSavedMethods(methods);
-                const active = methods.find((m) => m.is_active);
-                if (active) setSelectedMethodId(active.id);
-                else if (methods.length === 0) setAddingNew(true);
-            })
-            .catch(() => setAddingNew(true))
-            .finally(() => setLoadingMethods(false));
-    }, [userId]);
+  const handleCashInputChange = (event) => {
+    const { checked } = event.target;
+    setCashForm({ active: checked });
+  };
 
-    const handleCardChange = (e) => {
-        setCardForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    };
+  const handlePaypalInputChange = (event) => {
+    const { checked } = event.target;
+    setPaypalForm({ active: checked });
+  };
 
-    const handleDeleteMethod = async (p) => {
-        try {
-            await deletePaymentMethod(p);
-            const methods = await fetchPaymentMethods(userId);
-            setSavedMethods(methods);
-            if (selectedMethodId === p.id) {
-                const active = methods.find((m) => m.is_active);
-                setSelectedMethodId(active ? active.id : methods[0]?.id ?? null);
-                if (methods.length === 0) setAddingNew(true);
-            }
-        } catch (err) {
-            setError(err.message || "Failed to remove payment method.");
-        }
-    };
+  const handleCreateCash = async (event) => {
+    event.preventDefault();
+    if (!userId) return;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setSuccess(false);
+    clearMessages();
+    setBusyAction("create-cash");
 
-        if (addingNew && (newMethod === "credit_card" || newMethod === "debit_card")) {
-            const firstDigit = cardForm.card_digits.trim()[0];
-            if (firstDigit !== "4" && firstDigit !== "5") {
-                setError("Invalid card number. Card must start with 4 (Visa) or 5 (Mastercard).");
-                return;
-            }
-        }
+    try {
+      await createCashPayment({
+        userId,
+        active: cashForm.active,
+      });
 
-        setLoading(true);
+      setCashForm(initialSimpleForm);
+      setSelectedPayment(null);
+      setSuccessMessage("Cash payment method added.");
+      await loadPayments();
+    } catch (err) {
+      setError(err.message || "Failed to add cash payment method.");
+    } finally {
+      setBusyAction("");
+    }
+  };
 
-        try {
-            let paymentMethodId;
-            if (addingNew) {
-                if (newMethod === "cash") {
-                    const existingCash = savedMethods.find((m) => m.method === "cash");
-                    if (existingCash) {
-                        paymentMethodId = existingCash.id;
-                    } else {
-                        const created = await createCashPayment(userId);
-                        paymentMethodId = created.id;
-                    }
-                } else {
-                    const created = await createCardPayment(userId, cardForm, newMethod);
-                    paymentMethodId = created.id;
-                }
-            } else {
-                paymentMethodId = selectedMethodId;
-            }
+  const handleCreatePaypal = async (event) => {
+    event.preventDefault();
+    if (!userId) return;
 
-            await Promise.all(orderIds.map((id) => processPayment(id, paymentMethodId, orderTotals[id] || 1)));
+    clearMessages();
+    setBusyAction("create-paypal");
 
-            localStorage.removeItem("active_order_ids_by_restaurant");
-            window.dispatchEvent(new CustomEvent("cart:updated"));
-            setSuccess(true);
-            setTimeout(() => navigate("/orders"), 2000);
-        } catch (err) {
-            setError(err.message || "Payment failed. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      await createPaypalPayment({
+        userId,
+        active: paypalForm.active,
+      });
 
-    return (
-        <main className="home-page">
-            <section className="hero-banner">
-                <p className="hero-kicker">Checkout</p>
-                <h1>Choose your payment method.</h1>
-            </section>
+      setPaypalForm(initialSimpleForm);
+      setSelectedPayment(null);
+      setSuccessMessage("PayPal payment method added.");
+      await loadPayments();
+    } catch (err) {
+      setError(err.message || "Failed to add PayPal payment method.");
+    } finally {
+      setBusyAction("");
+    }
+  };
 
-            <section className="restaurant-section" style={{ maxWidth: 480, margin: "0 auto" }}>
-                {error && <p className="status-error">{error}</p>}
-                {success && <p className="status-success">Payment successful! Redirecting...</p>}
+  const handleCreateCard = async (event) => {
+    event.preventDefault();
+    if (!userId) return;
 
-                {loadingMethods ? (
-                    <div className="section-placeholder">Loading payment methods...</div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="payment-form">
-                        {savedMethods.length > 0 && (
-                            <fieldset className="payment-options">
-                                <legend>Saved payment methods</legend>
-                                {savedMethods.map((p) => (
-                                    <label
-                                        key={p.id}
-                                        className={`payment-option ${!addingNew && selectedMethodId === p.id ? "selected" : ""}`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="savedMethod"
-                                            checked={!addingNew && selectedMethodId === p.id}
-                                            onChange={() => { setSelectedMethodId(p.id); setAddingNew(false); }}
-                                        />
-                                        {formatMethodLabel(p)}
-                                        {p.is_active && <span className="payment-active-badge">Default</span>}
-                                        <button
-                                            type="button"
-                                            className="payment-remove-button"
-                                            onClick={(e) => { e.preventDefault(); handleDeleteMethod(p); }}
-                                        >
-                                            Remove
-                                        </button>
-                                    </label>
-                                ))}
-                                <label className={`payment-option ${addingNew ? "selected" : ""}`}>
-                                    <input
-                                        type="radio"
-                                        name="savedMethod"
-                                        checked={addingNew}
-                                        onChange={() => setAddingNew(true)}
-                                    />
-                                    + Add new payment method
-                                </label>
-                            </fieldset>
-                        )}
+    clearMessages();
+    setBusyAction("create-card");
 
-                        {addingNew && (
-                            <>
-                                <fieldset className="payment-options">
-                                    <legend>Payment method</legend>
-                                    <label className={`payment-option ${newMethod === "cash" ? "selected" : ""}`}>
-                                        <input type="radio" name="newMethod" value="cash" checked={newMethod === "cash"} onChange={() => setNewMethod("cash")} />
-                                        Cash
-                                    </label>
-                                    <label className={`payment-option ${newMethod === "credit_card" ? "selected" : ""}`}>
-                                        <input type="radio" name="newMethod" value="credit_card" checked={newMethod === "credit_card"} onChange={() => setNewMethod("credit_card")} />
-                                        Credit Card
-                                    </label>
-                                    <label className={`payment-option ${newMethod === "debit_card" ? "selected" : ""}`}>
-                                        <input type="radio" name="newMethod" value="debit_card" checked={newMethod === "debit_card"} onChange={() => setNewMethod("debit_card")} />
-                                        Debit Card
-                                    </label>
-                                </fieldset>
+    try {
+      await createCardPayment({
+        userId,
+        active: cardForm.active,
+        method: cardForm.method,
+        card_digits: cardForm.card_digits,
+        expiration_month: cardForm.expiration_month,
+        expiration_year: cardForm.expiration_year,
+        CVV: cardForm.CVV,
+        name_on_card: cardForm.name_on_card,
+      });
 
-                                {(newMethod === "credit_card" || newMethod === "debit_card") && (
-                                    <div className="card-fields">
-                                        <label>
-                                            Name on card
-                                            <input type="text" name="name_on_card" value={cardForm.name_on_card} onChange={handleCardChange} placeholder="John Doe" required />
-                                        </label>
-                                        <label>
-                                            Card number
-                                            <input type="text" name="card_digits" value={cardForm.card_digits} onChange={handleCardChange} placeholder="16 digits, no spaces" maxLength={16} required />
-                                        </label>
-                                        <div className="card-fields-row">
-                                            <label>
-                                                Exp. Month
-                                                <input type="number" name="expiration_month" value={cardForm.expiration_month} onChange={handleCardChange} placeholder="MM" min="1" max="12" required />
-                                            </label>
-                                            <label>
-                                                Exp. Year
-                                                <input type="number" name="expiration_year" value={cardForm.expiration_year} onChange={handleCardChange} placeholder="YYYY" min="2024" required />
-                                            </label>
-                                            <label>
-                                                CVV
-                                                <input type="text" name="CVV" value={cardForm.CVV} onChange={handleCardChange} placeholder="123" maxLength={3} required />
-                                            </label>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
+      setCardForm(initialCardForm);
+      setSelectedPayment(null);
+      setSuccessMessage("Card payment method added.");
+      await loadPayments();
+    } catch (err) {
+      setError(err.message || "Failed to add card payment method.");
+    } finally {
+      setBusyAction("");
+    }
+  };
 
-                        <button type="submit" className="payment-submit-button" disabled={loading || success}>
-                            {loading ? "Processing..." : "Confirm Payment"}
-                        </button>
-                    </form>
-                )}
-            </section>
-        </main>
-    );
+  const handleInspectPayment = async (payment) => {
+    clearMessages();
+    setBusyAction(`inspect-${payment.id}`);
+
+    try {
+      const details = await fetchPaymentDetails(payment.id, payment.method);
+      setSelectedPayment(details);
+    } catch (err) {
+      setError(err.message || "Failed to inspect payment method.");
+    } finally {
+      setBusyAction("");
+    }
+  };
+
+  const handleActivatePayment = async (payment) => {
+    clearMessages();
+    setBusyAction(`activate-${payment.id}`);
+
+    try {
+      await setActivePaymentMethod(userId, payment.id);
+      setSuccessMessage(`Payment method #${payment.id} is now active.`);
+      await loadPayments();
+
+      try {
+        const details = await fetchPaymentDetails(payment.id, payment.method);
+        setSelectedPayment(details);
+      } catch {
+        setSelectedPayment(null);
+      }
+    } catch (err) {
+      setError(err.message || "Failed to activate payment method.");
+    } finally {
+      setBusyAction("");
+    }
+  };
+
+  const handleDeletePayment = async (payment) => {
+    clearMessages();
+    setBusyAction(`delete-${payment.id}`);
+
+    try {
+      await deletePaymentMethod(payment.id, payment.method);
+
+      if (selectedPayment?.id === payment.id) {
+        setSelectedPayment(null);
+      }
+
+      setSuccessMessage(`Payment method #${payment.id} was deleted.`);
+      await loadPayments();
+    } catch (err) {
+      setError(err.message || "Failed to delete payment method.");
+    } finally {
+      setBusyAction("");
+    }
+  };
+
+  return (
+    <main className="home-page payments-page">
+      <section className="hero-banner">
+        <p className="hero-kicker">Payments</p>
+        <h1>Manage your saved payment methods.</h1>
+        <p className="hero-subtitle">
+          Add card, cash, or PayPal methods, inspect them, and choose which one is active.
+        </p>
+      </section>
+
+      {error ? <p className="status-error">{error}</p> : null}
+      {successMessage ? <p className="status-success">{successMessage}</p> : null}
+
+      <section className="restaurant-section" style={{ marginBottom: "1rem" }}>
+        <div className="transaction-form-actions">
+          <Link to="/transactions" className="payment-nav-link">Go to Transactions</Link>
+          <Link to="/paypal" className="payment-nav-link">Go to PayPal</Link>
+        </div>
+      </section>
+
+      <section className="payments-grid">
+        <article className="payment-form-card">
+          <div className="section-heading">
+            <h2>Add card</h2>
+            <p>Uses <code>POST /payment/card</code></p>
+          </div>
+
+          <form className="payment-form" onSubmit={handleCreateCard}>
+            <label>
+              Card type
+              <select
+                name="method"
+                value={cardForm.method}
+                onChange={handleCardInputChange}
+              >
+                <option value="credit_card">Credit Card</option>
+                <option value="debit_card">Debit Card</option>
+              </select>
+            </label>
+
+            <label>
+              Card digits
+              <input
+                name="card_digits"
+                type="text"
+                value={cardForm.card_digits}
+                onChange={handleCardInputChange}
+                placeholder="4111111111111111"
+                required
+              />
+            </label>
+
+            <div className="payment-form-row">
+              <label>
+                Exp. month
+                <input
+                  name="expiration_month"
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={cardForm.expiration_month}
+                  onChange={handleCardInputChange}
+                  required
+                />
+              </label>
+
+              <label>
+                Exp. year
+                <input
+                  name="expiration_year"
+                  type="number"
+                  min="2024"
+                  value={cardForm.expiration_year}
+                  onChange={handleCardInputChange}
+                  required
+                />
+              </label>
+            </div>
+
+            <label>
+              CVV
+              <input
+                name="CVV"
+                type="text"
+                value={cardForm.CVV}
+                onChange={handleCardInputChange}
+                placeholder="123"
+                required
+              />
+            </label>
+
+            <label>
+              Name on card
+              <input
+                name="name_on_card"
+                type="text"
+                value={cardForm.name_on_card}
+                onChange={handleCardInputChange}
+                placeholder="John Doe"
+                required
+              />
+            </label>
+
+            <label className="payment-checkbox">
+              <input
+                name="active"
+                type="checkbox"
+                checked={cardForm.active}
+                onChange={handleCardInputChange}
+              />
+              Make active immediately
+            </label>
+
+            <button type="submit" disabled={busyAction === "create-card"}>
+              {busyAction === "create-card" ? "Adding..." : "Add card"}
+            </button>
+          </form>
+        </article>
+
+        <article className="payment-form-card">
+          <div className="section-heading">
+            <h2>Add cash</h2>
+            <p>Uses <code>POST /payment/cash</code></p>
+          </div>
+
+          <form className="payment-form" onSubmit={handleCreateCash}>
+            <label className="payment-checkbox">
+              <input
+                type="checkbox"
+                checked={cashForm.active}
+                onChange={handleCashInputChange}
+              />
+              Make active immediately
+            </label>
+
+            <button type="submit" disabled={busyAction === "create-cash"}>
+              {busyAction === "create-cash" ? "Adding..." : "Add cash"}
+            </button>
+          </form>
+        </article>
+
+        <article className="payment-form-card">
+          <div className="section-heading">
+            <h2>Add PayPal</h2>
+            <p>Uses <code>POST /payment/paypal</code></p>
+          </div>
+
+          <form className="payment-form" onSubmit={handleCreatePaypal}>
+            <label className="payment-checkbox">
+              <input
+                type="checkbox"
+                checked={paypalForm.active}
+                onChange={handlePaypalInputChange}
+              />
+              Make active immediately
+            </label>
+
+            <button type="submit" disabled={busyAction === "create-paypal"}>
+              {busyAction === "create-paypal" ? "Adding..." : "Add PayPal"}
+            </button>
+          </form>
+        </article>
+      </section>
+
+      <section className="restaurant-section">
+        <div className="section-heading">
+          <h2>Saved payment methods</h2>
+          <p>
+            Uses <code>GET /payment/{userId}</code> and <code>GET /payment/active/{userId}</code>
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="section-placeholder">Loading payment methods...</div>
+        ) : sortedPayments.length === 0 ? (
+          <div className="section-placeholder">
+            No payment methods found for this user yet.
+          </div>
+        ) : (
+          <div className="payment-method-list">
+            {sortedPayments.map((payment) => {
+              const isBusy =
+                busyAction === `inspect-${payment.id}` ||
+                busyAction === `activate-${payment.id}` ||
+                busyAction === `delete-${payment.id}`;
+
+              const isSelected = selectedPayment?.id === payment.id;
+              const isActive =
+                activePayment?.id === payment.id || payment.is_active === true;
+
+              return (
+                <article
+                  key={payment.id}
+                  className={`payment-method-card ${isActive ? "active" : ""} ${
+                    isSelected ? "selected" : ""
+                  }`}
+                >
+                  <div className="payment-method-main">
+                    <div>
+                      <p className="payment-method-title">
+                        {getPaymentLabel(payment.method)}
+                      </p>
+                      <p className="payment-method-meta">
+                        ID #{payment.id} • User #{payment.user_id}
+                      </p>
+                      {payment.last4 ? (
+                        <p className="payment-method-meta">
+                          {payment.card_brand || "Card"} ending in {payment.last4}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <span className={`payment-badge ${isActive ? "active" : ""}`}>
+                      {isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  <div className="payment-method-actions">
+                    <button
+                      type="button"
+                      onClick={() => handleInspectPayment(payment)}
+                      disabled={isBusy}
+                    >
+                      Inspect
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleActivatePayment(payment)}
+                      disabled={isBusy || isActive}
+                    >
+                      {isBusy && busyAction === `activate-${payment.id}`
+                        ? "Updating..."
+                        : "Make active"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() => handleDeletePayment(payment)}
+                      disabled={isBusy}
+                    >
+                      {isBusy && busyAction === `delete-${payment.id}`
+                        ? "Deleting..."
+                        : "Delete"}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="restaurant-section">
+        <div className="section-heading">
+          <h2>Selected payment details</h2>
+          <p>
+            Uses type-specific inspect endpoints like <code>GET /payment/card/{"{id}"}</code>
+          </p>
+        </div>
+
+        {!selectedPayment ? (
+          <div className="section-placeholder">
+            Select <strong>Inspect</strong> on a payment method to view its details.
+          </div>
+        ) : (
+          <article className="payment-details-card">
+            <div className="payment-details-grid">
+              <div>
+                <span className="details-label">Payment ID</span>
+                <p>{selectedPayment.id}</p>
+              </div>
+              <div>
+                <span className="details-label">User ID</span>
+                <p>{selectedPayment.user_id}</p>
+              </div>
+              <div>
+                <span className="details-label">Method</span>
+                <p>{getPaymentLabel(selectedPayment.method)}</p>
+              </div>
+              <div>
+                <span className="details-label">Active</span>
+                <p>{selectedPayment.is_active ? "Yes" : "No"}</p>
+              </div>
+
+              {selectedPayment.last4 ? (
+                <>
+                  <div>
+                    <span className="details-label">Last 4</span>
+                    <p>{selectedPayment.last4}</p>
+                  </div>
+                  <div>
+                    <span className="details-label">Brand</span>
+                    <p>{selectedPayment.card_brand || "Unknown"}</p>
+                  </div>
+                  <div>
+                    <span className="details-label">Name on card</span>
+                    <p>{selectedPayment.name_on_card || "-"}</p>
+                  </div>
+                  <div>
+                    <span className="details-label">Expiration</span>
+                    <p>
+                      {selectedPayment.expiration_month || "-"} /{" "}
+                      {selectedPayment.expiration_year || "-"}
+                    </p>
+                  </div>
+                </>
+              ) : null}
+            </div>
+          </article>
+        )}
+      </section>
+    </main>
+  );
 }

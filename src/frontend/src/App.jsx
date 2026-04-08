@@ -19,10 +19,12 @@ import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import OrderHistory from "./pages/OrderHistory";
-import Payment from "./pages/Payment";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Register from "./pages/Register";
 import Settings from "./pages/Settings";
+import Payment from "./pages/Payment";
+import Transactions from "./pages/Transaction";
+import PayPalPage from "./pages/PayPal";
 
 export default function App() {
   return (
@@ -304,6 +306,9 @@ function AppShell() {
             <NavLink to="/" end>
               Home
             </NavLink>
+            <NavLink to="/payment">Payments</NavLink>
+            <NavLink to="/transactions">Transactions</NavLink>
+            <NavLink to="/paypal">PayPal</NavLink>
             <NavLink to="/cart" className="cart-link" aria-label="View cart">
               Cart
               <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
@@ -355,6 +360,8 @@ function AppShell() {
           />
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/paypal" element={<PayPalPage />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/login" element={<Login />} />

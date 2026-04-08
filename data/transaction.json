@@ -1,1 +1,34 @@
-[]
+[
+    {
+        "payment_method_id": 1,
+        "order_id": 18,
+        "amount": 39.550000000000004,
+        "is_successful": true,
+        "user_id": 1,
+        "id": 1
+    },
+    {
+        "payment_method_id": 1,
+        "order_id": 18,
+        "amount": 39.550000000000004,
+        "is_successful": true,
+        "user_id": 1,
+        "id": 2
+    },
+    {
+        "payment_method_id": 1,
+        "order_id": 19,
+        "amount": 18.450000000000003,
+        "is_successful": true,
+        "user_id": 1,
+        "id": 3
+    },
+    {
+        "payment_method_id": 1,
+        "order_id": 19,
+        "amount": 18.450000000000003,
+        "is_successful": true,
+        "user_id": 1,
+        "id": 4
+    }
+]
