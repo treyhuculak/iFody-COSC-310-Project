@@ -32,19 +32,22 @@ export default function Offers() {
     navigate(`/login?${query}`);
   }, [location.pathname, location.search, navigate]);
 
-  const loadOffers = useCallback(async (signal) => {
-    setState((s) => ({ ...s, loading: true, error: "" }));
-    try {
-      const offers = await fetchOfferSuggestions({ signal });
-      setState({ loading: false, error: "", offers: Array.isArray(offers) ? offers : [] });
-    } catch (err) {
-      if (err?.status === 401) {
-        redirectToLogin();
-        return;
+  const loadOffers = useCallback(
+    async (signal, forceRefresh = false) => {
+      setState((s) => ({ ...s, loading: true, error: "" }));
+      try {
+        const offers = await fetchOfferSuggestions({ signal, userId, forceRefresh });
+        setState({ loading: false, error: "", offers: Array.isArray(offers) ? offers : [] });
+      } catch (err) {
+        if (err?.status === 401) {
+          redirectToLogin();
+          return;
+        }
+        setState({ loading: false, error: err.message || "Failed to load offers.", offers: [] });
       }
-      setState({ loading: false, error: err.message || "Failed to load offers.", offers: [] });
-    }
-  }, [redirectToLogin]);
+    },
+    [redirectToLogin, userId]
+  );
 
   useEffect(() => {
     if (!userId) {
@@ -68,7 +71,8 @@ export default function Offers() {
         await activateOffer(offer.offer_id);
       }
 
-      await loadOffers();
+      // force refresh from server and update per-user cache
+      await loadOffers(null, true);
     } catch (err) {
       if (err?.status === 401) {
         redirectToLogin();
@@ -87,6 +91,21 @@ export default function Offers() {
         <p className="hero-kicker">Exclusive Offers</p>
         <h1>Special deals just for you</h1>
         <p className="hero-subtitle">Activate an offer to have it applied automatically at checkout.</p>
+        {state.offers && state.offers.length > 0 ? (
+          (() => {
+            // compute days until next refresh (earliest end_date)
+            const dates = state.offers
+              .map((o) => o.end_date)
+              .filter(Boolean)
+              .map((d) => new Date(d));
+            if (dates.length === 0) return null;
+            const next = new Date(Math.min(...dates.map((d) => d.getTime())));
+            const now = new Date();
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const daysLeft = Math.max(0, Math.ceil((next - now) / msPerDay));
+            return <p className="hero-subtitle">Refreshes in {daysLeft} day{daysLeft === 1 ? "" : "s"}.</p>;
+          })()
+        ) : null}
       </section>
 
       {state.error ? <p className="status-error">{state.error}</p> : null}

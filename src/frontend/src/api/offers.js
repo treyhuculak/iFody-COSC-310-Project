@@ -26,8 +26,36 @@ function authHeaders() {
   return headers;
 }
 
-export async function fetchOfferSuggestions({ signal } = {}) {
-  return request(`/offers/suggestions`, { signal, headers: authHeaders() });
+// fetchOfferSuggestions implemented below with optional per-user cache
+
+function _userKey(userId) {
+  return `weekly_offers_user_${userId}`;
+}
+
+export async function fetchOfferSuggestions({ signal, userId = null, forceRefresh = false } = {}) {
+  // If user-scoped cache exists and not forcing, return it
+  if (userId && !forceRefresh) {
+    try {
+      const cached = localStorage.getItem(_userKey(userId));
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }
+
+  const offers = await request(`/offers/suggestions`, { signal, headers: authHeaders() });
+
+  if (userId) {
+    try {
+      localStorage.setItem(_userKey(userId), JSON.stringify(offers));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  return offers;
 }
 
 export async function activateOffer(offerId) {

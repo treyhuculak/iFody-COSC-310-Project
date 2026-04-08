@@ -241,6 +241,16 @@ function AppShell() {
     } catch (err) {
       console.warn("Logout request error:", err);
     } finally {
+      // remove per-user cached offers if present
+      try {
+        const uid = parseUserIdFromStorage();
+        if (uid) {
+          try {
+            localStorage.removeItem(`weekly_offers_user_${uid}`);
+          } catch {}
+        }
+      } catch {}
+
       keysToRemove.forEach((k) => {
         try {
           localStorage.removeItem(k);
