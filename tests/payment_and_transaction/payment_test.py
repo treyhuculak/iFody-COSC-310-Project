@@ -30,8 +30,8 @@ def test_client(tmp_path):
     app.dependency_overrides.clear()
 
 paypal_payment = {
-        "user_id": 2,
-        "method": PaymentOptions.PAYPAL.value
+    "user_id": 2,
+    "method": PaymentOptions.PAYPAL.value
 }
 
 invalid_paypal_payment = {
@@ -84,38 +84,38 @@ card_payment_no_brand = {
 }
 
 card_expired = {
-  "user_id": 2,
-  "method": "credit_card",
-  "card_digits": "5234567812345678",
-  "expiration_month": 5,
-  "expiration_year": 2020,
-  "CVV": "123",
-  "name_on_card": "Test User"
+    "user_id": 2,
+    "method": "credit_card",
+    "card_digits": "5234567812345678",
+    "expiration_month": 5,
+    "expiration_year": 2020,
+    "CVV": "123",
+    "name_on_card": "Test User"
 }
 
 card_invalid_CVV = {
-  "user_id": 2,
-  "method": "credit_card",
-  "card_digits": "1234567812345678",
-  "expiration_month": 12,
-  "expiration_year": 2028,
-  "CVV": "12",
-  "name_on_card": "Test User"
+    "user_id": 2,
+    "method": "credit_card",
+    "card_digits": "1234567812345678",
+    "expiration_month": 12,
+    "expiration_year": 2028,
+    "CVV": "12",
+    "name_on_card": "Test User"
 }
 
 card_with_invalid_digits = {
-  "user_id": 2,
-  "method": "credit_card",
-  "card_digits": "12345678",
-  "expiration_month": 12,
-  "expiration_year": 2028,
-  "CVV": "123",
-  "name_on_card": "Test User"
+    "user_id": 2,
+    "method": "credit_card",
+    "card_digits": "12345678",
+    "expiration_month": 12,
+    "expiration_year": 2028,
+    "CVV": "123",
+    "name_on_card": "Test User"
 }
 
 def test_add_cash_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/cash", params={"active": True}, json=cash_payment) 
+    response = test_client.post("/payment/cash", params={"active": True}, json=cash_payment)
     assert response.status_code == 200
     data = response.json()
 
@@ -126,12 +126,12 @@ def test_add_cash_payment(test_client):
 
 def test_add_invalid_cash_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/cash", params={"active": True}, json=invalid_cash_payment) 
+    response = test_client.post("/payment/cash", params={"active": True}, json=invalid_cash_payment)
     assert response.status_code == 422
 
 def test_add_card_payment_with_brand(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", params={"active": True}, json=card_payment) 
+    response = test_client.post("/payment/card", params={"active": True}, json=card_payment)
     assert response.status_code == 200
     data = response.json()
 
@@ -145,12 +145,12 @@ def test_add_card_payment_with_brand(test_client):
 
 def test_add_invalid_card_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", params={"active": True}, json=invalid_card_payment) 
+    response = test_client.post("/payment/card", params={"active": True}, json=invalid_card_payment)
     assert response.status_code == 422
 
 def test_add_card_payment_without_brand(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", params={"active": False}, json=card_payment_no_brand) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_payment_no_brand)
     assert response.status_code == 200
     data = response.json()
 
@@ -163,17 +163,17 @@ def test_add_card_payment_without_brand(test_client):
 
 def test_add_card_invalid_expiration_date_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", params={"active": False}, json=card_expired) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_expired)
     assert response.status_code == 400
 
 def test_add_card_invalid_CVV_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", params={"active": False}, json=card_invalid_CVV) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_invalid_CVV)
     assert response.status_code == 400
 
 def test_add_card_invalid_digits_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/card", params={"active": False}, json=card_with_invalid_digits) 
+    response = test_client.post("/payment/card", params={"active": False}, json=card_with_invalid_digits)
     assert response.status_code == 400
 
 def test_get_cash_payment_by_id(test_client):
@@ -432,13 +432,14 @@ def test_switch_active_payment_method(test_client):
     assert data["method"] == PaymentOptions.CASH.value
     assert data["user_id"] == 2
     assert data["is_active"] == False
-    
-'''
+
+
+"""
 Paypal tests
-'''
+"""
 def test_add_paypal_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/paypal", params={"active": True}, json=paypal_payment) 
+    response = test_client.post("/payment/paypal", params={"active": True}, json=paypal_payment)
     assert response.status_code == 200
     data = response.json()
 
@@ -449,7 +450,7 @@ def test_add_paypal_payment(test_client):
 
 def test_add_invalid_paypal_payment(test_client):
     # The controller should return the new payment dict, which the router translates to a 200 response
-    response = test_client.post("/payment/paypal", params={"active": True}, json=invalid_paypal_payment) 
+    response = test_client.post("/payment/paypal", params={"active": True}, json=invalid_paypal_payment)
     assert response.status_code == 422
 
 def test_delete_paypal_payment(test_client):

@@ -50,7 +50,12 @@ class OfferController:
         The function checks whether it is the correct time to retrieve new Offer instances.
         '''
         current_time = datetime.datetime.now()
-        target_deadline = datetime.datetime.fromisoformat(self.next_refresh)
+        if self.next_refresh == "N/A":
+            return None
+        try:
+            target_deadline = datetime.datetime.fromisoformat(self.next_refresh)
+        except ValueError:
+            return None
         if current_time >= target_deadline:
             self.offer_service.refresh_offer_suggestions()
             self.offers = self.offer_service.get_offer_suggestions()
@@ -59,8 +64,7 @@ class OfferController:
             else:
                 self.next_refresh = "N/A"
             return self.offers
-        else:
-            return None
+        return None
         
     def activate_offer(self, offer_id: int) -> dict | None:
         '''

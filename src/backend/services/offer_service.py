@@ -1,5 +1,5 @@
+import json
 from fastapi import HTTPException
-
 from src.backend.models.offer import Offer
 from src.backend.repositories.offer_repo import OfferRepository
 
@@ -58,6 +58,9 @@ class OfferService:
                 for i in range(len(self.offer_suggestions)):
                     if self.offer_suggestions[i]["offer_id"] == offer_id:
                         self.offer_suggestions[i]["is_active"] = True
+                        weekly_offers_file = self.offer_repo.get_weekly_offers_file()
+                        with open(weekly_offers_file, "w") as file:
+                            json.dump(self.offer_suggestions, file, indent = 4)
                         return self.offer_suggestions[i]
         else:
             return None
@@ -71,6 +74,9 @@ class OfferService:
                 if self.offer_suggestions[i]["offer_id"] == offer_id:
                     if self.offer_suggestions[i]["is_active"]:
                         self.offer_suggestions[i]["is_active"] = False
+                        weekly_offers_file = self.offer_repo.get_weekly_offers_file()
+                        with open(weekly_offers_file, "w") as file:
+                            json.dump(self.offer_suggestions, file, indent = 4)
                         return self.offer_suggestions[i]
         else:
             return None
@@ -79,4 +85,6 @@ class OfferService:
         '''
         Refreshes the offer suggestions by retrieving the assigned amount of new Offer instances from the database at random.
         '''
+        weekly_offers_file = self.offer_repo.get_weekly_offers_file()
+        with open(weekly_offers_file, "w") as file: file.write("[]")
         self.offer_suggestions = self.offer_repo.get_new_offers(self.offers_each_week)

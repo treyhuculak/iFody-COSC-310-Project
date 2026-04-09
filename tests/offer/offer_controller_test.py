@@ -66,14 +66,15 @@ def offer_controller_init():
     '''
     Creates an instance of the OfferController class, with draft databases.
     '''
-    repo = OfferRepository(database = "data/test_offers.json")
+    repo = OfferRepository("data/draft_offers.json", "data/temp_weekly_offers.json")
     for offer in offers:
         repo.add_offer(offer)
     service = OfferService(repo, 3)
     controller = OfferController(service)
     yield controller
     import os
-    os.remove(os.getcwd() + "/data/test_offers.json")
+    os.remove(os.getcwd() + "/data/draft_offers.json")
+    os.remove(os.getcwd() + "/data/temp_weekly_offers.json")
 
 def test_add_offer(offer_controller_init):
     '''
@@ -116,7 +117,7 @@ def test_del_offer(offer_controller_init):
     result = offer_controller_init.del_offer(offer)
     assert result != None
     assert result["title"] == "Test Offer 1"
-    with open("data/test_offers.json", "r") as file:
+    with open("data/draft_offers.json", "r") as file:
         offers = json.load(file)
         assert "Test Offer 1" not in [offer["title"] for offer in offers]
 
