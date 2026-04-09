@@ -18,11 +18,16 @@ class DeliveryController:
             delivery_data = delivery.model_dump()
             order = self.order_repo.get_order_by_id(delivery_data["order_id"])
             delivery_data["estimated_delivery_time"] = self.delivery_service.calculate_estimated_delivery_time(order["location"])
-            self.delivery_service.assign_delivery_driver(delivery_data)
+            flag = self.delivery_service.assign_delivery_driver(delivery_data)
+
+            if not flag:
+                raise HTTPException(status_code=400, detail="No delivery driver was found around your area")
 
             new_delivery = self.delivery_repo.create_delivery(delivery_data)
             
             return new_delivery
+        except HTTPException as e:
+            raise
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:

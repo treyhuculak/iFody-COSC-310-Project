@@ -228,6 +228,51 @@
   color: #735641;
 }
 
+/* ── User dropdown (right-aligned) ────────────────────────────────────── */
+.app-username-btn {
+  font-weight: 700;
+}
+
+.nav-dropdown-menu-right {
+  left: auto;
+  right: 0;
+}
+
+.dropdown-logout-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  border-radius: 0;
+  font-size: 0.9rem;
+  color: #8e2518;
+}
+
+.dropdown-logout-btn:hover {
+  background: rgba(200, 30, 30, 0.08);
+}
+
+/* ── Notification badge in dropdown ────────────────────────────────────── */
+.notif-nav-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.notif-nav-badge {
+  min-width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: #ff6b35;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 @media (max-width: 960px) {
   .app-nav-main {
     grid-template-columns: 1fr;

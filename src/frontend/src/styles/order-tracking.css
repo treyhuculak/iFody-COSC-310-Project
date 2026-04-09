@@ -1,0 +1,190 @@
+/* ── Order Tracking Page ───────────────────────────────────────────────── */
+
+.tracking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.tracking-card {
+    background: #fffdf9;
+    border: 1px solid #e8d7c5;
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tracking-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.tracking-card-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #2d1d14;
+}
+
+/* Status badge */
+.tracking-status-badge {
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tracking-status-preparing {
+    background: rgba(255, 180, 0, 0.18);
+    color: #8a5e00;
+}
+
+.tracking-status-out_for_delivery {
+    background: rgba(255, 107, 53, 0.18);
+    color: #b84000;
+}
+
+.tracking-status-delivered {
+    background: rgba(34, 160, 82, 0.16);
+    color: #165a2e;
+}
+
+.tracking-status-error {
+    background: rgba(200, 30, 30, 0.14);
+    color: #8e1010;
+}
+
+/* Phase info block */
+.tracking-phase-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.tracking-phase-label {
+    margin: 0;
+    color: #5a3f2c;
+    font-size: 0.9rem;
+}
+
+.tracking-countdown-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.tracking-countdown-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ff6b35;
+    line-height: 1;
+}
+
+.tracking-countdown-unit {
+    font-size: 0.85rem;
+    color: #7a5540;
+}
+
+/* Progress bar */
+.tracking-progress-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 107, 53, 0.15);
+    overflow: hidden;
+}
+
+.tracking-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #ff6b35;
+    transition: width 0.9s linear;
+}
+
+/* Delivery info table */
+.tracking-delivery-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    background: rgba(255, 107, 53, 0.05);
+    border: 1px solid rgba(255, 107, 53, 0.15);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+}
+
+.tracking-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.tracking-info-label {
+    color: #7a5540;
+    font-weight: 600;
+}
+
+.tracking-info-value {
+    color: #2d1d14;
+    font-weight: 500;
+    text-align: right;
+}
+
+/* Delivered banner */
+.tracking-delivered-banner {
+    background: rgba(34, 160, 82, 0.12);
+    border: 1px solid rgba(34, 160, 82, 0.3);
+    color: #165a2e;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+/* Error banner */
+.tracking-error-banner {
+    background: rgba(200, 30, 30, 0.08);
+    border: 1px solid rgba(200, 30, 30, 0.25);
+    color: #8e1010;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Done state */
+.tracking-done-row {
+    margin-top: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    text-align: center;
+}
+
+.tracking-done-message {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #165a2e;
+    margin: 0;
+}
+
+.tracking-history-link {
+    display: inline-block;
+    background: #ff6b35;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.92rem;
+    transition: background-color 0.15s ease;
+}
+
+.tracking-history-link:hover {
+    background: #e5571f;
+}

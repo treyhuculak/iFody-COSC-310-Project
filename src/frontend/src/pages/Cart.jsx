@@ -340,12 +340,10 @@ export default function Cart() {
             }
 
             clearPendingCheckout();
-            navigate("/transactions", {
+            navigate("/order-tracking", {
                 state: {
-                    message:
-                        createdTransactions.length === 1
-                            ? `Transaction #${createdTransactions[0].id} was created from checkout.`
-                            : `${createdTransactions.length} transactions were created from checkout.`,
+                    orderIds: checkoutPayload.orders.map((o) => o.id),
+                    transactionIds: createdTransactions.map((t) => t.id),
                 },
             });
         } catch (error) {
