@@ -26,6 +26,7 @@ import OrderTracking from "./pages/OrderTracking";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import RestaurantManager from "./pages/RestaurantManager";
 import Register from "./pages/Register";
+import Review from "./pages/Review";
 import Settings from "./pages/Settings";
 import Payment from "./pages/Payment";
 import Transactions from "./pages/Transaction";
@@ -57,6 +58,13 @@ function AppShell() {
   const [selectedMenuItemId, setSelectedMenuItemId] = useState(null);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const [activeTrackingIds, setActiveTrackingIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem("tracking_order_ids");
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
 
   const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
   const paymentDropdownRef = useRef(null);
@@ -125,6 +133,17 @@ function AppShell() {
     window.addEventListener("cart:updated", handleCartUpdate);
     return () => window.removeEventListener("cart:updated", handleCartUpdate);
   }, [refreshCartCount]);
+
+  useEffect(() => {
+    const handleTrackingUpdate = () => {
+      try {
+        const stored = localStorage.getItem("tracking_order_ids");
+        setActiveTrackingIds(stored ? JSON.parse(stored) : []);
+      } catch { setActiveTrackingIds([]); }
+    };
+    window.addEventListener("tracking:updated", handleTrackingUpdate);
+    return () => window.removeEventListener("tracking:updated", handleTrackingUpdate);
+  }, []);
 
   // Close payment dropdown on outside click
   useEffect(() => {
@@ -353,6 +372,14 @@ function AppShell() {
               )}
             </div>
 
+            {/* Live tracking indicator */}
+            {activeTrackingIds.length > 0 && location.pathname !== "/order-tracking" && (
+              <NavLink to="/order-tracking" className="tracking-nav-link">
+                <span className="tracking-nav-dot" />
+                Live Tracking
+              </NavLink>
+            )}
+
             {/* Cart */}
             <NavLink to="/cart" className="cart-link" aria-label="View cart">
               Cart
@@ -450,6 +477,7 @@ function AppShell() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/my-restaurants" element={<RestaurantManager />} />
+          <Route path="/review/:orderId" element={<Review />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>

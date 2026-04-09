@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { getReview } from "../api/reviews";
 import { fetchRestaurantById, parseUserIdFromStorage } from "../api/restaurants";
 import "../styles/orders.css";
 
@@ -50,7 +52,7 @@ async function fetchDeliveryInfo(orderId) {
     return res.json();
 }
 
-function OrderCard({ order, eta, itemNames = {}, restaurantName }) {
+function OrderCard({ order, eta, itemNames = {}, restaurantName, hasReview }) {
     const items = order.order_items || [];
     const subtotal = Number(order.subtotal_price ?? 0);
     const tax = Number(order.tax ?? 0);
@@ -89,6 +91,14 @@ function OrderCard({ order, eta, itemNames = {}, restaurantName }) {
                 {eta && (
                     <p className="order-eta">Estimated delivery: {formatTimestamp(eta)}</p>
                 )}
+                {order.status === "delivered" && (
+                    <Link
+                        to={`/review/${order.id}`}
+                        className="order-review-link"
+                    >
+                        {hasReview ? "View / Edit Review" : "Leave a Review"}
+                    </Link>
+                )}
             </div>
         </article>
     );
@@ -100,6 +110,7 @@ export default function OrderHistory() {
     const [etaMap, setEtaMap] = useState({});
     const [itemNamesMap, setItemNamesMap] = useState({});
     const [restaurantNamesMap, setRestaurantNamesMap] = useState({});
+    const [reviewedOrderIds, setReviewedOrderIds] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const intervalRef = useRef(null);
@@ -133,6 +144,20 @@ export default function OrderHistory() {
             );
             setItemNamesMap(Object.fromEntries(dataEntries.map(([rid, d]) => [rid, d.itemNames])));
             setRestaurantNamesMap(Object.fromEntries(dataEntries.map(([rid, d]) => [rid, d.name])));
+
+            // Fetch which delivered orders already have a review
+            const deliveredOrders = filtered.filter((o) => o.status === "delivered");
+            if (deliveredOrders.length > 0) {
+                const reviewChecks = await Promise.all(
+                    deliveredOrders.map(async (o) => {
+                        const review = await getReview(o.id);
+                        return [o.id, review !== null];
+                    })
+                );
+                setReviewedOrderIds(
+                    new Set(reviewChecks.filter(([, has]) => has).map(([id]) => id))
+                );
+            }
 
             // Fetch ETAs for "out for delivery" orders
             const outForDelivery = live.filter((o) => o.status === "out for delivery");
@@ -218,6 +243,7 @@ export default function OrderHistory() {
                                             eta={etaMap[order.id] ?? null}
                                             itemNames={itemNamesMap[order.restaurant_id] ?? {}}
                                             restaurantName={restaurantNamesMap[order.restaurant_id]}
+                                            hasReview={reviewedOrderIds.has(order.id)}
                                         />
                                     ))}
                                 </div>
@@ -233,7 +259,14 @@ export default function OrderHistory() {
                         ) : (
                             <div className="orders-list">
                                 {doneOrders.map((order) => (
-                                    <OrderCard key={order.id} order={order} eta={null} itemNames={itemNamesMap[order.restaurant_id] ?? {}} restaurantName={restaurantNamesMap[order.restaurant_id]} />
+                                    <OrderCard
+                                        key={order.id}
+                                        order={order}
+                                        eta={null}
+                                        itemNames={itemNamesMap[order.restaurant_id] ?? {}}
+                                        restaurantName={restaurantNamesMap[order.restaurant_id]}
+                                        hasReview={reviewedOrderIds.has(order.id)}
+                                    />
                                 ))}
                             </div>
                         )}

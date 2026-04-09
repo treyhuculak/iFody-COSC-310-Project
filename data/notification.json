@@ -10,16 +10,6 @@
         "created_at": "2026-04-08T22:14:05.263897"
     },
     {
-        "user_id": 7,
-        "type": "new order received",
-        "title": "Order Confirmed",
-        "message": "Your order at Maple Smokehouse has been received, and is awaiting payment",
-        "is_read": true,
-        "order_id": 24,
-        "id": 2,
-        "created_at": "2026-04-08T22:14:05.265192"
-    },
-    {
         "user_id": 2,
         "type": "new item has been added to order",
         "title": "New Item Added",
@@ -50,16 +40,6 @@
         "created_at": "2026-04-08T22:14:26.508677"
     },
     {
-        "user_id": 7,
-        "type": "order cancelled",
-        "title": "Order Cancelled",
-        "message": "Order 23 has been successfully cancelled before confirmation",
-        "is_read": true,
-        "order_id": 23,
-        "id": 6,
-        "created_at": "2026-04-08T22:14:26.509705"
-    },
-    {
         "user_id": 2,
         "type": "order cancelled",
         "title": "Order Cancelled",
@@ -68,16 +48,6 @@
         "order_id": 24,
         "id": 7,
         "created_at": "2026-04-08T22:14:31.386773"
-    },
-    {
-        "user_id": 7,
-        "type": "order cancelled",
-        "title": "Order Cancelled",
-        "message": "Order 24 has been successfully cancelled before confirmation",
-        "is_read": true,
-        "order_id": 24,
-        "id": 8,
-        "created_at": "2026-04-08T22:14:31.387743"
     },
     {
         "user_id": 2,
@@ -90,16 +60,6 @@
         "created_at": "2026-04-08T22:14:35.026767"
     },
     {
-        "user_id": 7,
-        "type": "order cancelled",
-        "title": "Order Cancelled",
-        "message": "Order 21 has been cancelled after confirmation, fees will be applied",
-        "is_read": true,
-        "order_id": 21,
-        "id": 10,
-        "created_at": "2026-04-08T22:14:35.027474"
-    },
-    {
         "user_id": 2,
         "type": "new order received",
         "title": "New Order Received",
@@ -108,16 +68,6 @@
         "order_id": 19,
         "id": 11,
         "created_at": "2026-04-08T22:14:41.577918"
-    },
-    {
-        "user_id": 7,
-        "type": "new order received",
-        "title": "Order Confirmed",
-        "message": "Your order at Pacific Bowl has been received, and is awaiting payment",
-        "is_read": true,
-        "order_id": 19,
-        "id": 12,
-        "created_at": "2026-04-08T22:14:41.578658"
     },
     {
         "user_id": 2,
@@ -140,36 +90,6 @@
         "created_at": "2026-04-08T22:14:42.961069"
     },
     {
-        "user_id": 7,
-        "type": "order in progress",
-        "title": "Successful Cash Payment",
-        "message": "Your cash payment for order 19 was successful",
-        "is_read": true,
-        "order_id": 19,
-        "id": 15,
-        "created_at": "2026-04-08T22:14:59.722787"
-    },
-    {
-        "user_id": 7,
-        "type": "order in progress",
-        "title": "Successful Cash Payment",
-        "message": "Your cash payment for order 19 was successful",
-        "is_read": true,
-        "order_id": 19,
-        "id": 16,
-        "created_at": "2026-04-08T22:21:54.850098"
-    },
-    {
-        "user_id": 7,
-        "type": "order in transit",
-        "title": "Order Status Updated",
-        "message": "Your order status is now out for delivery",
-        "is_read": true,
-        "order_id": 19,
-        "id": 17,
-        "created_at": "2026-04-08T22:22:25.018611"
-    },
-    {
         "user_id": 2,
         "type": "order in transit",
         "title": "Driver Picked Up",
@@ -178,16 +98,6 @@
         "order_id": 19,
         "id": 18,
         "created_at": "2026-04-08T22:22:25.019599"
-    },
-    {
-        "user_id": 7,
-        "type": "order delivered",
-        "title": "Order Status Updated",
-        "message": "Your order status is now delivered",
-        "is_read": true,
-        "order_id": 19,
-        "id": 19,
-        "created_at": "2026-04-08T22:22:56.627592"
     },
     {
         "user_id": 2,
@@ -210,16 +120,6 @@
         "created_at": "2026-04-08T22:23:39.641260"
     },
     {
-        "user_id": 7,
-        "type": "new order received",
-        "title": "Order Confirmed",
-        "message": "Your order at Roma Table has been received, and is awaiting payment",
-        "is_read": true,
-        "order_id": 20,
-        "id": 22,
-        "created_at": "2026-04-08T22:23:39.642124"
-    },
-    {
         "user_id": 2,
         "type": "new item has been added to order",
         "title": "New Item Added",
@@ -230,26 +130,6 @@
         "created_at": "2026-04-08T22:23:39.663247"
     },
     {
-        "user_id": 7,
-        "type": "order in progress",
-        "title": "Successful Cash Payment",
-        "message": "Your cash payment for order 20 was successful",
-        "is_read": true,
-        "order_id": 20,
-        "id": 24,
-        "created_at": "2026-04-08T22:24:00.984797"
-    },
-    {
-        "user_id": 7,
-        "type": "order in transit",
-        "title": "Order Status Updated",
-        "message": "Your order status is now out for delivery",
-        "is_read": true,
-        "order_id": 20,
-        "id": 25,
-        "created_at": "2026-04-08T22:24:31.070833"
-    },
-    {
         "user_id": 2,
         "type": "order in transit",
         "title": "Driver Picked Up",
@@ -258,16 +138,6 @@
         "order_id": 20,
         "id": 26,
         "created_at": "2026-04-08T22:24:31.071708"
-    },
-    {
-        "user_id": 7,
-        "type": "order delivered",
-        "title": "Order Status Updated",
-        "message": "Your order status is now delivered",
-        "is_read": true,
-        "order_id": 20,
-        "id": 27,
-        "created_at": "2026-04-08T22:25:02.595049"
     },
     {
         "user_id": 2,
@@ -290,16 +160,6 @@
         "created_at": "2026-04-08T22:26:56.835682"
     },
     {
-        "user_id": 7,
-        "type": "new order received",
-        "title": "Order Confirmed",
-        "message": "Your order at Maple Smokehouse has been received, and is awaiting payment",
-        "is_read": true,
-        "order_id": 21,
-        "id": 30,
-        "created_at": "2026-04-08T22:26:56.842435"
-    },
-    {
         "user_id": 2,
         "type": "new item has been added to order",
         "title": "New Item Added",
@@ -318,16 +178,6 @@
         "order_id": 22,
         "id": 32,
         "created_at": "2026-04-08T22:29:07.407177"
-    },
-    {
-        "user_id": 7,
-        "type": "new order received",
-        "title": "Order Confirmed",
-        "message": "Your order at Pacific Bowl has been received, and is awaiting payment",
-        "is_read": true,
-        "order_id": 22,
-        "id": 33,
-        "created_at": "2026-04-08T22:29:07.408498"
     },
     {
         "user_id": 2,
@@ -360,36 +210,6 @@
         "created_at": "2026-04-08T22:29:17.828525"
     },
     {
-        "user_id": 7,
-        "type": "order cancelled",
-        "title": "Order Cancelled",
-        "message": "Order 21 has been successfully cancelled before confirmation",
-        "is_read": true,
-        "order_id": 21,
-        "id": 37,
-        "created_at": "2026-04-08T22:29:17.829614"
-    },
-    {
-        "user_id": 7,
-        "type": "order in progress",
-        "title": "Successful Cash Payment",
-        "message": "Your cash payment for order 22 was successful",
-        "is_read": true,
-        "order_id": 22,
-        "id": 38,
-        "created_at": "2026-04-08T22:29:34.842774"
-    },
-    {
-        "user_id": 7,
-        "type": "order in transit",
-        "title": "Order Status Updated",
-        "message": "Your order status is now out for delivery",
-        "is_read": true,
-        "order_id": 22,
-        "id": 39,
-        "created_at": "2026-04-08T22:29:44.941097"
-    },
-    {
         "user_id": 2,
         "type": "order in transit",
         "title": "Driver Picked Up",
@@ -398,16 +218,6 @@
         "order_id": 22,
         "id": 40,
         "created_at": "2026-04-08T22:29:44.941732"
-    },
-    {
-        "user_id": 7,
-        "type": "order delivered",
-        "title": "Order Status Updated",
-        "message": "Your order status is now delivered",
-        "is_read": true,
-        "order_id": 22,
-        "id": 41,
-        "created_at": "2026-04-08T22:29:56.438558"
     },
     {
         "user_id": 2,
@@ -430,16 +240,6 @@
         "created_at": "2026-04-08T22:32:19.814462"
     },
     {
-        "user_id": 7,
-        "type": "new order received",
-        "title": "Order Confirmed",
-        "message": "Your order at Pacific Bowl has been received, and is awaiting payment",
-        "is_read": true,
-        "order_id": 23,
-        "id": 44,
-        "created_at": "2026-04-08T22:32:19.815243"
-    },
-    {
         "user_id": 2,
         "type": "new item has been added to order",
         "title": "New Item Added",
@@ -448,26 +248,6 @@
         "order_id": 23,
         "id": 45,
         "created_at": "2026-04-08T22:32:19.838736"
-    },
-    {
-        "user_id": 7,
-        "type": "order in progress",
-        "title": "Successful Cash Payment",
-        "message": "Your cash payment for order 23 was successful",
-        "is_read": true,
-        "order_id": 23,
-        "id": 46,
-        "created_at": "2026-04-08T22:32:41.147918"
-    },
-    {
-        "user_id": 7,
-        "type": "order in transit",
-        "title": "Order Status Updated",
-        "message": "Your order status is now out for delivery",
-        "is_read": true,
-        "order_id": 23,
-        "id": 47,
-        "created_at": "2026-04-08T22:32:51.210495"
     },
     {
         "user_id": 2,
@@ -480,16 +260,6 @@
         "created_at": "2026-04-08T22:32:51.212116"
     },
     {
-        "user_id": 7,
-        "type": "order delivered",
-        "title": "Order Status Updated",
-        "message": "Your order status is now delivered",
-        "is_read": true,
-        "order_id": 23,
-        "id": 49,
-        "created_at": "2026-04-08T22:33:02.581437"
-    },
-    {
         "user_id": 2,
         "type": "order delivered",
         "title": "Order has been delivered",
@@ -498,5 +268,165 @@
         "order_id": 23,
         "id": 50,
         "created_at": "2026-04-08T22:33:02.585332"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 24 has been received.",
+        "is_read": false,
+        "order_id": 24,
+        "id": 51,
+        "created_at": "2026-04-09T02:34:15.472659"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #24",
+        "is_read": false,
+        "order_id": 24,
+        "id": 53,
+        "created_at": "2026-04-09T02:34:15.497307"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 25 has been received.",
+        "is_read": false,
+        "order_id": 25,
+        "id": 54,
+        "created_at": "2026-04-09T02:35:06.346767"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Penne Arrabbiata to order #25",
+        "is_read": false,
+        "order_id": 25,
+        "id": 56,
+        "created_at": "2026-04-09T02:35:06.370083"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 24 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 24,
+        "id": 57,
+        "created_at": "2026-04-09T02:35:12.596544"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #25 picked up by driver",
+        "is_read": false,
+        "order_id": 25,
+        "id": 61,
+        "created_at": "2026-04-09T02:35:37.194797"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #25 has been delivered",
+        "is_read": false,
+        "order_id": 25,
+        "id": 63,
+        "created_at": "2026-04-09T02:35:52.058900"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 26 has been received.",
+        "is_read": false,
+        "order_id": 26,
+        "id": 64,
+        "created_at": "2026-04-09T02:44:09.264251"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Matcha Cheesecake to order #26",
+        "is_read": false,
+        "order_id": 26,
+        "id": 66,
+        "created_at": "2026-04-09T02:44:09.399713"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #26 picked up by driver",
+        "is_read": false,
+        "order_id": 26,
+        "id": 69,
+        "created_at": "2026-04-09T02:44:36.353680"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #26 has been delivered",
+        "is_read": false,
+        "order_id": 26,
+        "id": 71,
+        "created_at": "2026-04-09T02:44:51.878143"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 27 has been received.",
+        "is_read": false,
+        "order_id": 27,
+        "id": 72,
+        "created_at": "2026-04-09T02:50:25.672956"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #27",
+        "is_read": false,
+        "order_id": 27,
+        "id": 74,
+        "created_at": "2026-04-09T02:50:25.688020"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #27 picked up by driver",
+        "is_read": false,
+        "order_id": 27,
+        "id": 77,
+        "created_at": "2026-04-09T02:51:00.202003"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #27 picked up by driver",
+        "is_read": false,
+        "order_id": 27,
+        "id": 79,
+        "created_at": "2026-04-09T02:51:13.465394"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #27 has been delivered",
+        "is_read": false,
+        "order_id": 27,
+        "id": 81,
+        "created_at": "2026-04-09T02:51:29.472253"
     }
 ]

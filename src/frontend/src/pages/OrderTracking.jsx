@@ -115,7 +115,17 @@ export default function OrderTracking() {
     const navigate = useNavigate();
     const userId = parseUserIdFromStorage();
 
-    const orderIds = location.state?.orderIds ?? [];
+    // Fall back to localStorage if state was lost (e.g. navigated away and came back)
+    const orderIds = (() => {
+        const fromState = location.state?.orderIds;
+        if (Array.isArray(fromState) && fromState.length > 0) return fromState;
+        try {
+            const stored = localStorage.getItem("tracking_order_ids");
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    })();
 
     const [orderStates, setOrderStates] = useState(() =>
         Object.fromEntries(
@@ -148,6 +158,12 @@ export default function OrderTracking() {
             navigate("/");
             return;
         }
+
+        // Persist so the user can return to this page after navigating away
+        try {
+            localStorage.setItem("tracking_order_ids", JSON.stringify(orderIdsRef.current));
+            window.dispatchEvent(new CustomEvent("tracking:updated"));
+        } catch { /* ignore */ }
 
         orderIdsRef.current.forEach((orderId) => {
             runPreparingPhase(orderId);
@@ -242,6 +258,16 @@ export default function OrderTracking() {
             const phase = orderStates[id]?.phase;
             return phase === "delivered" || phase === "error";
         });
+
+    // Once all orders are done, remove the tracking record from localStorage
+    useEffect(() => {
+        if (allSettled) {
+            try {
+                localStorage.removeItem("tracking_order_ids");
+                window.dispatchEvent(new CustomEvent("tracking:updated"));
+            } catch { /* ignore */ }
+        }
+    }, [allSettled]);
 
     return (
         <main className="home-page order-tracking-page">
