@@ -48,6 +48,17 @@ const EMPTY_MENU_ITEM_FORM = {
     price: "",
 };
 
+const TOAST_DURATION_MS = 3200;
+
+const EMPTY_CONFIRMATION_STATE = {
+    open: false,
+    action: "",
+    title: "",
+    message: "",
+    confirmLabel: "Confirm",
+    payload: null,
+};
+
 function normalizeRole(role) {
     return String(role || "")
         .toLowerCase()
@@ -94,7 +105,8 @@ export default function OwnerPortal() {
         total: 0,
     });
 
-    const [feedback, setFeedback] = useState({ type: "", text: "" });
+    const [toasts, setToasts] = useState([]);
+    const [confirmationState, setConfirmationState] = useState(EMPTY_CONFIRMATION_STATE);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [showCreateRestaurantForm, setShowCreateRestaurantForm] = useState(false);
@@ -301,6 +313,22 @@ export default function OwnerPortal() {
         Boolean(selectedRestaurant) && editingRestaurantId === selectedRestaurant?.id;
     const isCreateMenuModalOpen = showCreateMenuItemForm;
     const isEditMenuModalOpen = Boolean(selectedMenuItem);
+    const isConfirmModalOpen = confirmationState.open;
+
+    const dismissToast = (toastId) => {
+        setToasts((previousToasts) =>
+            previousToasts.filter((toast) => toast.id !== toastId)
+        );
+    };
+
+    const pushToast = (type, text) => {
+        const toastId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        setToasts((previousToasts) => [...previousToasts, { id: toastId, type, text }]);
+
+        window.setTimeout(() => {
+            dismissToast(toastId);
+        }, TOAST_DURATION_MS);
+    };
 
     useEffect(() => {
         if (!selectedRestaurant) {
@@ -318,7 +346,8 @@ export default function OwnerPortal() {
             isCreateRestaurantModalOpen ||
             isEditRestaurantModalOpen ||
             isCreateMenuModalOpen ||
-            isEditMenuModalOpen;
+            isEditMenuModalOpen ||
+            isConfirmModalOpen;
 
         if (!hasOpenModal) {
             return undefined;
@@ -333,6 +362,7 @@ export default function OwnerPortal() {
             setEditingRestaurantId(null);
             setShowCreateMenuItemForm(false);
             setEditingMenuItemId(null);
+            setConfirmationState(EMPTY_CONFIRMATION_STATE);
         };
 
         const previousOverflow = document.body.style.overflow;
@@ -348,6 +378,7 @@ export default function OwnerPortal() {
         isEditRestaurantModalOpen,
         isCreateMenuModalOpen,
         isEditMenuModalOpen,
+        isConfirmModalOpen,
         isSubmitting,
     ]);
 
@@ -361,7 +392,7 @@ export default function OwnerPortal() {
         setMenuSearchQuery("");
         setEditingMenuItemId(null);
         setShowCreateMenuItemForm(false);
-        setFeedback({ type: "", text: "" });
+        setConfirmationState(EMPTY_CONFIRMATION_STATE);
     };
 
     const handleCreateRestaurant = async (event) => {
@@ -372,15 +403,11 @@ export default function OwnerPortal() {
 
         const deliveryFee = Number(newRestaurantForm.delivery_fee);
         if (Number.isNaN(deliveryFee) || deliveryFee < 0) {
-            setFeedback({
-                type: "error",
-                text: "Delivery fee must be a number greater than or equal to 0.",
-            });
+            pushToast("error", "Delivery fee must be a number greater than or equal to 0.");
             return;
         }
 
         setIsSubmitting(true);
-        setFeedback({ type: "", text: "" });
 
         try {
             await createRestaurant({
@@ -398,12 +425,9 @@ export default function OwnerPortal() {
             setShowCreateRestaurantForm(false);
             setRestaurantsPage(1);
             setRestaurantsRefreshKey((prev) => prev + 1);
-            setFeedback({ type: "success", text: "Restaurant created successfully." });
+            pushToast("success", "Restaurant created successfully.");
         } catch (error) {
-            setFeedback({
-                type: "error",
-                text: error.message || "Could not create restaurant.",
-            });
+            pushToast("error", error.message || "Could not create restaurant.");
         } finally {
             setIsSubmitting(false);
         }
@@ -422,7 +446,6 @@ export default function OwnerPortal() {
             delivery_fee: String(selectedRestaurant.delivery_fee ?? ""),
             is_available: Boolean(selectedRestaurant.is_available),
         });
-        setFeedback({ type: "", text: "" });
     };
 
     const handleUpdateRestaurant = async (event) => {
@@ -437,18 +460,12 @@ export default function OwnerPortal() {
         const deliveryFee = Number(restaurantEditForm.delivery_fee);
 
         if (!trimmedName || !trimmedCuisine) {
-            setFeedback({
-                type: "error",
-                text: "Restaurant name and cuisine are required.",
-            });
+            pushToast("error", "Restaurant name and cuisine are required.");
             return;
         }
 
         if (Number.isNaN(deliveryFee) || deliveryFee < 0) {
-            setFeedback({
-                type: "error",
-                text: "Delivery fee must be a number greater than or equal to 0.",
-            });
+            pushToast("error", "Delivery fee must be a number greater than or equal to 0.");
             return;
         }
 
@@ -464,7 +481,6 @@ export default function OwnerPortal() {
         }
 
         setIsSubmitting(true);
-        setFeedback({ type: "", text: "" });
 
         try {
             await updateRestaurant({
@@ -475,60 +491,27 @@ export default function OwnerPortal() {
 
             setEditingRestaurantId(null);
             setRestaurantsRefreshKey((prev) => prev + 1);
-            setFeedback({ type: "success", text: "Restaurant updated successfully." });
+            pushToast("success", "Restaurant updated successfully.");
         } catch (error) {
-            setFeedback({
-                type: "error",
-                text: error.message || "Could not update restaurant.",
-            });
+            pushToast("error", error.message || "Could not update restaurant.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleDeleteRestaurant = async () => {
+    const requestDeleteRestaurant = () => {
         if (!selectedRestaurant || !canManageRestaurants || isSubmitting) {
             return;
         }
 
-        const shouldDelete = window.confirm(
-            `Delete restaurant "${selectedRestaurant.name}"? This cannot be undone.`
-        );
-
-        if (!shouldDelete) {
-            return;
-        }
-
-        setIsSubmitting(true);
-        setFeedback({ type: "", text: "" });
-
-        try {
-            await deleteRestaurant({
-                restaurantId: selectedRestaurant.id,
-                userId: ownerId,
-            });
-
-            setEditingRestaurantId(null);
-            setShowCreateMenuItemForm(false);
-            setEditingMenuItemId(null);
-
-            if (restaurantsState.items.length === 1 && restaurantsPage > 1) {
-                setRestaurantsPage((prev) => Math.max(1, prev - 1));
-            } else {
-                setRestaurantsRefreshKey((prev) => prev + 1);
-            }
-
-            setMenuPage(1);
-            setMenuRefreshKey((prev) => prev + 1);
-            setFeedback({ type: "success", text: "Restaurant deleted successfully." });
-        } catch (error) {
-            setFeedback({
-                type: "error",
-                text: error.message || "Could not delete restaurant.",
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+        setConfirmationState({
+            open: true,
+            action: "deleteRestaurant",
+            title: "Delete restaurant?",
+            message: `Delete "${selectedRestaurant.name}"? This action cannot be undone.`,
+            confirmLabel: "Delete restaurant",
+            payload: selectedRestaurant,
+        });
     };
 
     const handleCreateMenuItem = async (event) => {
@@ -539,15 +522,11 @@ export default function OwnerPortal() {
 
         const price = Number(newMenuItemForm.price);
         if (Number.isNaN(price) || price <= 0) {
-            setFeedback({
-                type: "error",
-                text: "Menu item price must be greater than 0.",
-            });
+            pushToast("error", "Menu item price must be greater than 0.");
             return;
         }
 
         setIsSubmitting(true);
-        setFeedback({ type: "", text: "" });
 
         try {
             await createRestaurantMenuItem({
@@ -564,12 +543,9 @@ export default function OwnerPortal() {
             setShowCreateMenuItemForm(false);
             setMenuPage(1);
             setMenuRefreshKey((prev) => prev + 1);
-            setFeedback({ type: "success", text: "Menu item created successfully." });
+            pushToast("success", "Menu item created successfully.");
         } catch (error) {
-            setFeedback({
-                type: "error",
-                text: error.message || "Could not create menu item.",
-            });
+            pushToast("error", error.message || "Could not create menu item.");
         } finally {
             setIsSubmitting(false);
         }
@@ -582,7 +558,6 @@ export default function OwnerPortal() {
             description: item.description || "",
             price: String(item.price ?? ""),
         });
-        setFeedback({ type: "", text: "" });
     };
 
     const handleUpdateMenuItem = async (event, menuItemId) => {
@@ -595,20 +570,16 @@ export default function OwnerPortal() {
         const price = Number(menuItemEditForm.price);
 
         if (!trimmedName) {
-            setFeedback({ type: "error", text: "Menu item name is required." });
+            pushToast("error", "Menu item name is required.");
             return;
         }
 
         if (Number.isNaN(price) || price <= 0) {
-            setFeedback({
-                type: "error",
-                text: "Menu item price must be greater than 0.",
-            });
+            pushToast("error", "Menu item price must be greater than 0.");
             return;
         }
 
         setIsSubmitting(true);
-        setFeedback({ type: "", text: "" });
 
         try {
             await updateRestaurantMenuItem({
@@ -624,53 +595,105 @@ export default function OwnerPortal() {
 
             setEditingMenuItemId(null);
             setMenuRefreshKey((prev) => prev + 1);
-            setFeedback({ type: "success", text: "Menu item updated successfully." });
+            pushToast("success", "Menu item updated successfully.");
         } catch (error) {
-            setFeedback({
-                type: "error",
-                text: error.message || "Could not update menu item.",
-            });
+            pushToast("error", error.message || "Could not update menu item.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleDeleteMenuItem = async (item) => {
+    const requestDeleteMenuItem = (item) => {
         if (!selectedRestaurant || !canManageRestaurants || isSubmitting) {
             return;
         }
 
-        const shouldDelete = window.confirm(
-            `Delete menu item "${item.name}" from ${selectedRestaurant.name}?`
-        );
+        if (!item) {
+            return;
+        }
 
-        if (!shouldDelete) {
+        setConfirmationState({
+            open: true,
+            action: "deleteMenuItem",
+            title: "Delete menu item?",
+            message: `Delete "${item.name}" from ${selectedRestaurant.name}?`,
+            confirmLabel: "Delete menu item",
+            payload: {
+                item,
+                restaurantId: selectedRestaurant.id,
+            },
+        });
+    };
+
+    const closeConfirmation = () => {
+        if (isSubmitting) {
+            return;
+        }
+
+        setConfirmationState(EMPTY_CONFIRMATION_STATE);
+    };
+
+    const handleConfirmAction = async () => {
+        if (!confirmationState.open || isSubmitting || !canManageRestaurants) {
             return;
         }
 
         setIsSubmitting(true);
-        setFeedback({ type: "", text: "" });
 
         try {
-            await deleteRestaurantMenuItem({
-                restaurantId: selectedRestaurant.id,
-                menuItemId: item.id,
-                userId: ownerId,
-            });
+            if (confirmationState.action === "deleteRestaurant") {
+                const restaurant = confirmationState.payload;
+                if (!restaurant?.id) {
+                    throw new Error("Restaurant information is missing.");
+                }
 
-            if (menuState.items.length === 1 && menuPage > 1) {
-                setMenuPage((prev) => Math.max(1, prev - 1));
-            } else {
+                await deleteRestaurant({
+                    restaurantId: restaurant.id,
+                    userId: ownerId,
+                });
+
+                setEditingRestaurantId(null);
+                setShowCreateMenuItemForm(false);
+                setEditingMenuItemId(null);
+
+                if (restaurantsState.items.length === 1 && restaurantsPage > 1) {
+                    setRestaurantsPage((prev) => Math.max(1, prev - 1));
+                } else {
+                    setRestaurantsRefreshKey((prev) => prev + 1);
+                }
+
+                setMenuPage(1);
                 setMenuRefreshKey((prev) => prev + 1);
+                pushToast("success", "Restaurant deleted successfully.");
             }
 
-            setEditingMenuItemId(null);
-            setFeedback({ type: "success", text: "Menu item deleted successfully." });
+            if (confirmationState.action === "deleteMenuItem") {
+                const payload = confirmationState.payload;
+                if (!payload?.restaurantId || !payload?.item?.id) {
+                    throw new Error("Menu item information is missing.");
+                }
+
+                await deleteRestaurantMenuItem({
+                    restaurantId: payload.restaurantId,
+                    menuItemId: payload.item.id,
+                    userId: ownerId,
+                });
+
+                if (menuState.items.length === 1 && menuPage > 1) {
+                    setMenuPage((prev) => Math.max(1, prev - 1));
+                } else {
+                    setMenuRefreshKey((prev) => prev + 1);
+                }
+
+                setEditingMenuItemId((previousId) =>
+                    previousId === payload.item.id ? null : previousId
+                );
+                pushToast("success", "Menu item deleted successfully.");
+            }
+
+            setConfirmationState(EMPTY_CONFIRMATION_STATE);
         } catch (error) {
-            setFeedback({
-                type: "error",
-                text: error.message || "Could not delete menu item.",
-            });
+            pushToast("error", error.message || "Unable to complete this action.");
         } finally {
             setIsSubmitting(false);
         }
@@ -712,6 +735,22 @@ export default function OwnerPortal() {
 
     return (
         <main className="owner-page">
+            <div className="owner-toast-stack" aria-live="polite" aria-atomic="true">
+                {toasts.map((toast) => (
+                    <div key={toast.id} className={`owner-toast is-${toast.type || "info"}`}>
+                        <p>{toast.text}</p>
+                        <button
+                            type="button"
+                            className="owner-toast-close"
+                            onClick={() => dismissToast(toast.id)}
+                            aria-label="Dismiss notification"
+                        >
+                            x
+                        </button>
+                    </div>
+                ))}
+            </div>
+
             <section className="owner-hero">
                 <p className="owner-kicker">Owner Portal</p>
                 <h1>Manage your restaurants and menus</h1>
@@ -720,12 +759,6 @@ export default function OwnerPortal() {
                     Use the create buttons to add new restaurants and menu items.
                 </p>
             </section>
-
-            {feedback.text ? (
-                <p className={feedback.type === "error" ? "owner-status-error" : "owner-status-success"}>
-                    {feedback.text}
-                </p>
-            ) : null}
 
             {restaurantsState.error ? (
                 <p className="owner-status-error">{restaurantsState.error}</p>
@@ -748,7 +781,6 @@ export default function OwnerPortal() {
                         onClick={() => {
                             setShowCreateRestaurantForm(true);
                             setEditingRestaurantId(null);
-                            setFeedback({ type: "", text: "" });
                         }}
                     >
                         Create restaurant
@@ -851,7 +883,7 @@ export default function OwnerPortal() {
                             </button>
                             <button
                                 type="button"
-                                onClick={handleDeleteRestaurant}
+                                onClick={requestDeleteRestaurant}
                                 className="danger"
                                 disabled={isSubmitting}
                             >
@@ -900,7 +932,6 @@ export default function OwnerPortal() {
                                 onClick={() => {
                                     setShowCreateMenuItemForm(true);
                                     setEditingMenuItemId(null);
-                                    setFeedback({ type: "", text: "" });
                                 }}
                             >
                                 Create menu item
@@ -949,7 +980,7 @@ export default function OwnerPortal() {
                                                     <button
                                                         type="button"
                                                         className="danger"
-                                                        onClick={() => handleDeleteMenuItem(item)}
+                                                        onClick={() => requestDeleteMenuItem(item)}
                                                         disabled={isSubmitting}
                                                     >
                                                         Delete
@@ -990,6 +1021,48 @@ export default function OwnerPortal() {
                     </div>
                 )}
             </section>
+
+            {isConfirmModalOpen ? (
+                <div className="owner-modal-backdrop" onClick={closeConfirmation}>
+                    <div
+                        className="owner-modal owner-confirm-modal"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="owner-modal-header">
+                            <h3>{confirmationState.title || "Please confirm"}</h3>
+                            <button
+                                type="button"
+                                className="owner-modal-close"
+                                onClick={closeConfirmation}
+                                disabled={isSubmitting}
+                                aria-label="Close confirmation dialog"
+                            >
+                                x
+                            </button>
+                        </div>
+
+                        <p className="owner-confirm-message">{confirmationState.message}</p>
+
+                        <div className="owner-inline-actions owner-confirm-actions">
+                            <button
+                                type="button"
+                                className="danger"
+                                onClick={handleConfirmAction}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? "Working..." : confirmationState.confirmLabel || "Confirm"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={closeConfirmation}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
 
             {isCreateRestaurantModalOpen ? (
                 <div
