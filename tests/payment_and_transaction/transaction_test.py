@@ -380,4 +380,3 @@ def test_update_transaction(test_client):
     assert data["payment_method_id"] == data_1["payment_method_id"]
     assert data["order_id"] == data_1["order_id"]
     assert data["amount"] == data_1["amount"]
-
