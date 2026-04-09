@@ -1,0 +1,196 @@
+/* ── Admin Page ──────────────────────────────────────────────────────────── */
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.admin-stat-card {
+    background: #fffdf9;
+    border: 1px solid #e8d7c5;
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.admin-stat-label {
+    font-size: 0.8rem;
+    color: #7a5540;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.admin-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #2d1d14;
+}
+
+/* Orders table */
+.admin-table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e8d7c5;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.65rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid #ede3d8;
+    color: #2d1d14;
+}
+
+.admin-table th {
+    background: #f9f2ea;
+    font-weight: 700;
+    color: #5f4330;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Revenue lookup */
+.admin-lookup-form {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+}
+
+.admin-lookup-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #5f4330;
+}
+
+.admin-lookup-form input {
+    border: 1px solid #e8d7c5;
+    border-radius: 9px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    background: #fffdfa;
+    color: #2a1f16;
+    width: 140px;
+}
+
+.admin-lookup-form button {
+    padding: 0.55rem 1.2rem;
+    background: #ff6b35;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.14s ease;
+}
+
+.admin-lookup-form button:hover {
+    background: #e5571f;
+}
+
+.admin-result-box {
+    background: rgba(255, 107, 53, 0.06);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.92rem;
+    color: #2d1d14;
+}
+
+/* User management */
+.admin-user-form {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+}
+
+.admin-user-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #5f4330;
+}
+
+.admin-user-form input {
+    border: 1px solid #e8d7c5;
+    border-radius: 9px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    background: #fffdfa;
+    color: #2a1f16;
+    width: 180px;
+}
+
+.admin-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-action-btn {
+    padding: 0.52rem 1.1rem;
+    border: none;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.14s ease;
+}
+
+.admin-action-btn.block {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.admin-action-btn.unblock {
+    background: #22a052;
+    color: #fff;
+}
+
+.admin-action-btn.delete {
+    background: #dc2626;
+    color: #fff;
+}
+
+.admin-action-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.admin-toggle-btn {
+    background: transparent;
+    border: 1px solid #d4b89a;
+    border-radius: 9px;
+    color: #5f4330;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+    margin-bottom: 0.9rem;
+}
+
+.admin-toggle-btn:hover {
+    background: rgba(255, 107, 53, 0.08);
+}
