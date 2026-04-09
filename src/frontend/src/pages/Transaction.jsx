@@ -17,7 +17,7 @@ export default function Transactions() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(location.state?.message || "");
+  const [successMessage] = useState(location.state?.message || "");
   const [busyAction, setBusyAction] = useState("");
 
   const redirectToLogin = useCallback(() => {

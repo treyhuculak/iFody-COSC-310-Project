@@ -43,6 +43,13 @@ async function request(path, { signal, headers, ...options } = {}) {
     return payload;
 }
 
+function buildUserHeaders(userId) {
+    return {
+        "x-user-id": String(userId),
+        "Content-Type": "application/json",
+    };
+}
+
 function normalizeRestaurant(raw = {}) {
     const city = raw.city || "";
     const fallbackLocation = city || "Location unavailable";
@@ -167,6 +174,104 @@ export async function fetchRestaurantById(restaurantId, { signal } = {}) {
     return normalizeRestaurant(payload);
 }
 
+export async function fetchOwnerRestaurants({
+    ownerId,
+    skip = 0,
+    limit = 10,
+    signal,
+} = {}) {
+    const query = toQueryString({ skip, limit });
+    const payload = await request(`/restaurants/owner/${ownerId}?${query}`, { signal });
+    return normalizePaginatedResponse(payload);
+}
+
+export async function searchOwnerRestaurantsByName({
+    ownerId,
+    name = "",
+    skip = 0,
+    limit = 10,
+    signal,
+} = {}) {
+    const trimmedName = String(name || "").trim().toLowerCase();
+
+    if (!trimmedName) {
+        return fetchOwnerRestaurants({ ownerId, skip, limit, signal });
+    }
+
+    const pageSize = 100;
+    let currentSkip = 0;
+    let hasNext = true;
+    let allOwnerRestaurants = [];
+
+    while (hasNext) {
+        const response = await fetchOwnerRestaurants({
+            ownerId,
+            skip: currentSkip,
+            limit: pageSize,
+            signal,
+        });
+
+        allOwnerRestaurants = allOwnerRestaurants.concat(response.items);
+        hasNext = response.has_next;
+        currentSkip += pageSize;
+    }
+
+    const filteredItems = allOwnerRestaurants.filter((restaurant) =>
+        String(restaurant.name || "").toLowerCase().includes(trimmedName)
+    );
+
+    const total = filteredItems.length;
+    const items = filteredItems.slice(skip, skip + limit);
+    const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
+
+    return {
+        items,
+        total,
+        page: limit > 0 ? Math.floor(skip / limit) + 1 : 1,
+        page_size: limit,
+        total_pages: totalPages,
+        has_next: skip + limit < total,
+        has_prev: skip > 0,
+    };
+}
+
+export async function createRestaurant({ restaurant, userId, signal } = {}) {
+    const payload = await request(`/restaurants`, {
+        signal,
+        method: "POST",
+        headers: buildUserHeaders(userId),
+        body: JSON.stringify(restaurant),
+    });
+
+    return normalizeRestaurant(payload);
+}
+
+export async function updateRestaurant({
+    restaurantId,
+    updates,
+    userId,
+    signal,
+} = {}) {
+    const query = toQueryString(updates || {});
+    const payload = await request(`/restaurants/${restaurantId}?${query}`, {
+        signal,
+        method: "PUT",
+        headers: buildUserHeaders(userId),
+    });
+
+    return normalizeRestaurant(payload);
+}
+
+export async function deleteRestaurant({ restaurantId, userId, signal } = {}) {
+    const payload = await request(`/restaurants/${restaurantId}`, {
+        signal,
+        method: "DELETE",
+        headers: buildUserHeaders(userId),
+    });
+
+    return normalizeRestaurant(payload);
+}
+
 export async function fetchRestaurantMenuItems({
     restaurantId,
     skip = 0,
@@ -176,6 +281,57 @@ export async function fetchRestaurantMenuItems({
     const query = toQueryString({ skip, limit });
     const payload = await request(`/restaurants/${restaurantId}/menu?${query}`, { signal });
     return normalizeMenuItemPaginatedResponse(payload);
+}
+
+export async function createRestaurantMenuItem({
+    restaurantId,
+    menuItem,
+    userId,
+    signal,
+} = {}) {
+    const payload = await request(`/restaurants/${restaurantId}/menu`, {
+        signal,
+        method: "POST",
+        headers: buildUserHeaders(userId),
+        body: JSON.stringify(menuItem),
+    });
+
+    return normalizeMenuItem(payload);
+}
+
+export async function updateRestaurantMenuItem({
+    restaurantId,
+    menuItemId,
+    updates,
+    userId,
+    signal,
+} = {}) {
+    const query = toQueryString(updates || {});
+    const payload = await request(
+        `/restaurants/${restaurantId}/menu/${menuItemId}?${query}`,
+        {
+            signal,
+            method: "PUT",
+            headers: buildUserHeaders(userId),
+        }
+    );
+
+    return normalizeMenuItem(payload);
+}
+
+export async function deleteRestaurantMenuItem({
+    restaurantId,
+    menuItemId,
+    userId,
+    signal,
+} = {}) {
+    const payload = await request(`/restaurants/${restaurantId}/menu/${menuItemId}`, {
+        signal,
+        method: "DELETE",
+        headers: buildUserHeaders(userId),
+    });
+
+    return normalizeMenuItem(payload);
 }
 
 export async function searchRestaurantMenuItems({
@@ -195,6 +351,27 @@ export async function searchRestaurantMenuItems({
         signal,
     });
     return normalizeMenuItemCollection(payload);
+}
+
+export async function searchRestaurantMenuItemsPaginated({
+    restaurantId,
+    name,
+    skip = 0,
+    limit = 20,
+    signal,
+} = {}) {
+    const trimmedName = String(name || "").trim();
+
+    if (!trimmedName) {
+        return fetchRestaurantMenuItems({ restaurantId, skip, limit, signal });
+    }
+
+    const query = toQueryString({ name: trimmedName, skip, limit });
+    const payload = await request(`/restaurants/${restaurantId}/menu/search?${query}`, {
+        signal,
+    });
+
+    return normalizeMenuItemPaginatedResponse(payload);
 }
 
 export async function searchRestaurantsByName(name, { limit = 8, signal } = {}) {
@@ -267,13 +444,13 @@ export async function fetchRecentlyOrderedRestaurants({
 
         const filteredItems = normalizedLocation
             ? normalizedItems.filter((restaurant) => {
-                  const restaurantLocation = String(
-                      restaurant.city || restaurant.location || ""
-                  )
-                      .trim()
-                      .toLowerCase();
-                  return restaurantLocation === normalizedLocation;
-              })
+                const restaurantLocation = String(
+                    restaurant.city || restaurant.location || ""
+                )
+                    .trim()
+                    .toLowerCase();
+                return restaurantLocation === normalizedLocation;
+            })
             : normalizedItems;
 
         return {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
     BrowserRouter,
+    Navigate,
     NavLink,
     Route,
     Routes,
@@ -16,7 +17,6 @@ import {
     searchRestaurantsByName,
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
-import ChatbotWindow from "./components/home/ChatbotWindow";
 import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
@@ -33,6 +33,7 @@ import Settings from "./pages/Settings";
 import Payment from "./pages/Payment";
 import Transactions from "./pages/Transaction";
 import PayPalPage from "./pages/PayPal";
+import OwnerPortal from "./pages/OwnerPortal";
 
 export default function App() {
     return (
@@ -40,6 +41,12 @@ export default function App() {
             <AppShell />
         </BrowserRouter>
     );
+}
+
+function normalizeRole(role) {
+    return String(role || "")
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
 }
 
 function AppShell() {
@@ -65,7 +72,9 @@ function AppShell() {
         try {
             const stored = localStorage.getItem("tracking_order_ids");
             return stored ? JSON.parse(stored) : [];
-        } catch { return []; }
+        } catch {
+            return [];
+        }
     });
 
     const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
@@ -96,6 +105,17 @@ function AppShell() {
         : null;
     const isRestaurantPage =
         activeRestaurantId !== null && Number.isInteger(activeRestaurantId);
+    const isOwnerPortalPage = location.pathname.startsWith("/owner");
+    const isOwnerUser = normalizeRole(userRole) === "restaurantowner";
+    const isOwnerLockedView = isOwnerUser || isOwnerPortalPage;
+
+    useEffect(() => {
+        if (!isOwnerUser || isOwnerPortalPage) {
+            return;
+        }
+
+        navigate("/owner", { replace: true });
+    }, [isOwnerUser, isOwnerPortalPage, navigate]);
 
     const refreshCartCount = useCallback(async () => {
         const userId = parseUserIdFromStorage();
@@ -141,7 +161,9 @@ function AppShell() {
             try {
                 const stored = localStorage.getItem("tracking_order_ids");
                 setActiveTrackingIds(stored ? JSON.parse(stored) : []);
-            } catch { setActiveTrackingIds([]); }
+            } catch {
+                setActiveTrackingIds([]);
+            }
         };
         window.addEventListener("tracking:updated", handleTrackingUpdate);
         return () => window.removeEventListener("tracking:updated", handleTrackingUpdate);
@@ -149,7 +171,10 @@ function AppShell() {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (paymentDropdownRef.current && !paymentDropdownRef.current.contains(e.target)) {
+            if (
+                paymentDropdownRef.current &&
+                !paymentDropdownRef.current.contains(e.target)
+            ) {
                 setPaymentDropdownOpen(false);
             }
         };
@@ -159,7 +184,10 @@ function AppShell() {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+            if (
+                userDropdownRef.current &&
+                !userDropdownRef.current.contains(e.target)
+            ) {
                 setUserDropdownOpen(false);
             }
         };
@@ -168,7 +196,9 @@ function AppShell() {
     }, []);
 
     useEffect(() => {
-        if (isRestaurantPage || !restaurantSearchQuery.trim()) return;
+        if (isOwnerLockedView || isRestaurantPage || !restaurantSearchQuery.trim()) {
+            return;
+        }
 
         const abortController = new AbortController();
         const timer = setTimeout(() => {
@@ -193,10 +223,12 @@ function AppShell() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [restaurantSearchQuery, isRestaurantPage]);
+    }, [restaurantSearchQuery, isRestaurantPage, isOwnerLockedView]);
 
     useEffect(() => {
-        if (!isRestaurantPage || !menuSearchQuery.trim()) return;
+        if (isOwnerLockedView || !isRestaurantPage || !menuSearchQuery.trim()) {
+            return;
+        }
 
         const abortController = new AbortController();
         const timer = setTimeout(() => {
@@ -223,7 +255,7 @@ function AppShell() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [activeRestaurantId, menuSearchQuery, isRestaurantPage]);
+    }, [activeRestaurantId, menuSearchQuery, isRestaurantPage, isOwnerLockedView]);
 
     useEffect(() => {
         setMenuSearchQuery("");
@@ -301,12 +333,22 @@ function AppShell() {
             try {
                 const uid = parseUserIdFromStorage();
                 if (uid) {
-                    try { localStorage.removeItem(`weekly_offers_user_${uid}`); } catch {}
+                    try {
+                        localStorage.removeItem(`weekly_offers_user_${uid}`);
+                    } catch {
+                        // Ignore localStorage cleanup errors.
+                    }
                 }
-            } catch {}
+            } catch {
+                // Ignore localStorage read errors.
+            }
 
             keysToRemove.forEach((k) => {
-                try { localStorage.removeItem(k); } catch { /* ignore */ }
+                try {
+                    localStorage.removeItem(k);
+                } catch {
+                    /* ignore */
+                }
             });
             setUsername(null);
             setUserRole("");
@@ -328,132 +370,217 @@ function AppShell() {
                 <div className="app-nav-main">
                     <div className="app-brand">iFody</div>
 
-                    <SearchDropdown
-                        className="app-nav-search"
-                        inputId={isRestaurantPage ? "app-menu-search" : "app-restaurant-search"}
-                        query={activeSearchQuery}
-                        onQueryChange={handleSearchQueryChange}
-                        results={activeSearchResults}
-                        isLoading={activeSearchLoading}
-                        onSelect={isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect}
-                        placeholder={isRestaurantPage ? "Find menu items" : "Search restaurants"}
-                        loadingText={isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."}
-                        emptyText={
-                            isRestaurantPage
-                                ? "No matching menu items found."
-                                : "No matching restaurants found."
-                        }
-                        getItemPrimaryText={(item) => item.name}
-                        getItemSecondaryText={(item) =>
-                            isRestaurantPage
-                                ? `$${Number(item.price ?? 0).toFixed(2)}`
-                                : `${item.cuisine} • ${item.location}`
-                        }
-                    />
+                    {isOwnerLockedView ? (
+                        <div className="app-nav-search app-nav-search-placeholder" />
+                    ) : (
+                        <SearchDropdown
+                            className="app-nav-search"
+                            inputId={
+                                isRestaurantPage ? "app-menu-search" : "app-restaurant-search"
+                            }
+                            query={activeSearchQuery}
+                            onQueryChange={handleSearchQueryChange}
+                            results={activeSearchResults}
+                            isLoading={activeSearchLoading}
+                            onSelect={
+                                isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect
+                            }
+                            placeholder={
+                                isRestaurantPage ? "Find menu items" : "Search restaurants"
+                            }
+                            loadingText={
+                                isRestaurantPage
+                                    ? "Searching menu items..."
+                                    : "Searching restaurants..."
+                            }
+                            emptyText={
+                                isRestaurantPage
+                                    ? "No matching menu items found."
+                                    : "No matching restaurants found."
+                            }
+                            getItemPrimaryText={(item) => item.name}
+                            getItemSecondaryText={(item) =>
+                                isRestaurantPage
+                                    ? `$${Number(item.price ?? 0).toFixed(2)}`
+                                    : `${item.cuisine} • ${item.location}`
+                            }
+                        />
+                    )}
 
                     <div className="app-links">
-                        <NavLink to="/" end>Home</NavLink>
-
-                        {username && (
-                            <NavLink to="/offers">Offers</NavLink>
-                        )}
-
-                        {/* Payments dropdown */}
-                        <div className="nav-dropdown" ref={paymentDropdownRef}>
-                            <button
-                                className="nav-dropdown-trigger link-button"
-                                onClick={() => setPaymentDropdownOpen((prev) => !prev)}
-                                aria-expanded={paymentDropdownOpen}
-                            >
-                                Payments{" "}
-                                <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
-                            </button>
-                            {paymentDropdownOpen && (
-                                <div className="nav-dropdown-menu">
-                                    <NavLink to="/payment" onClick={() => setPaymentDropdownOpen(false)}>
-                                        Payment Methods
-                                    </NavLink>
-                                    <NavLink to="/transactions" onClick={() => setPaymentDropdownOpen(false)}>
-                                        Transactions
-                                    </NavLink>
-                                    <NavLink to="/paypal" onClick={() => setPaymentDropdownOpen(false)}>
-                                        PayPal
-                                    </NavLink>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Live tracking indicator */}
-                        {activeTrackingIds.length > 0 && location.pathname !== "/order-tracking" && (
-                            <NavLink to="/order-tracking" className="tracking-nav-link">
-                                <span className="tracking-nav-dot" />
-                                Live Tracking
-                            </NavLink>
-                        )}
-
-                        {/* Cart */}
-                        <NavLink to="/cart" className="cart-link" aria-label="View cart">
-                            Cart
-                            <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
-                                {cartItemCount}
-                            </span>
-                        </NavLink>
-
-                        {username ? (
-                            /* User dropdown */
-                            <div className="nav-dropdown" ref={userDropdownRef}>
-                                <button
-                                    className="nav-dropdown-trigger link-button app-username-btn"
-                                    onClick={() => setUserDropdownOpen((prev) => !prev)}
-                                    aria-expanded={userDropdownOpen}
-                                >
-                                    Hi, {username}{" "}
-                                    <span className="nav-dropdown-caret">{userDropdownOpen ? "▴" : "▾"}</span>
-                                </button>
-                                {userDropdownOpen && (
-                                    <div className="nav-dropdown-menu nav-dropdown-menu-right">
-                                        <NavLink to="/orders" onClick={() => setUserDropdownOpen(false)}>
-                                            Order History
-                                        </NavLink>
-                                        <NavLink
-                                            to="/notifications"
-                                            className="notif-nav-link"
-                                            onClick={() => setUserDropdownOpen(false)}
-                                        >
-                                            Notifications
-                                            {unreadCount > 0 && (
-                                                <span className="notif-nav-badge">{unreadCount}</span>
-                                            )}
-                                        </NavLink>
-                                        <NavLink to="/settings" onClick={() => setUserDropdownOpen(false)}>
-                                            Settings
-                                        </NavLink>
-                                        {userRole === "administrator" && (
-                                            <NavLink to="/admin" onClick={() => setUserDropdownOpen(false)}>
-                                                Admin Dashboard
-                                            </NavLink>
-                                        )}
-                                        {userRole === "restaurant owner" && (
-                                            <NavLink to="/my-restaurants" onClick={() => setUserDropdownOpen(false)}>
-                                                My Restaurants
-                                            </NavLink>
-                                        )}
-                                        <button className="link-button dropdown-logout-btn" onClick={handleLogout}>
+                        {isOwnerLockedView ? (
+                            <>
+                                <NavLink to="/owner" end>
+                                    Owner Home
+                                </NavLink>
+                                {username ? (
+                                    <>
+                                        <span className="app-username">Hi, {username}</span>
+                                        <button className="link-button" onClick={handleLogout}>
                                             Logout
                                         </button>
-                                    </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <NavLink to="/login?redirect=/owner">Login</NavLink>
+                                        <NavLink to="/register">Register</NavLink>
+                                    </>
                                 )}
-                            </div>
+                            </>
                         ) : (
                             <>
-                                <NavLink to="/login">Login</NavLink>
-                                <NavLink to="/register">Register</NavLink>
+                                <NavLink to="/" end>
+                                    Home
+                                </NavLink>
+
+                                {username && <NavLink to="/offers">Offers</NavLink>}
+
+                                {/* Payments dropdown */}
+                                <div className="nav-dropdown" ref={paymentDropdownRef}>
+                                    <button
+                                        className="nav-dropdown-trigger link-button"
+                                        onClick={() =>
+                                            setPaymentDropdownOpen((prev) => !prev)
+                                        }
+                                        aria-expanded={paymentDropdownOpen}
+                                    >
+                                        Payments{" "}
+                                        <span className="nav-dropdown-caret">
+                                            {paymentDropdownOpen ? "▴" : "▾"}
+                                        </span>
+                                    </button>
+                                    {paymentDropdownOpen && (
+                                        <div className="nav-dropdown-menu">
+                                            <NavLink
+                                                to="/payment"
+                                                onClick={() => setPaymentDropdownOpen(false)}
+                                            >
+                                                Payment Methods
+                                            </NavLink>
+                                            <NavLink
+                                                to="/transactions"
+                                                onClick={() => setPaymentDropdownOpen(false)}
+                                            >
+                                                Transactions
+                                            </NavLink>
+                                            <NavLink
+                                                to="/paypal"
+                                                onClick={() => setPaymentDropdownOpen(false)}
+                                            >
+                                                PayPal
+                                            </NavLink>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Live tracking indicator */}
+                                {activeTrackingIds.length > 0 &&
+                                    location.pathname !== "/order-tracking" && (
+                                        <NavLink
+                                            to="/order-tracking"
+                                            className="tracking-nav-link"
+                                        >
+                                            <span className="tracking-nav-dot" />
+                                            Live Tracking
+                                        </NavLink>
+                                    )}
+
+                                {/* Cart */}
+                                <NavLink
+                                    to="/cart"
+                                    className="cart-link"
+                                    aria-label="View cart"
+                                >
+                                    Cart
+                                    <span
+                                        className={`cart-badge ${
+                                            cartItemCount > 0 ? "has-items" : ""
+                                        }`}
+                                    >
+                                        {cartItemCount}
+                                    </span>
+                                </NavLink>
+
+                                {username ? (
+                                    /* User dropdown */
+                                    <div className="nav-dropdown" ref={userDropdownRef}>
+                                        <button
+                                            className="nav-dropdown-trigger link-button app-username-btn"
+                                            onClick={() =>
+                                                setUserDropdownOpen((prev) => !prev)
+                                            }
+                                            aria-expanded={userDropdownOpen}
+                                        >
+                                            Hi, {username}{" "}
+                                            <span className="nav-dropdown-caret">
+                                                {userDropdownOpen ? "▴" : "▾"}
+                                            </span>
+                                        </button>
+                                        {userDropdownOpen && (
+                                            <div className="nav-dropdown-menu nav-dropdown-menu-right">
+                                                <NavLink
+                                                    to="/orders"
+                                                    onClick={() => setUserDropdownOpen(false)}
+                                                >
+                                                    Order History
+                                                </NavLink>
+                                                <NavLink
+                                                    to="/notifications"
+                                                    className="notif-nav-link"
+                                                    onClick={() => setUserDropdownOpen(false)}
+                                                >
+                                                    Notifications
+                                                    {unreadCount > 0 && (
+                                                        <span className="notif-nav-badge">
+                                                            {unreadCount}
+                                                        </span>
+                                                    )}
+                                                </NavLink>
+                                                <NavLink
+                                                    to="/settings"
+                                                    onClick={() => setUserDropdownOpen(false)}
+                                                >
+                                                    Settings
+                                                </NavLink>
+                                                {userRole === "administrator" && (
+                                                    <NavLink
+                                                        to="/admin"
+                                                        onClick={() => setUserDropdownOpen(false)}
+                                                    >
+                                                        Admin Dashboard
+                                                    </NavLink>
+                                                )}
+                                                {userRole === "restaurant owner" && (
+                                                    <NavLink
+                                                        to="/my-restaurants"
+                                                        onClick={() => setUserDropdownOpen(false)}
+                                                    >
+                                                        My Restaurants
+                                                    </NavLink>
+                                                )}
+                                                <button
+                                                    className="link-button dropdown-logout-btn"
+                                                    onClick={handleLogout}
+                                                >
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <NavLink to="/login">Login</NavLink>
+                                        <NavLink to="/register">Register</NavLink>
+                                    </>
+                                )}
                             </>
                         )}
                     </div>
                 </div>
 
-                {activeSearchError ? <p className="app-nav-error">{activeSearchError}</p> : null}
+                {!isOwnerLockedView && activeSearchError ? (
+                    <p className="app-nav-error">{activeSearchError}</p>
+                ) : null}
             </nav>
 
             <div className="app-page-shell">
@@ -461,40 +588,124 @@ function AppShell() {
                     <Route
                         path="/"
                         element={
-                            <Home
-                                navSearchResults={restaurantSearchResults}
-                                selectedRestaurantId={selectedRestaurantId}
-                                onRestaurantSelect={handleRestaurantSelect}
-                            />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Home
+                                    navSearchResults={restaurantSearchResults}
+                                    selectedRestaurantId={selectedRestaurantId}
+                                    onRestaurantSelect={handleRestaurantSelect}
+                                />
+                            )
                         }
                     />
                     <Route
                         path="/restaurants/:restaurantId"
                         element={
-                            <RestaurantDetails
-                                navMenuSearchResults={menuSearchResults}
-                                menuSearchQuery={menuSearchQuery}
-                                highlightedMenuItemId={selectedMenuItemId}
-                            />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <RestaurantDetails
+                                    navMenuSearchResults={menuSearchResults}
+                                    menuSearchQuery={menuSearchQuery}
+                                    highlightedMenuItemId={selectedMenuItemId}
+                                />
+                            )
                         }
                     />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/order-tracking" element={<OrderTracking />} />
-                    <Route path="/payment" element={<Payment />} />
-                    <Route path="/transactions" element={<Transactions />} />
-                    <Route path="/paypal" element={<PayPalPage />} />
-                    <Route path="/offers" element={<Offers />} />
-                    <Route path="/orders" element={<OrderHistory />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/my-restaurants" element={<RestaurantManager />} />
-                    <Route path="/review/:orderId" element={<Review />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                    <Route
+                        path="/cart"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Cart />
+                        }
+                    />
+                    <Route
+                        path="/order-tracking"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <OrderTracking />
+                        }
+                    />
+                    <Route
+                        path="/payment"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Payment />
+                        }
+                    />
+                    <Route
+                        path="/transactions"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Transactions />
+                        }
+                    />
+                    <Route
+                        path="/paypal"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <PayPalPage />
+                        }
+                    />
+                    <Route
+                        path="/offers"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Offers />
+                        }
+                    />
+                    <Route
+                        path="/orders"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <OrderHistory />
+                        }
+                    />
+                    <Route
+                        path="/notifications"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Notifications />
+                        }
+                    />
+                    <Route
+                        path="/settings"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Settings />
+                        }
+                    />
+                    <Route
+                        path="/admin"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Admin />
+                        }
+                    />
+                    <Route
+                        path="/my-restaurants"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <RestaurantManager />
+                        }
+                    />
+                    <Route
+                        path="/review/:orderId"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Review />
+                        }
+                    />
+                    <Route path="/owner" element={<OwnerPortal />} />
+                    <Route
+                        path="/login"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Login />
+                        }
+                    />
+                    <Route
+                        path="/register"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Register />
+                        }
+                    />
+                    <Route
+                        path="*"
+                        element={
+                            <Navigate to={isOwnerUser ? "/owner" : "/"} replace />
+                        }
+                    />
                 </Routes>
             </div>
-            <ChatbotWindow />
         </>
     );
 }
