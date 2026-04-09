@@ -72,3 +72,23 @@ export async function getMostPopularRestaurant(userId) {
     if (!res.ok) throw new Error(payload?.detail || "Failed to fetch most popular restaurant");
     return payload;
 }
+
+export async function toggleRestaurantAvailability(restaurantId, isAvailable, userId) {
+    const res = await fetch(`${API_URL}/restaurants/${restaurantId}?is_available=${isAvailable}`, {
+        method: "PUT",
+        headers: buildUserHeaders(userId),
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(payload?.detail || "Failed to update restaurant");
+    return payload;
+}
+
+export async function deleteRestaurant(restaurantId, userId) {
+    const res = await fetch(`${API_URL}/restaurants/${restaurantId}`, {
+        method: "DELETE",
+        headers: buildUserHeaders(userId),
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(payload?.detail || "Failed to delete restaurant");
+    return payload;
+}

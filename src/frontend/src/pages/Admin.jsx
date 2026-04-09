@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
     blockUser,
+    deleteRestaurant,
     deleteUser,
     getAllOrders,
     getAverageDeliveryTime,
     getGrossRevenue,
     getMostPopularRestaurant,
+    toggleRestaurantAvailability,
     unblockUser,
 } from "../api/admin";
 import { parseUserIdFromStorage } from "../api/restaurants";
@@ -42,6 +44,15 @@ export default function Admin() {
     const [revenueError, setRevenueError] = useState("");
     const [revenueBusy, setRevenueBusy] = useState(false);
 
+    // Restaurant management
+    const [restIdInput, setRestIdInput] = useState("");
+    const [restActionBusy, setRestActionBusy] = useState("");
+    const [restActionMessage, setRestActionMessage] = useState("");
+    const [restActionError, setRestActionError] = useState("");
+
+    // Orders filter
+    const [orderFilterId, setOrderFilterId] = useState("");
+
     // User management
     const [usernameInput, setUsernameInput] = useState("");
     const [userActionBusy, setUserActionBusy] = useState("");
@@ -71,8 +82,8 @@ export default function Admin() {
                 setTotalOrders(Array.isArray(data) ? data.length : data?.count ?? "—");
             }
             if (avgData.status === "fulfilled") {
-                const data = avgData.value;
-                setAvgDelivery(data?.average_delivery_time ?? data?.average ?? JSON.stringify(data));
+                const raw = avgData.value?.average_delivery_time ?? avgData.value?.average ?? avgData.value;
+                setAvgDelivery(typeof raw === "number" ? raw.toFixed(1) + " min" : JSON.stringify(raw));
             }
             if (popularData.status === "fulfilled") {
                 const data = popularData.value;
@@ -116,6 +127,30 @@ export default function Admin() {
             setRevenueError(err.message || "Failed to fetch gross revenue.");
         } finally {
             setRevenueBusy(false);
+        }
+    };
+
+    const handleRestaurantAction = async (action) => {
+        if (!restIdInput.trim()) return;
+        setRestActionBusy(action);
+        setRestActionMessage("");
+        setRestActionError("");
+        try {
+            if (action === "enable") {
+                await toggleRestaurantAvailability(restIdInput, true, userId);
+                setRestActionMessage(`Restaurant ${restIdInput} is now enabled.`);
+            } else if (action === "disable") {
+                await toggleRestaurantAvailability(restIdInput, false, userId);
+                setRestActionMessage(`Restaurant ${restIdInput} has been disabled.`);
+            } else if (action === "delete") {
+                await deleteRestaurant(restIdInput, userId);
+                setRestActionMessage(`Restaurant ${restIdInput} has been deleted.`);
+                setRestIdInput("");
+            }
+        } catch (err) {
+            setRestActionError(err.message || "Action failed.");
+        } finally {
+            setRestActionBusy("");
         }
     };
 
@@ -173,39 +208,56 @@ export default function Admin() {
                     </div>
                 </div>
 
-                {/* All orders table */}
+                {/* All orders table with filter */}
                 <button type="button" className="admin-toggle-btn" onClick={handleToggleOrders} disabled={ordersLoading}>
                     {ordersLoading ? "Loading…" : showOrders ? "Hide all orders" : "Show all orders"}
                 </button>
                 {ordersError && <p className="status-error">{ordersError}</p>}
-                {showOrders && orders.length > 0 && (
-                    <div className="admin-table-wrap">
-                        <table className="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Customer</th>
-                                    <th>Restaurant</th>
-                                    <th>Status</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orders.map((o) => (
-                                    <tr key={o.id}>
-                                        <td>{o.id}</td>
-                                        <td>{o.customer_id}</td>
-                                        <td>{o.restaurant_id}</td>
-                                        <td>{o.status}</td>
-                                        <td>${Number(o.total_price ?? 0).toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-                {showOrders && orders.length === 0 && (
-                    <div className="section-placeholder">No orders found.</div>
+                {showOrders && (
+                    <>
+                        <div className="admin-lookup-form" style={{ marginTop: "0.75rem" }}>
+                            <label>
+                                Filter by Restaurant ID
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={orderFilterId}
+                                    onChange={(e) => setOrderFilterId(e.target.value)}
+                                    placeholder="All restaurants"
+                                />
+                            </label>
+                        </div>
+                        {orders.filter((o) => !orderFilterId || String(o.restaurant_id) === orderFilterId).length > 0 ? (
+                            <div className="admin-table-wrap">
+                                <table className="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Customer</th>
+                                            <th>Restaurant</th>
+                                            <th>Status</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders
+                                            .filter((o) => !orderFilterId || String(o.restaurant_id) === orderFilterId)
+                                            .map((o) => (
+                                                <tr key={o.id}>
+                                                    <td>{o.id}</td>
+                                                    <td>{o.customer_id}</td>
+                                                    <td>{o.restaurant_id}</td>
+                                                    <td>{o.status}</td>
+                                                    <td>${Number(o.total_price ?? 0).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="section-placeholder">No orders found.</div>
+                        )}
+                    </>
                 )}
             </section>
 
@@ -231,11 +283,54 @@ export default function Admin() {
                 {revenueError && <p className="status-error">{revenueError}</p>}
                 {revenueResult !== null && (
                     <div className="admin-result-box">
-                        {typeof revenueResult === "object"
-                            ? JSON.stringify(revenueResult)
-                            : String(revenueResult)}
+                        ${typeof revenueResult === "number" ? revenueResult.toFixed(2) : JSON.stringify(revenueResult)}
                     </div>
                 )}
+            </section>
+
+            {/* Restaurant management */}
+            <section className="restaurant-section">
+                <h2 className="section-title">Restaurant Management</h2>
+                {restActionMessage && <p className="status-success">{restActionMessage}</p>}
+                {restActionError && <p className="status-error">{restActionError}</p>}
+                <div className="admin-user-form">
+                    <label>
+                        Restaurant ID
+                        <input
+                            type="number"
+                            min="1"
+                            value={restIdInput}
+                            onChange={(e) => setRestIdInput(e.target.value)}
+                            placeholder="Enter restaurant ID"
+                        />
+                    </label>
+                </div>
+                <div className="admin-action-buttons">
+                    <button
+                        type="button"
+                        className="admin-action-btn unblock"
+                        disabled={!!restActionBusy || !restIdInput.trim()}
+                        onClick={() => handleRestaurantAction("enable")}
+                    >
+                        {restActionBusy === "enable" ? "Enabling…" : "Enable"}
+                    </button>
+                    <button
+                        type="button"
+                        className="admin-action-btn block"
+                        disabled={!!restActionBusy || !restIdInput.trim()}
+                        onClick={() => handleRestaurantAction("disable")}
+                    >
+                        {restActionBusy === "disable" ? "Disabling…" : "Disable"}
+                    </button>
+                    <button
+                        type="button"
+                        className="admin-action-btn delete"
+                        disabled={!!restActionBusy || !restIdInput.trim()}
+                        onClick={() => handleRestaurantAction("delete")}
+                    >
+                        {restActionBusy === "delete" ? "Deleting…" : "Delete restaurant"}
+                    </button>
+                </div>
             </section>
 
             {/* User management */}
