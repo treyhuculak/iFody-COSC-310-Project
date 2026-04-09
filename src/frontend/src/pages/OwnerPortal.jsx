@@ -141,16 +141,16 @@ export default function OwnerPortal() {
 
         const loadOwnerRestaurants = restaurantSearchQuery.trim()
             ? searchOwnerRestaurantsByName({
-                  ownerId,
-                  name: restaurantSearchQuery,
-                  skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
-                  limit: OWNER_RESTAURANTS_PAGE_SIZE,
-              })
+                ownerId,
+                name: restaurantSearchQuery,
+                skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
+                limit: OWNER_RESTAURANTS_PAGE_SIZE,
+            })
             : fetchOwnerRestaurants({
-                  ownerId,
-                  skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
-                  limit: OWNER_RESTAURANTS_PAGE_SIZE,
-              });
+                ownerId,
+                skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
+                limit: OWNER_RESTAURANTS_PAGE_SIZE,
+            });
 
         loadOwnerRestaurants
             .then((response) => {
@@ -227,16 +227,16 @@ export default function OwnerPortal() {
 
         const loadMenuItems = menuSearchQuery.trim()
             ? searchRestaurantMenuItemsPaginated({
-                  restaurantId: activeRestaurantId,
-                  name: menuSearchQuery,
-                  skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
-                  limit: OWNER_MENU_PAGE_SIZE,
-              })
+                restaurantId: activeRestaurantId,
+                name: menuSearchQuery,
+                skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
+                limit: OWNER_MENU_PAGE_SIZE,
+            })
             : fetchRestaurantMenuItems({
-                  restaurantId: activeRestaurantId,
-                  skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
-                  limit: OWNER_MENU_PAGE_SIZE,
-              });
+                restaurantId: activeRestaurantId,
+                skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
+                limit: OWNER_MENU_PAGE_SIZE,
+            });
 
         loadMenuItems
             .then((response) => {
@@ -288,6 +288,20 @@ export default function OwnerPortal() {
         );
     }, [restaurantsState.items, activeRestaurantId]);
 
+    const selectedMenuItem = useMemo(() => {
+        if (!editingMenuItemId) {
+            return null;
+        }
+
+        return menuState.items.find((item) => item.id === editingMenuItemId) || null;
+    }, [menuState.items, editingMenuItemId]);
+
+    const isCreateRestaurantModalOpen = showCreateRestaurantForm;
+    const isEditRestaurantModalOpen =
+        Boolean(selectedRestaurant) && editingRestaurantId === selectedRestaurant?.id;
+    const isCreateMenuModalOpen = showCreateMenuItemForm;
+    const isEditMenuModalOpen = Boolean(selectedMenuItem);
+
     useEffect(() => {
         if (!selectedRestaurant) {
             setEditingRestaurantId(null);
@@ -298,6 +312,44 @@ export default function OwnerPortal() {
             setEditingRestaurantId(null);
         }
     }, [selectedRestaurant, editingRestaurantId]);
+
+    useEffect(() => {
+        const hasOpenModal =
+            isCreateRestaurantModalOpen ||
+            isEditRestaurantModalOpen ||
+            isCreateMenuModalOpen ||
+            isEditMenuModalOpen;
+
+        if (!hasOpenModal) {
+            return undefined;
+        }
+
+        const handleEscape = (event) => {
+            if (event.key !== "Escape" || isSubmitting) {
+                return;
+            }
+
+            setShowCreateRestaurantForm(false);
+            setEditingRestaurantId(null);
+            setShowCreateMenuItemForm(false);
+            setEditingMenuItemId(null);
+        };
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        window.addEventListener("keydown", handleEscape);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", handleEscape);
+        };
+    }, [
+        isCreateRestaurantModalOpen,
+        isEditRestaurantModalOpen,
+        isCreateMenuModalOpen,
+        isEditMenuModalOpen,
+        isSubmitting,
+    ]);
 
     const handleRestaurantCardClick = (restaurantId) => {
         if (restaurantId === activeRestaurantId) {
@@ -694,12 +746,12 @@ export default function OwnerPortal() {
                         type="button"
                         className="owner-primary-button"
                         onClick={() => {
-                            setShowCreateRestaurantForm((prev) => !prev);
+                            setShowCreateRestaurantForm(true);
                             setEditingRestaurantId(null);
                             setFeedback({ type: "", text: "" });
                         }}
                     >
-                        {showCreateRestaurantForm ? "Close create form" : "Create restaurant"}
+                        Create restaurant
                     </button>
                 </div>
 
@@ -716,102 +768,6 @@ export default function OwnerPortal() {
                         placeholder="e.g. sushi, burger, downtown"
                     />
                 </div>
-
-                {showCreateRestaurantForm ? (
-                    <form className="owner-form-grid" onSubmit={handleCreateRestaurant}>
-                        <label>
-                            Name
-                            <input
-                                type="text"
-                                value={newRestaurantForm.name}
-                                onChange={(event) =>
-                                    setNewRestaurantForm((prev) => ({
-                                        ...prev,
-                                        name: event.target.value,
-                                    }))
-                                }
-                                required
-                                minLength={1}
-                                maxLength={100}
-                            />
-                        </label>
-
-                        <label>
-                            Cuisine
-                            <input
-                                type="text"
-                                value={newRestaurantForm.cuisine}
-                                onChange={(event) =>
-                                    setNewRestaurantForm((prev) => ({
-                                        ...prev,
-                                        cuisine: event.target.value,
-                                    }))
-                                }
-                                required
-                                minLength={1}
-                                maxLength={100}
-                            />
-                        </label>
-
-                        <label>
-                            City
-                            <input
-                                type="text"
-                                value={newRestaurantForm.city}
-                                onChange={(event) =>
-                                    setNewRestaurantForm((prev) => ({
-                                        ...prev,
-                                        city: event.target.value,
-                                    }))
-                                }
-                                required
-                                minLength={1}
-                                maxLength={100}
-                            />
-                        </label>
-
-                        <label>
-                            Province
-                            <select
-                                value={newRestaurantForm.province}
-                                onChange={(event) =>
-                                    setNewRestaurantForm((prev) => ({
-                                        ...prev,
-                                        province: event.target.value,
-                                    }))
-                                }
-                                required
-                            >
-                                {PROVINCE_OPTIONS.map((provinceCode) => (
-                                    <option key={provinceCode} value={provinceCode}>
-                                        {provinceCode}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <label>
-                            Delivery fee
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={newRestaurantForm.delivery_fee}
-                                onChange={(event) =>
-                                    setNewRestaurantForm((prev) => ({
-                                        ...prev,
-                                        delivery_fee: event.target.value,
-                                    }))
-                                }
-                                required
-                            />
-                        </label>
-
-                        <button type="submit" className="owner-primary-button" disabled={isSubmitting}>
-                            {isSubmitting ? "Saving..." : "Save restaurant"}
-                        </button>
-                    </form>
-                ) : null}
 
                 {restaurantsState.loading ? (
                     <div className="owner-placeholder">Loading your restaurants...</div>
@@ -907,128 +863,26 @@ export default function OwnerPortal() {
 
                 {selectedRestaurant ? (
                     <>
-                        {editingRestaurantId === selectedRestaurant.id ? (
-                            <form className="owner-form-grid" onSubmit={handleUpdateRestaurant}>
-                                <label>
-                                    Name
-                                    <input
-                                        type="text"
-                                        value={restaurantEditForm.name}
-                                        onChange={(event) =>
-                                            setRestaurantEditForm((prev) => ({
-                                                ...prev,
-                                                name: event.target.value,
-                                            }))
-                                        }
-                                        required
-                                        minLength={1}
-                                        maxLength={100}
-                                    />
-                                </label>
-
-                                <label>
-                                    Cuisine
-                                    <input
-                                        type="text"
-                                        value={restaurantEditForm.cuisine}
-                                        onChange={(event) =>
-                                            setRestaurantEditForm((prev) => ({
-                                                ...prev,
-                                                cuisine: event.target.value,
-                                            }))
-                                        }
-                                        required
-                                        minLength={1}
-                                        maxLength={100}
-                                    />
-                                </label>
-
-                                <label>
-                                    City
-                                    <input
-                                        type="text"
-                                        value={restaurantEditForm.city}
-                                        onChange={(event) =>
-                                            setRestaurantEditForm((prev) => ({
-                                                ...prev,
-                                                city: event.target.value,
-                                            }))
-                                        }
-                                        minLength={1}
-                                        maxLength={100}
-                                    />
-                                </label>
-
-                                <label>
-                                    Delivery fee
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={restaurantEditForm.delivery_fee}
-                                        onChange={(event) =>
-                                            setRestaurantEditForm((prev) => ({
-                                                ...prev,
-                                                delivery_fee: event.target.value,
-                                            }))
-                                        }
-                                        required
-                                    />
-                                </label>
-
-                                <label className="owner-checkbox-field">
-                                    <input
-                                        type="checkbox"
-                                        checked={restaurantEditForm.is_available}
-                                        onChange={(event) =>
-                                            setRestaurantEditForm((prev) => ({
-                                                ...prev,
-                                                is_available: event.target.checked,
-                                            }))
-                                        }
-                                    />
-                                    Mark restaurant available
-                                </label>
-
-                                <div className="owner-inline-actions">
-                                    <button
-                                        type="submit"
-                                        className="owner-primary-button"
-                                        disabled={isSubmitting}
-                                    >
-                                        {isSubmitting ? "Saving..." : "Save changes"}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setEditingRestaurantId(null)}
-                                        disabled={isSubmitting}
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        ) : (
-                            <div className="owner-summary-grid">
-                                <p>
-                                    <strong>Name:</strong> {selectedRestaurant.name}
-                                </p>
-                                <p>
-                                    <strong>Cuisine:</strong> {selectedRestaurant.cuisine}
-                                </p>
-                                <p>
-                                    <strong>City:</strong> {selectedRestaurant.city || "N/A"}
-                                </p>
-                                <p>
-                                    <strong>Province:</strong> {selectedRestaurant.province || "N/A"}
-                                </p>
-                                <p>
-                                    <strong>Delivery fee:</strong> ${Number(selectedRestaurant.delivery_fee || 0).toFixed(2)}
-                                </p>
-                                <p>
-                                    <strong>Status:</strong> {selectedRestaurant.is_available ? "Available" : "Unavailable"}
-                                </p>
-                            </div>
-                        )}
+                        <div className="owner-summary-grid">
+                            <p>
+                                <strong>Name:</strong> {selectedRestaurant.name}
+                            </p>
+                            <p>
+                                <strong>Cuisine:</strong> {selectedRestaurant.cuisine}
+                            </p>
+                            <p>
+                                <strong>City:</strong> {selectedRestaurant.city || "N/A"}
+                            </p>
+                            <p>
+                                <strong>Province:</strong> {selectedRestaurant.province || "N/A"}
+                            </p>
+                            <p>
+                                <strong>Delivery fee:</strong> ${Number(selectedRestaurant.delivery_fee || 0).toFixed(2)}
+                            </p>
+                            <p>
+                                <strong>Status:</strong> {selectedRestaurant.is_available ? "Available" : "Unavailable"}
+                            </p>
+                        </div>
 
                         <div className="owner-subsection-header">
                             <div>
@@ -1044,12 +898,12 @@ export default function OwnerPortal() {
                                 type="button"
                                 className="owner-primary-button"
                                 onClick={() => {
-                                    setShowCreateMenuItemForm((prev) => !prev);
+                                    setShowCreateMenuItemForm(true);
                                     setEditingMenuItemId(null);
                                     setFeedback({ type: "", text: "" });
                                 }}
                             >
-                                {showCreateMenuItemForm ? "Close menu form" : "Create menu item"}
+                                Create menu item
                             </button>
                         </div>
 
@@ -1067,62 +921,6 @@ export default function OwnerPortal() {
                             />
                         </div>
 
-                        {showCreateMenuItemForm ? (
-                            <form className="owner-form-grid" onSubmit={handleCreateMenuItem}>
-                                <label>
-                                    Name
-                                    <input
-                                        type="text"
-                                        value={newMenuItemForm.name}
-                                        onChange={(event) =>
-                                            setNewMenuItemForm((prev) => ({
-                                                ...prev,
-                                                name: event.target.value,
-                                            }))
-                                        }
-                                        required
-                                        minLength={1}
-                                    />
-                                </label>
-
-                                <label>
-                                    Description
-                                    <textarea
-                                        value={newMenuItemForm.description}
-                                        onChange={(event) =>
-                                            setNewMenuItemForm((prev) => ({
-                                                ...prev,
-                                                description: event.target.value,
-                                            }))
-                                        }
-                                        rows={3}
-                                        required
-                                    />
-                                </label>
-
-                                <label>
-                                    Price
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
-                                        value={newMenuItemForm.price}
-                                        onChange={(event) =>
-                                            setNewMenuItemForm((prev) => ({
-                                                ...prev,
-                                                price: event.target.value,
-                                            }))
-                                        }
-                                        required
-                                    />
-                                </label>
-
-                                <button type="submit" className="owner-primary-button" disabled={isSubmitting}>
-                                    {isSubmitting ? "Saving..." : "Save menu item"}
-                                </button>
-                            </form>
-                        ) : null}
-
                         {menuState.error ? <p className="owner-status-error">{menuState.error}</p> : null}
 
                         {menuState.loading ? (
@@ -1134,101 +932,30 @@ export default function OwnerPortal() {
                                 <div className="owner-menu-grid">
                                     {menuState.items.map((item) => (
                                         <article key={item.id} className="owner-menu-card">
-                                            {editingMenuItemId === item.id ? (
-                                                <form
-                                                    className="owner-form-grid compact"
-                                                    onSubmit={(event) => handleUpdateMenuItem(event, item.id)}
-                                                >
-                                                    <label>
-                                                        Name
-                                                        <input
-                                                            type="text"
-                                                            value={menuItemEditForm.name}
-                                                            onChange={(event) =>
-                                                                setMenuItemEditForm((prev) => ({
-                                                                    ...prev,
-                                                                    name: event.target.value,
-                                                                }))
-                                                            }
-                                                            required
-                                                        />
-                                                    </label>
-
-                                                    <label>
-                                                        Description
-                                                        <textarea
-                                                            value={menuItemEditForm.description}
-                                                            onChange={(event) =>
-                                                                setMenuItemEditForm((prev) => ({
-                                                                    ...prev,
-                                                                    description: event.target.value,
-                                                                }))
-                                                            }
-                                                            rows={2}
-                                                            required
-                                                        />
-                                                    </label>
-
-                                                    <label>
-                                                        Price
-                                                        <input
-                                                            type="number"
-                                                            step="0.01"
-                                                            min="0.01"
-                                                            value={menuItemEditForm.price}
-                                                            onChange={(event) =>
-                                                                setMenuItemEditForm((prev) => ({
-                                                                    ...prev,
-                                                                    price: event.target.value,
-                                                                }))
-                                                            }
-                                                            required
-                                                        />
-                                                    </label>
-
-                                                    <div className="owner-inline-actions">
-                                                        <button
-                                                            type="submit"
-                                                            className="owner-primary-button"
-                                                            disabled={isSubmitting}
-                                                        >
-                                                            {isSubmitting ? "Saving..." : "Save"}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setEditingMenuItemId(null)}
-                                                            disabled={isSubmitting}
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            ) : (
-                                                <>
-                                                    <div className="owner-menu-heading">
-                                                        <h4>{item.name}</h4>
-                                                        <span>${Number(item.price || 0).toFixed(2)}</span>
-                                                    </div>
-                                                    <p>{item.description}</p>
-                                                    <div className="owner-inline-actions">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => startEditMenuItem(item)}
-                                                            disabled={isSubmitting}
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="danger"
-                                                            onClick={() => handleDeleteMenuItem(item)}
-                                                            disabled={isSubmitting}
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            )}
+                                            <>
+                                                <div className="owner-menu-heading">
+                                                    <h4>{item.name}</h4>
+                                                    <span>${Number(item.price || 0).toFixed(2)}</span>
+                                                </div>
+                                                <p>{item.description}</p>
+                                                <div className="owner-inline-actions">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => startEditMenuItem(item)}
+                                                        disabled={isSubmitting}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="danger"
+                                                        onClick={() => handleDeleteMenuItem(item)}
+                                                        disabled={isSubmitting}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </>
                                         </article>
                                     ))}
                                 </div>
@@ -1263,6 +990,449 @@ export default function OwnerPortal() {
                     </div>
                 )}
             </section>
+
+            {isCreateRestaurantModalOpen ? (
+                <div
+                    className="owner-modal-backdrop"
+                    onClick={() => {
+                        if (!isSubmitting) {
+                            setShowCreateRestaurantForm(false);
+                        }
+                    }}
+                >
+                    <div className="owner-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="owner-modal-header">
+                            <h3>Create restaurant</h3>
+                            <button
+                                type="button"
+                                className="owner-modal-close"
+                                onClick={() => setShowCreateRestaurantForm(false)}
+                                disabled={isSubmitting}
+                                aria-label="Close create restaurant form"
+                            >
+                                x
+                            </button>
+                        </div>
+                        <form className="owner-form-grid owner-modal-form" onSubmit={handleCreateRestaurant}>
+                            <label>
+                                Name
+                                <input
+                                    type="text"
+                                    value={newRestaurantForm.name}
+                                    onChange={(event) =>
+                                        setNewRestaurantForm((prev) => ({
+                                            ...prev,
+                                            name: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                    minLength={1}
+                                    maxLength={100}
+                                />
+                            </label>
+
+                            <label>
+                                Cuisine
+                                <input
+                                    type="text"
+                                    value={newRestaurantForm.cuisine}
+                                    onChange={(event) =>
+                                        setNewRestaurantForm((prev) => ({
+                                            ...prev,
+                                            cuisine: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                    minLength={1}
+                                    maxLength={100}
+                                />
+                            </label>
+
+                            <label>
+                                City
+                                <input
+                                    type="text"
+                                    value={newRestaurantForm.city}
+                                    onChange={(event) =>
+                                        setNewRestaurantForm((prev) => ({
+                                            ...prev,
+                                            city: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                    minLength={1}
+                                    maxLength={100}
+                                />
+                            </label>
+
+                            <label>
+                                Province
+                                <select
+                                    value={newRestaurantForm.province}
+                                    onChange={(event) =>
+                                        setNewRestaurantForm((prev) => ({
+                                            ...prev,
+                                            province: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                >
+                                    {PROVINCE_OPTIONS.map((provinceCode) => (
+                                        <option key={provinceCode} value={provinceCode}>
+                                            {provinceCode}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <label>
+                                Delivery fee
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={newRestaurantForm.delivery_fee}
+                                    onChange={(event) =>
+                                        setNewRestaurantForm((prev) => ({
+                                            ...prev,
+                                            delivery_fee: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                />
+                            </label>
+
+                            <div className="owner-inline-actions owner-modal-actions">
+                                <button
+                                    type="submit"
+                                    className="owner-primary-button"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "Saving..." : "Save restaurant"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateRestaurantForm(false)}
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            ) : null}
+
+            {isEditRestaurantModalOpen ? (
+                <div
+                    className="owner-modal-backdrop"
+                    onClick={() => {
+                        if (!isSubmitting) {
+                            setEditingRestaurantId(null);
+                        }
+                    }}
+                >
+                    <div className="owner-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="owner-modal-header">
+                            <h3>Edit restaurant</h3>
+                            <button
+                                type="button"
+                                className="owner-modal-close"
+                                onClick={() => setEditingRestaurantId(null)}
+                                disabled={isSubmitting}
+                                aria-label="Close edit restaurant form"
+                            >
+                                x
+                            </button>
+                        </div>
+                        <form className="owner-form-grid owner-modal-form" onSubmit={handleUpdateRestaurant}>
+                            <label>
+                                Name
+                                <input
+                                    type="text"
+                                    value={restaurantEditForm.name}
+                                    onChange={(event) =>
+                                        setRestaurantEditForm((prev) => ({
+                                            ...prev,
+                                            name: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                    minLength={1}
+                                    maxLength={100}
+                                />
+                            </label>
+
+                            <label>
+                                Cuisine
+                                <input
+                                    type="text"
+                                    value={restaurantEditForm.cuisine}
+                                    onChange={(event) =>
+                                        setRestaurantEditForm((prev) => ({
+                                            ...prev,
+                                            cuisine: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                    minLength={1}
+                                    maxLength={100}
+                                />
+                            </label>
+
+                            <label>
+                                City
+                                <input
+                                    type="text"
+                                    value={restaurantEditForm.city}
+                                    onChange={(event) =>
+                                        setRestaurantEditForm((prev) => ({
+                                            ...prev,
+                                            city: event.target.value,
+                                        }))
+                                    }
+                                    minLength={1}
+                                    maxLength={100}
+                                />
+                            </label>
+
+                            <label>
+                                Delivery fee
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={restaurantEditForm.delivery_fee}
+                                    onChange={(event) =>
+                                        setRestaurantEditForm((prev) => ({
+                                            ...prev,
+                                            delivery_fee: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                />
+                            </label>
+
+                            <label className="owner-checkbox-field owner-modal-checkbox-field">
+                                <input
+                                    type="checkbox"
+                                    checked={restaurantEditForm.is_available}
+                                    onChange={(event) =>
+                                        setRestaurantEditForm((prev) => ({
+                                            ...prev,
+                                            is_available: event.target.checked,
+                                        }))
+                                    }
+                                />
+                                Mark restaurant available
+                            </label>
+
+                            <div className="owner-inline-actions owner-modal-actions">
+                                <button
+                                    type="submit"
+                                    className="owner-primary-button"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "Saving..." : "Save changes"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingRestaurantId(null)}
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            ) : null}
+
+            {isCreateMenuModalOpen ? (
+                <div
+                    className="owner-modal-backdrop"
+                    onClick={() => {
+                        if (!isSubmitting) {
+                            setShowCreateMenuItemForm(false);
+                        }
+                    }}
+                >
+                    <div className="owner-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="owner-modal-header">
+                            <h3>Create menu item</h3>
+                            <button
+                                type="button"
+                                className="owner-modal-close"
+                                onClick={() => setShowCreateMenuItemForm(false)}
+                                disabled={isSubmitting}
+                                aria-label="Close create menu item form"
+                            >
+                                x
+                            </button>
+                        </div>
+                        <form className="owner-form-grid owner-modal-form" onSubmit={handleCreateMenuItem}>
+                            <label>
+                                Name
+                                <input
+                                    type="text"
+                                    value={newMenuItemForm.name}
+                                    onChange={(event) =>
+                                        setNewMenuItemForm((prev) => ({
+                                            ...prev,
+                                            name: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                    minLength={1}
+                                />
+                            </label>
+
+                            <label>
+                                Price
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0.01"
+                                    value={newMenuItemForm.price}
+                                    onChange={(event) =>
+                                        setNewMenuItemForm((prev) => ({
+                                            ...prev,
+                                            price: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                />
+                            </label>
+
+                            <label className="owner-modal-field-full">
+                                Description
+                                <textarea
+                                    value={newMenuItemForm.description}
+                                    onChange={(event) =>
+                                        setNewMenuItemForm((prev) => ({
+                                            ...prev,
+                                            description: event.target.value,
+                                        }))
+                                    }
+                                    rows={3}
+                                    required
+                                />
+                            </label>
+
+                            <div className="owner-inline-actions owner-modal-actions">
+                                <button
+                                    type="submit"
+                                    className="owner-primary-button"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "Saving..." : "Save menu item"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateMenuItemForm(false)}
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            ) : null}
+
+            {isEditMenuModalOpen ? (
+                <div
+                    className="owner-modal-backdrop"
+                    onClick={() => {
+                        if (!isSubmitting) {
+                            setEditingMenuItemId(null);
+                        }
+                    }}
+                >
+                    <div className="owner-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="owner-modal-header">
+                            <h3>Edit menu item</h3>
+                            <button
+                                type="button"
+                                className="owner-modal-close"
+                                onClick={() => setEditingMenuItemId(null)}
+                                disabled={isSubmitting}
+                                aria-label="Close edit menu item form"
+                            >
+                                x
+                            </button>
+                        </div>
+                        <form
+                            className="owner-form-grid owner-modal-form"
+                            onSubmit={(event) => handleUpdateMenuItem(event, selectedMenuItem.id)}
+                        >
+                            <label>
+                                Name
+                                <input
+                                    type="text"
+                                    value={menuItemEditForm.name}
+                                    onChange={(event) =>
+                                        setMenuItemEditForm((prev) => ({
+                                            ...prev,
+                                            name: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                />
+                            </label>
+
+                            <label>
+                                Price
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0.01"
+                                    value={menuItemEditForm.price}
+                                    onChange={(event) =>
+                                        setMenuItemEditForm((prev) => ({
+                                            ...prev,
+                                            price: event.target.value,
+                                        }))
+                                    }
+                                    required
+                                />
+                            </label>
+
+                            <label className="owner-modal-field-full">
+                                Description
+                                <textarea
+                                    value={menuItemEditForm.description}
+                                    onChange={(event) =>
+                                        setMenuItemEditForm((prev) => ({
+                                            ...prev,
+                                            description: event.target.value,
+                                        }))
+                                    }
+                                    rows={3}
+                                    required
+                                />
+                            </label>
+
+                            <div className="owner-inline-actions owner-modal-actions">
+                                <button
+                                    type="submit"
+                                    className="owner-primary-button"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "Saving..." : "Save changes"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingMenuItemId(null)}
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            ) : null}
         </main>
     );
 }

@@ -399,6 +399,82 @@
     background: rgba(31, 122, 79, 0.12);
 }
 
+.owner-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 700;
+    background: rgba(17, 34, 24, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.owner-modal {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    border: 1px solid #a9c2ad;
+    border-radius: 16px;
+    background: #f8fff6;
+    box-shadow: 0 22px 46px rgba(20, 41, 28, 0.26);
+    padding: 1rem;
+}
+
+.owner-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.owner-modal-header h3 {
+    margin: 0;
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    color: #1a3222;
+}
+
+.owner-modal-close {
+    border: 1px solid #c5d8c7;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #264731;
+    font-weight: 700;
+    font-family: inherit;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.owner-modal-close:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.owner-modal-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.8rem;
+    align-items: start;
+    gap: 0.85rem;
+}
+
+.owner-modal-field-full {
+    grid-column: 1 / -1;
+}
+
+.owner-modal-checkbox-field {
+    align-self: center;
+}
+
+.owner-modal-actions {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    padding-top: 0.25rem;
+    border-top: 1px solid rgba(41, 69, 52, 0.12);
+    justify-content: flex-end;
+}
+
 @keyframes owner-slide-up {
     from {
         opacity: 0;
@@ -434,5 +510,14 @@
 
     .owner-pagination-row {
         justify-content: flex-start;
+    }
+
+    .owner-modal {
+        width: min(96vw, 760px);
+        padding: 0.85rem;
+    }
+
+    .owner-modal-form {
+        grid-template-columns: 1fr;
     }
 }
