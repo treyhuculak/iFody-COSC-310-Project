@@ -266,48 +266,161 @@
     },
     {
         "customer_id": 7,
-        "restaurant_id": 2,
-        "status": "payment confirmed",
+        "restaurant_id": 1,
+        "status": "delivered",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 2,
+                "order_id": 19,
+                "price_at_purchase": 15.25
+            },
+            {
+                "quantity": 1,
+                "item_id": 4,
+                "order_id": 19,
+                "price_at_purchase": 3.5
+            }
+        ],
+        "subtotal_price": 18.75,
+        "tax": 2.25,
+        "delivery_fee": 3.99,
+        "total_price": 24.990000000000002,
+        "id": 19,
+        "timestamp": "2026-04-08T22:14:41.575471"
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 3,
+        "status": "delivered",
         "location": "BC",
         "order_items": [
             {
                 "quantity": 1,
                 "item_id": 1,
-                "order_id": 21,
-                "price_at_purchase": 19.95
-            },
-            {
-                "quantity": 1,
-                "item_id": 2,
-                "order_id": 21,
-                "price_at_purchase": 14.25
+                "order_id": 20,
+                "price_at_purchase": 15.0
             }
         ],
-        "subtotal_price": 34.2,
-        "tax": 4.104,
-        "delivery_fee": 4.49,
-        "total_price": 42.794000000000004,
-        "id": 21,
-        "timestamp": "2026-04-08T04:40:07.868556"
+        "subtotal_price": 15.0,
+        "tax": 1.7999999999999998,
+        "delivery_fee": 2.99,
+        "total_price": 19.79,
+        "id": 20,
+        "timestamp": "2026-04-08T22:23:39.637608"
     },
     {
         "customer_id": 7,
-        "restaurant_id": 5,
-        "status": "pending",
+        "restaurant_id": 1,
+        "status": "delivered",
         "location": "BC",
         "order_items": [
             {
                 "quantity": 1,
-                "item_id": 3,
-                "order_id": 23,
-                "price_at_purchase": 11.95
+                "item_id": 2,
+                "order_id": 22,
+                "price_at_purchase": 15.25
+            },
+            {
+                "quantity": 1,
+                "item_id": 4,
+                "order_id": 22,
+                "price_at_purchase": 3.5
             }
         ],
-        "subtotal_price": 11.95,
-        "tax": 1.434,
-        "delivery_fee": 2.49,
-        "total_price": 15.873999999999999,
+        "subtotal_price": 18.75,
+        "tax": 2.25,
+        "delivery_fee": 3.99,
+        "total_price": 24.990000000000002,
+        "id": 22,
+        "timestamp": "2026-04-08T22:29:07.403567"
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 1,
+        "status": "delivered",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 1,
+                "order_id": 23,
+                "price_at_purchase": 16.5
+            }
+        ],
+        "subtotal_price": 16.5,
+        "tax": 1.98,
+        "delivery_fee": 3.99,
+        "total_price": 22.47,
         "id": 23,
-        "timestamp": "2026-04-08T04:55:16.601725"
+        "timestamp": "2026-04-08T22:32:19.812494"
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 3,
+        "status": "delivered",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 2,
+                "order_id": 25,
+                "price_at_purchase": 14.5
+            }
+        ],
+        "subtotal_price": 14.5,
+        "tax": 1.74,
+        "delivery_fee": 2.99,
+        "total_price": 19.229999999999997,
+        "id": 25,
+        "timestamp": "2026-04-09T02:35:06.343870"
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 1,
+        "status": "delivered",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 5,
+                "order_id": 26,
+                "price_at_purchase": 6.75
+            }
+        ],
+        "subtotal_price": 6.75,
+        "tax": 0.8099999999999999,
+        "delivery_fee": 3.99,
+        "total_price": 11.55,
+        "id": 26,
+        "timestamp": "2026-04-09T02:44:09.240827",
+        "review": {
+            "rating": 5,
+            "title": "Great Matcha Cheesecake",
+            "comment": "It was simply amazing!",
+            "created_at": "2026-04-09T02:45:22.358346",
+            "updated_at": "2026-04-09T02:45:22.358346"
+        }
+    },
+    {
+        "customer_id": 7,
+        "restaurant_id": 2,
+        "status": "delivered",
+        "location": "BC",
+        "order_items": [
+            {
+                "quantity": 1,
+                "item_id": 2,
+                "order_id": 27,
+                "price_at_purchase": 14.25
+            }
+        ],
+        "subtotal_price": 14.25,
+        "tax": 1.71,
+        "delivery_fee": 4.49,
+        "total_price": 20.450000000000003,
+        "id": 27,
+        "timestamp": "2026-04-09T02:50:25.670961"
     }
 ]

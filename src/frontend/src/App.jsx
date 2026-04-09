@@ -10,19 +10,25 @@ import {
 } from "react-router-dom";
 import "./App.css";
 import { getCartItemCount } from "./api/orders";
+import { getUnreadCount } from "./api/notifications";
 import {
     parseUserIdFromStorage,
     searchRestaurantMenuItems,
     searchRestaurantsByName,
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
+import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import OrderHistory from "./pages/OrderHistory";
-import RestaurantDetails from "./pages/RestaurantDetails";
-import Register from "./pages/Register";
+import Notifications from "./pages/Notifications";
 import Offers from "./pages/Offers";
+import OrderHistory from "./pages/OrderHistory";
+import OrderTracking from "./pages/OrderTracking";
+import RestaurantDetails from "./pages/RestaurantDetails";
+import RestaurantManager from "./pages/RestaurantManager";
+import Register from "./pages/Register";
+import Review from "./pages/Review";
 import Settings from "./pages/Settings";
 import Payment from "./pages/Payment";
 import Transactions from "./pages/Transaction";
@@ -60,8 +66,22 @@ function AppShell() {
     const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
     const [selectedMenuItemId, setSelectedMenuItemId] = useState(null);
     const [cartItemCount, setCartItemCount] = useState(0);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const [activeTrackingIds, setActiveTrackingIds] = useState(() => {
+        try {
+            const stored = localStorage.getItem("tracking_order_ids");
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    });
+
     const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
     const paymentDropdownRef = useRef(null);
+
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const userDropdownRef = useRef(null);
 
     const [username, setUsername] = useState(() => {
         try {
@@ -70,11 +90,12 @@ function AppShell() {
             return null;
         }
     });
+
     const [userRole, setUserRole] = useState(() => {
         try {
-            return localStorage.getItem("userRole");
+            return localStorage.getItem("userRole") || "";
         } catch {
-            return null;
+            return "";
         }
     });
 
@@ -102,7 +123,6 @@ function AppShell() {
             setCartItemCount(0);
             return;
         }
-
         try {
             const count = await getCartItemCount(userId);
             setCartItemCount(count);
@@ -111,25 +131,64 @@ function AppShell() {
         }
     }, []);
 
+    const refreshUnreadCount = useCallback(async () => {
+        const userId = parseUserIdFromStorage();
+        if (!userId) {
+            setUnreadCount(0);
+            return;
+        }
+        try {
+            const count = await getUnreadCount(userId);
+            setUnreadCount(count);
+        } catch {
+            setUnreadCount(0);
+        }
+    }, []);
+
     useEffect(() => {
         refreshCartCount();
-    }, [location.pathname, refreshCartCount, username]);
+        refreshUnreadCount();
+    }, [location.pathname, refreshCartCount, refreshUnreadCount, username]);
 
     useEffect(() => {
-        const handleCartUpdate = () => {
-            refreshCartCount();
-        };
-
+        const handleCartUpdate = () => refreshCartCount();
         window.addEventListener("cart:updated", handleCartUpdate);
-        return () => {
-            window.removeEventListener("cart:updated", handleCartUpdate);
-        };
+        return () => window.removeEventListener("cart:updated", handleCartUpdate);
     }, [refreshCartCount]);
 
     useEffect(() => {
+        const handleTrackingUpdate = () => {
+            try {
+                const stored = localStorage.getItem("tracking_order_ids");
+                setActiveTrackingIds(stored ? JSON.parse(stored) : []);
+            } catch {
+                setActiveTrackingIds([]);
+            }
+        };
+        window.addEventListener("tracking:updated", handleTrackingUpdate);
+        return () => window.removeEventListener("tracking:updated", handleTrackingUpdate);
+    }, []);
+
+    useEffect(() => {
         const handleClickOutside = (e) => {
-            if (paymentDropdownRef.current && !paymentDropdownRef.current.contains(e.target)) {
+            if (
+                paymentDropdownRef.current &&
+                !paymentDropdownRef.current.contains(e.target)
+            ) {
                 setPaymentDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (
+                userDropdownRef.current &&
+                !userDropdownRef.current.contains(e.target)
+            ) {
+                setUserDropdownOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -153,10 +212,7 @@ function AppShell() {
                     setRestaurantSearchError("");
                 })
                 .catch((error) => {
-                    if (error.name === "AbortError") {
-                        return;
-                    }
-
+                    if (error.name === "AbortError") return;
                     setRestaurantSearchResults([]);
                     setRestaurantSearchLoading(false);
                     setRestaurantSearchError(error.message || "Search is unavailable.");
@@ -188,10 +244,7 @@ function AppShell() {
                     setMenuSearchError("");
                 })
                 .catch((error) => {
-                    if (error.name === "AbortError") {
-                        return;
-                    }
-
+                    if (error.name === "AbortError") return;
                     setMenuSearchResults([]);
                     setMenuSearchLoading(false);
                     setMenuSearchError(error.message || "Search is unavailable.");
@@ -215,7 +268,6 @@ function AppShell() {
     const handleSearchQueryChange = (value) => {
         if (isRestaurantPage) {
             setMenuSearchQuery(value);
-
             if (!value.trim()) {
                 setMenuSearchResults([]);
                 setMenuSearchLoading(false);
@@ -223,21 +275,18 @@ function AppShell() {
                 setSelectedMenuItemId(null);
                 return;
             }
-
             setMenuSearchLoading(true);
             setMenuSearchError("");
             return;
         }
 
         setRestaurantSearchQuery(value);
-
         if (!value.trim()) {
             setRestaurantSearchResults([]);
             setRestaurantSearchLoading(false);
             setRestaurantSearchError("");
             return;
         }
-
         setRestaurantSearchLoading(true);
         setRestaurantSearchError("");
     };
@@ -245,10 +294,7 @@ function AppShell() {
     const handleRestaurantSelect = (restaurant) => {
         setSelectedRestaurantId(restaurant?.id ?? null);
         setRestaurantSearchQuery(restaurant?.name || "");
-
-        if (restaurant?.id) {
-            navigate(`/restaurants/${restaurant.id}`);
-        }
+        if (restaurant?.id) navigate(`/restaurants/${restaurant.id}`);
     };
 
     const handleMenuItemSelect = (menuItem) => {
@@ -267,6 +313,7 @@ function AppShell() {
             "currentUserId",
             "userRole",
             "active_order_ids_by_restaurant",
+            "email",
         ];
         try {
             const token = localStorage.getItem("auth_token") || localStorage.getItem("token");
@@ -283,7 +330,6 @@ function AppShell() {
         } catch (err) {
             console.warn("Logout request error:", err);
         } finally {
-            // remove per-user cached offers if present
             try {
                 const uid = parseUserIdFromStorage();
                 if (uid) {
@@ -301,29 +347,22 @@ function AppShell() {
                 try {
                     localStorage.removeItem(k);
                 } catch {
-                    // ignore
+                    /* ignore */
                 }
             });
             setUsername(null);
-            setUserRole(null);
+            setUserRole("");
             setCartItemCount(0);
-            // reload to ensure all components read cleared storage
+            setUnreadCount(0);
+            setUserDropdownOpen(false);
             window.location.href = "/";
         }
     };
 
-    const activeSearchQuery = isRestaurantPage
-        ? menuSearchQuery
-        : restaurantSearchQuery;
-    const activeSearchResults = isRestaurantPage
-        ? menuSearchResults
-        : restaurantSearchResults;
-    const activeSearchLoading = isRestaurantPage
-        ? menuSearchLoading
-        : restaurantSearchLoading;
-    const activeSearchError = isRestaurantPage
-        ? menuSearchError
-        : restaurantSearchError;
+    const activeSearchQuery = isRestaurantPage ? menuSearchQuery : restaurantSearchQuery;
+    const activeSearchResults = isRestaurantPage ? menuSearchResults : restaurantSearchResults;
+    const activeSearchLoading = isRestaurantPage ? menuSearchLoading : restaurantSearchLoading;
+    const activeSearchError = isRestaurantPage ? menuSearchError : restaurantSearchError;
 
     return (
         <>
@@ -336,15 +375,23 @@ function AppShell() {
                     ) : (
                         <SearchDropdown
                             className="app-nav-search"
-                            inputId={isRestaurantPage ? "app-menu-search" : "app-restaurant-search"}
+                            inputId={
+                                isRestaurantPage ? "app-menu-search" : "app-restaurant-search"
+                            }
                             query={activeSearchQuery}
                             onQueryChange={handleSearchQueryChange}
                             results={activeSearchResults}
                             isLoading={activeSearchLoading}
-                            onSelect={isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect}
-                            placeholder={isRestaurantPage ? "Find menu items" : "Search restaurants"}
+                            onSelect={
+                                isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect
+                            }
+                            placeholder={
+                                isRestaurantPage ? "Find menu items" : "Search restaurants"
+                            }
                             loadingText={
-                                isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."
+                                isRestaurantPage
+                                    ? "Searching menu items..."
+                                    : "Searching restaurants..."
                             }
                             emptyText={
                                 isRestaurantPage
@@ -385,47 +432,141 @@ function AppShell() {
                                 <NavLink to="/" end>
                                     Home
                                 </NavLink>
-                                {username ? (
-                                    <NavLink to="/offers">Offers</NavLink>
-                                ) : null}
+
+                                {username && <NavLink to="/offers">Offers</NavLink>}
+
+                                {/* Payments dropdown */}
                                 <div className="nav-dropdown" ref={paymentDropdownRef}>
                                     <button
                                         className="nav-dropdown-trigger link-button"
-                                        onClick={() => setPaymentDropdownOpen((prev) => !prev)}
+                                        onClick={() =>
+                                            setPaymentDropdownOpen((prev) => !prev)
+                                        }
                                         aria-expanded={paymentDropdownOpen}
                                     >
-                                        Payments <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
+                                        Payments{" "}
+                                        <span className="nav-dropdown-caret">
+                                            {paymentDropdownOpen ? "▴" : "▾"}
+                                        </span>
                                     </button>
                                     {paymentDropdownOpen && (
                                         <div className="nav-dropdown-menu">
-                                            <NavLink to="/payment" onClick={() => setPaymentDropdownOpen(false)}>
+                                            <NavLink
+                                                to="/payment"
+                                                onClick={() => setPaymentDropdownOpen(false)}
+                                            >
                                                 Payment Methods
                                             </NavLink>
-                                            <NavLink to="/transactions" onClick={() => setPaymentDropdownOpen(false)}>
+                                            <NavLink
+                                                to="/transactions"
+                                                onClick={() => setPaymentDropdownOpen(false)}
+                                            >
                                                 Transactions
                                             </NavLink>
-                                            <NavLink to="/paypal" onClick={() => setPaymentDropdownOpen(false)}>
+                                            <NavLink
+                                                to="/paypal"
+                                                onClick={() => setPaymentDropdownOpen(false)}
+                                            >
                                                 PayPal
                                             </NavLink>
                                         </div>
                                     )}
                                 </div>
-                                <NavLink to="/cart" className="cart-link" aria-label="View cart">
+
+                                {/* Live tracking indicator */}
+                                {activeTrackingIds.length > 0 &&
+                                    location.pathname !== "/order-tracking" && (
+                                        <NavLink
+                                            to="/order-tracking"
+                                            className="tracking-nav-link"
+                                        >
+                                            <span className="tracking-nav-dot" />
+                                            Live Tracking
+                                        </NavLink>
+                                    )}
+
+                                {/* Cart */}
+                                <NavLink
+                                    to="/cart"
+                                    className="cart-link"
+                                    aria-label="View cart"
+                                >
                                     Cart
-                                    <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
+                                    <span
+                                        className={`cart-badge ${
+                                            cartItemCount > 0 ? "has-items" : ""
+                                        }`}
+                                    >
                                         {cartItemCount}
                                     </span>
                                 </NavLink>
+
                                 {username ? (
-                                    <>
-                                        <NavLink to="/orders">Order History</NavLink>
-                                        <NavLink to="/settings">Settings</NavLink>
-                                        {isOwnerUser ? <NavLink to="/owner">Owner Portal</NavLink> : null}
-                                        <span className="app-username">Hi, {username}</span>
-                                        <button className="link-button" onClick={handleLogout}>
-                                            Logout
+                                    /* User dropdown */
+                                    <div className="nav-dropdown" ref={userDropdownRef}>
+                                        <button
+                                            className="nav-dropdown-trigger link-button app-username-btn"
+                                            onClick={() =>
+                                                setUserDropdownOpen((prev) => !prev)
+                                            }
+                                            aria-expanded={userDropdownOpen}
+                                        >
+                                            Hi, {username}{" "}
+                                            <span className="nav-dropdown-caret">
+                                                {userDropdownOpen ? "▴" : "▾"}
+                                            </span>
                                         </button>
-                                    </>
+                                        {userDropdownOpen && (
+                                            <div className="nav-dropdown-menu nav-dropdown-menu-right">
+                                                <NavLink
+                                                    to="/orders"
+                                                    onClick={() => setUserDropdownOpen(false)}
+                                                >
+                                                    Order History
+                                                </NavLink>
+                                                <NavLink
+                                                    to="/notifications"
+                                                    className="notif-nav-link"
+                                                    onClick={() => setUserDropdownOpen(false)}
+                                                >
+                                                    Notifications
+                                                    {unreadCount > 0 && (
+                                                        <span className="notif-nav-badge">
+                                                            {unreadCount}
+                                                        </span>
+                                                    )}
+                                                </NavLink>
+                                                <NavLink
+                                                    to="/settings"
+                                                    onClick={() => setUserDropdownOpen(false)}
+                                                >
+                                                    Settings
+                                                </NavLink>
+                                                {userRole === "administrator" && (
+                                                    <NavLink
+                                                        to="/admin"
+                                                        onClick={() => setUserDropdownOpen(false)}
+                                                    >
+                                                        Admin Dashboard
+                                                    </NavLink>
+                                                )}
+                                                {userRole === "restaurant owner" && (
+                                                    <NavLink
+                                                        to="/my-restaurants"
+                                                        onClick={() => setUserDropdownOpen(false)}
+                                                    >
+                                                        My Restaurants
+                                                    </NavLink>
+                                                )}
+                                                <button
+                                                    className="link-button dropdown-logout-btn"
+                                                    onClick={handleLogout}
+                                                >
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 ) : (
                                     <>
                                         <NavLink to="/login">Login</NavLink>
@@ -472,20 +613,97 @@ function AppShell() {
                             )
                         }
                     />
-                    <Route path="/cart" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Cart />} />
-                    <Route path="/payment" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Payment />} />
+                    <Route
+                        path="/cart"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Cart />
+                        }
+                    />
+                    <Route
+                        path="/order-tracking"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <OrderTracking />
+                        }
+                    />
+                    <Route
+                        path="/payment"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Payment />
+                        }
+                    />
                     <Route
                         path="/transactions"
-                        element={isOwnerUser ? <Navigate to="/owner" replace /> : <Transactions />}
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Transactions />
+                        }
                     />
-                    <Route path="/paypal" element={isOwnerUser ? <Navigate to="/owner" replace /> : <PayPalPage />} />
-                    <Route path="/offers" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Offers />} />
-                    <Route path="/orders" element={isOwnerUser ? <Navigate to="/owner" replace /> : <OrderHistory />} />
-                    <Route path="/settings" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Settings />} />
+                    <Route
+                        path="/paypal"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <PayPalPage />
+                        }
+                    />
+                    <Route
+                        path="/offers"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Offers />
+                        }
+                    />
+                    <Route
+                        path="/orders"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <OrderHistory />
+                        }
+                    />
+                    <Route
+                        path="/notifications"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Notifications />
+                        }
+                    />
+                    <Route
+                        path="/settings"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Settings />
+                        }
+                    />
+                    <Route
+                        path="/admin"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Admin />
+                        }
+                    />
+                    <Route
+                        path="/my-restaurants"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <RestaurantManager />
+                        }
+                    />
+                    <Route
+                        path="/review/:orderId"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Review />
+                        }
+                    />
                     <Route path="/owner" element={<OwnerPortal />} />
-                    <Route path="/login" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Login />} />
-                    <Route path="/register" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Register />} />
-                    <Route path="*" element={<Navigate to={isOwnerUser ? "/owner" : "/"} replace />} />
+                    <Route
+                        path="/login"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Login />
+                        }
+                    />
+                    <Route
+                        path="/register"
+                        element={
+                            isOwnerUser ? <Navigate to="/owner" replace /> : <Register />
+                        }
+                    />
+                    <Route
+                        path="*"
+                        element={
+                            <Navigate to={isOwnerUser ? "/owner" : "/"} replace />
+                        }
+                    />
                 </Routes>
             </div>
         </>

@@ -1,0 +1,112 @@
+/* ── Notifications Page ──────────────────────────────────────────────────── */
+
+.notifications-page .hero-banner {
+    margin-bottom: 1rem;
+}
+
+.notif-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.9rem;
+}
+
+.notif-mark-all-btn {
+    background: transparent;
+    border: 1px solid #d4b89a;
+    border-radius: 999px;
+    color: #5f4330;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.38rem 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.14s ease;
+}
+
+.notif-mark-all-btn:hover {
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.notif-card {
+    background: #fffdf9;
+    border: 1px solid #e8d7c5;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: box-shadow 0.15s ease;
+}
+
+.notif-card.unread {
+    border-color: rgba(255, 107, 53, 0.4);
+    background: rgba(255, 107, 53, 0.04);
+}
+
+.notif-card:hover {
+    box-shadow: 0 4px 14px rgba(72, 36, 13, 0.1);
+}
+
+.notif-unread-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ff6b35;
+    flex-shrink: 0;
+    margin-top: 0.4rem;
+}
+
+.notif-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-message {
+    margin: 0 0 0.3rem;
+    color: #2d1d14;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.notif-meta {
+    font-size: 0.78rem;
+    color: #8a6650;
+}
+
+.notif-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.notif-action-btn {
+    background: transparent;
+    border: 1px solid #d4b89a;
+    border-radius: 8px;
+    color: #5f4330;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.28rem 0.65rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.13s ease;
+}
+
+.notif-action-btn:hover {
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.notif-action-btn.danger {
+    border-color: #e8a8a0;
+    color: #8e2518;
+}
+
+.notif-action-btn.danger:hover {
+    background: rgba(200, 30, 30, 0.08);
+}

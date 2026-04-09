@@ -1,0 +1,195 @@
+/* ── Restaurant Manager Page ─────────────────────────────────────────────── */
+
+.rm-form-card {
+    background: #fffdf9;
+    border: 1px solid #e8d7c5;
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 2rem;
+}
+
+.rm-form-card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    color: #2d1d14;
+}
+
+.rm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.rm-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #5f4330;
+}
+
+.rm-form input,
+.rm-form textarea,
+.rm-form select {
+    border: 1px solid #e8d7c5;
+    border-radius: 9px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    background: #fffdfa;
+    color: #2a1f16;
+    font-family: inherit;
+}
+
+.rm-form textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.rm-form button[type="submit"] {
+    align-self: flex-start;
+    padding: 0.55rem 1.3rem;
+    background: #ff6b35;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.14s ease;
+}
+
+.rm-form button[type="submit"]:hover {
+    background: #e5571f;
+}
+
+/* Restaurant list */
+.rm-restaurant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.rm-restaurant-card {
+    background: #fffdf9;
+    border: 1px solid #e8d7c5;
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+}
+
+.rm-restaurant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.7rem;
+}
+
+.rm-restaurant-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #2d1d14;
+}
+
+.rm-restaurant-meta {
+    font-size: 0.82rem;
+    color: #7a5540;
+    margin: 0;
+}
+
+.rm-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.rm-btn {
+    padding: 0.38rem 0.9rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: background-color 0.14s ease;
+}
+
+.rm-btn.primary {
+    background: #ff6b35;
+    color: #fff;
+}
+
+.rm-btn.primary:hover {
+    background: #e5571f;
+}
+
+.rm-btn.secondary {
+    background: rgba(95, 67, 48, 0.12);
+    color: #4c3224;
+}
+
+.rm-btn.secondary:hover {
+    background: rgba(95, 67, 48, 0.2);
+}
+
+.rm-btn.danger {
+    background: rgba(200, 30, 30, 0.1);
+    color: #8e1010;
+}
+
+.rm-btn.danger:hover {
+    background: rgba(200, 30, 30, 0.2);
+}
+
+.rm-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Menu section inside restaurant card */
+.rm-menu-section {
+    border-top: 1px solid #ede3d8;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.rm-menu-section h4 {
+    margin: 0 0 0.8rem;
+    font-size: 0.9rem;
+    color: #5f4330;
+}
+
+.rm-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.rm-menu-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.7rem;
+    background: rgba(255, 107, 53, 0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 107, 53, 0.12);
+}
+
+.rm-menu-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.rm-menu-item-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #2d1d14;
+    margin: 0 0 0.1rem;
+}
+
+.rm-menu-item-price {
+    font-size: 0.8rem;
+    color: #7a5540;
+    margin: 0;
+}
