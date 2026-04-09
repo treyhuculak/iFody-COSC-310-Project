@@ -27,7 +27,7 @@ It covers:
 The project runs as 3 Docker services:
 - backend: FastAPI application (Python).
 - frontend: React + Vite development server.
-- ollama: local LLM runtime used by chatbot features.
+- ollama: local LLM runtime (llama3.2:3b) used by chatbot features.
 
 Default URLs after startup:
 - Frontend: http://localhost:3000
@@ -305,6 +305,7 @@ Before submitting or handing off:
 - Seed login accounts are documented.
 - PayPal and email setup status is documented (configured or intentionally omitted).
 - Data backup/restore procedure is documented and tested.
+- Ollama model pulls successfully, and the chatbot responds to test messages.
 
 ## 7. Optional Non-Docker Run (Reference)
 If needed for debugging only:
