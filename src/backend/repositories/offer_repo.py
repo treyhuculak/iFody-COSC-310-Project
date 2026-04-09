@@ -1,14 +1,16 @@
 import datetime
 import json
 import random
+import os
 from src.backend.models.offer import Offer
 
 class OfferRepository:
-    def __init__(self, database: str = None) -> None:
+    def __init__(self, database: str = None, weekly_offers_file = None) -> None:
         '''
         Initializes the OfferRepository instance.
         '''
         self.offer_database = database or "data/offers.json"
+        self.weekly_offers_file = weekly_offers_file or "data/weekly_offers.json"
 
         try:
             with open(self.offer_database, "r") as file:
@@ -21,6 +23,15 @@ class OfferRepository:
             with open(self.offer_database, "w") as file:
                 json.dump([], file, indent = 4)
                 self.offer_id = 1
+        finally:
+            # Only create the weekly offers file if it does not already exist.
+            # Avoid overwriting an existing weekly_offers file (e.g., production data).
+            weekly_dir = os.path.dirname(self.weekly_offers_file)
+            if weekly_dir and not os.path.exists(weekly_dir):
+                os.makedirs(weekly_dir, exist_ok = True)
+            if not os.path.exists(self.weekly_offers_file):
+                with open(self.weekly_offers_file, "w") as file:
+                    json.dump([], file, indent = 4)
 
     def add_offer(self, offer: Offer) -> dict | None:
         '''
@@ -56,15 +67,25 @@ class OfferRepository:
         with open(self.offer_database, "w") as file:
             json.dump(offers, file, indent = 4)
             return offer
+        
+    def get_weekly_offers_file(self) -> str:
+        '''
+        Retrieves the temporary database for storing the new weekly Offer instances.
+        '''
+        return self.weekly_offers_file
 
     def get_new_offers(self, amount: int) -> list[Offer]:
         '''
         Retrieves a specified number of Offer instances from the database.
         This is a helper function for getting weekly offers for the users.
         '''
+        with open(self.weekly_offers_file, "r") as file:
+            weekly_offers = json.load(file)
+            if weekly_offers and len(weekly_offers) >= amount:
+                return weekly_offers
         with open(self.offer_database, "r") as file:
             offers = json.load(file)[:]
-            if len(offers) < amount:
+            if len(offers) <= amount:
                 offer_suggestions = offers
             else:
                 offer_suggestions = random.sample(offers, k = amount)
@@ -77,4 +98,11 @@ class OfferRepository:
             for offer in offer_suggestions:
                 offer["start_date"] = current_date.isoformat()
                 offer["end_date"] = offer_deadline.isoformat()
+        with open(self.weekly_offers_file, "w") as file:
+            '''
+            We need a way to keep track of the Offer instances.
+            The self.weekly_offers_file file stores the new Offer instances.
+            '''
+            json.dump(offer_suggestions, file, indent = 4)
+
         return offer_suggestions
