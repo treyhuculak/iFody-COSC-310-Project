@@ -115,6 +115,10 @@
     gap: 0.35rem;
 }
 
+.owner-search-row.compact {
+    margin-top: 0.7rem;
+}
+
 .owner-search-row label {
     color: #294534;
     font-weight: 700;

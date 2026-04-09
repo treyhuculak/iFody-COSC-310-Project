@@ -9,6 +9,7 @@ import {
     fetchRestaurantMenuItems,
     parseUserIdFromStorage,
     searchOwnerRestaurantsByName,
+    searchRestaurantMenuItemsPaginated,
     updateRestaurant,
     updateRestaurantMenuItem,
 } from "../api/restaurants";
@@ -70,6 +71,7 @@ export default function OwnerPortal() {
     const [restaurantsPage, setRestaurantsPage] = useState(1);
     const [menuPage, setMenuPage] = useState(1);
     const [restaurantSearchQuery, setRestaurantSearchQuery] = useState("");
+    const [menuSearchQuery, setMenuSearchQuery] = useState("");
 
     const [restaurantsRefreshKey, setRestaurantsRefreshKey] = useState(0);
     const [menuRefreshKey, setMenuRefreshKey] = useState(0);
@@ -223,11 +225,20 @@ export default function OwnerPortal() {
             error: "",
         }));
 
-        fetchRestaurantMenuItems({
-            restaurantId: activeRestaurantId,
-            skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
-            limit: OWNER_MENU_PAGE_SIZE,
-        })
+        const loadMenuItems = menuSearchQuery.trim()
+            ? searchRestaurantMenuItemsPaginated({
+                  restaurantId: activeRestaurantId,
+                  name: menuSearchQuery,
+                  skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
+                  limit: OWNER_MENU_PAGE_SIZE,
+              })
+            : fetchRestaurantMenuItems({
+                  restaurantId: activeRestaurantId,
+                  skip: (menuPage - 1) * OWNER_MENU_PAGE_SIZE,
+                  limit: OWNER_MENU_PAGE_SIZE,
+              });
+
+        loadMenuItems
             .then((response) => {
                 if (cancelled) {
                     return;
@@ -263,7 +274,13 @@ export default function OwnerPortal() {
         return () => {
             cancelled = true;
         };
-    }, [canManageRestaurants, activeRestaurantId, menuPage, menuRefreshKey]);
+    }, [
+        canManageRestaurants,
+        activeRestaurantId,
+        menuPage,
+        menuRefreshKey,
+        menuSearchQuery,
+    ]);
 
     const selectedRestaurant = useMemo(() => {
         return (
@@ -289,6 +306,7 @@ export default function OwnerPortal() {
 
         setActiveRestaurantId(restaurantId);
         setMenuPage(1);
+        setMenuSearchQuery("");
         setEditingMenuItemId(null);
         setShowCreateMenuItemForm(false);
         setFeedback({ type: "", text: "" });
@@ -1017,6 +1035,9 @@ export default function OwnerPortal() {
                                 <h3>Menu items</h3>
                                 <p>
                                     Page {menuPage} of {Math.max(menuState.totalPages, 1)} • {menuState.total} total
+                                    {menuSearchQuery.trim()
+                                        ? ` matching "${menuSearchQuery.trim()}"`
+                                        : ""}
                                 </p>
                             </div>
                             <button
@@ -1030,6 +1051,20 @@ export default function OwnerPortal() {
                             >
                                 {showCreateMenuItemForm ? "Close menu form" : "Create menu item"}
                             </button>
+                        </div>
+
+                        <div className="owner-search-row compact">
+                            <label htmlFor="owner-menu-search">Search menu items by name</label>
+                            <input
+                                id="owner-menu-search"
+                                type="text"
+                                value={menuSearchQuery}
+                                onChange={(event) => {
+                                    setMenuSearchQuery(event.target.value);
+                                    setMenuPage(1);
+                                }}
+                                placeholder="e.g. poutine, burger, latte"
+                            />
                         </div>
 
                         {showCreateMenuItemForm ? (

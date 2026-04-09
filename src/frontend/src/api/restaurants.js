@@ -353,6 +353,27 @@ export async function searchRestaurantMenuItems({
     return normalizeMenuItemCollection(payload);
 }
 
+export async function searchRestaurantMenuItemsPaginated({
+    restaurantId,
+    name,
+    skip = 0,
+    limit = 20,
+    signal,
+} = {}) {
+    const trimmedName = String(name || "").trim();
+
+    if (!trimmedName) {
+        return fetchRestaurantMenuItems({ restaurantId, skip, limit, signal });
+    }
+
+    const query = toQueryString({ name: trimmedName, skip, limit });
+    const payload = await request(`/restaurants/${restaurantId}/menu/search?${query}`, {
+        signal,
+    });
+
+    return normalizeMenuItemPaginatedResponse(payload);
+}
+
 export async function searchRestaurantsByName(name, { limit = 8, signal } = {}) {
     if (!name.trim()) {
         return [];
