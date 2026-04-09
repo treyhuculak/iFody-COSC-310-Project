@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { getRestaurantReviews } from "../api/restaurantManager";
 import {
     fetchPopularRestaurants,
     fetchRecentlyOrderedRestaurants,
@@ -57,6 +58,10 @@ export default function Home({
         endpointReady: true,
         error: "",
     });
+
+    // avg_review_rating per restaurant id, fetched lazily in parallel
+    const [reviewRatings, setReviewRatings] = useState({});
+    const fetchedRatingIds = useRef(new Set());
 
     useEffect(() => {
         const abortController = new AbortController();
@@ -169,6 +174,43 @@ export default function Home({
             abortController.abort();
         };
     }, [filters.location]);
+
+    // Fetch review averages for any newly visible restaurants
+    useEffect(() => {
+        const allRestaurants = dedupeById([
+            ...restaurantsState.items,
+            ...popularState.items,
+            ...recentState.items,
+        ]);
+        const idsToFetch = allRestaurants
+            .map((r) => r.id)
+            .filter((id) => !fetchedRatingIds.current.has(id));
+
+        if (idsToFetch.length === 0) return;
+        idsToFetch.forEach((id) => fetchedRatingIds.current.add(id));
+
+        Promise.allSettled(
+            idsToFetch.map((id) =>
+                getRestaurantReviews(id, { skip: 0, limit: 100 })
+                    .then((data) => {
+                        const items = data.items ?? [];
+                        const avg = items.length
+                            ? items.reduce((sum, r) => sum + (r.rating ?? 0), 0) / items.length
+                            : 0;
+                        return { id, avg };
+                    })
+                    .catch(() => ({ id, avg: 0 }))
+            )
+        ).then((results) => {
+            const updates = {};
+            results.forEach((r) => {
+                if (r.status === "fulfilled") updates[r.value.id] = r.value.avg;
+            });
+            if (Object.keys(updates).length > 0) {
+                setReviewRatings((prev) => ({ ...prev, ...updates }));
+            }
+        });
+    }, [restaurantsState.items, popularState.items, recentState.items]);
 
     const locationOptions = useMemo(() => {
         const values = new Set();
@@ -307,6 +349,9 @@ export default function Home({
 
     const highlightedRestaurantId = selectedRestaurantId || localSelectedRestaurantId;
 
+    const enrichRestaurants = (list) =>
+        list.map((r) => ({ ...r, avg_review_rating: reviewRatings[r.id] ?? null }));
+
     return (
         <main className="home-page">
             <section className="hero-banner">
@@ -338,7 +383,7 @@ export default function Home({
             <RestaurantSection
                 title="Recommended for you"
                 subtitle="Live recommendations based on your current search and active filters."
-                restaurants={filteredRecommendationPool}
+                restaurants={enrichRestaurants(filteredRecommendationPool)}
                 isLoading={restaurantsState.loading}
                 emptyMessage="No recommendations yet. Try loosening your filters."
                 highlightedRestaurantId={highlightedRestaurantId}
@@ -348,7 +393,7 @@ export default function Home({
             <RestaurantSection
                 title="Popular in this area"
                 subtitle="Top restaurants for your selected location based on order activity."
-                restaurants={popularState.items}
+                restaurants={enrichRestaurants(popularState.items)}
                 isLoading={popularState.loading}
                 endpointReady={popularState.endpointReady}
                 emptyMessage="No popular restaurants available for this location yet."
@@ -359,7 +404,7 @@ export default function Home({
             <RestaurantSection
                 title="Your recent favorites"
                 subtitle="Restaurants you ordered from most recently in this account."
-                restaurants={recentState.items}
+                restaurants={enrichRestaurants(recentState.items)}
                 isLoading={recentState.loading}
                 endpointReady={recentState.endpointReady}
                 emptyMessage="No recent restaurants yet for this user."

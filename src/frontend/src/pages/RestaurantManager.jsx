@@ -6,14 +6,34 @@ import {
     deleteMenuItem,
     deleteRestaurant,
     getMyRestaurants,
+    getRestaurantReviews,
     updateMenuItem,
     updateRestaurant,
 } from "../api/restaurantManager";
+import {
+    deleteNotification,
+    getNotifications,
+    markAllAsRead,
+    markAsRead,
+} from "../api/notifications";
 import { parseUserIdFromStorage } from "../api/restaurants";
 import "../styles/restaurant-manager.css";
 
 const emptyRestaurantForm = { name: "", cuisine: "", location: "", rating: "" };
 const emptyMenuItemForm = { name: "", description: "", price: "" };
+const NOTIF_PAGE_SIZE = 8;
+const REVIEWS_PAGE_SIZE = 10;
+
+function StarsDisplay({ rating }) {
+    const r = Math.round(Number(rating ?? 0));
+    return (
+        <span className="rm-stars" aria-label={`${r} out of 5 stars`}>
+            {[1, 2, 3, 4, 5].map((n) => (
+                <span key={n} className={n <= r ? "rm-star filled" : "rm-star"}>★</span>
+            ))}
+        </span>
+    );
+}
 
 export default function RestaurantManager() {
     const location = useLocation();
@@ -27,6 +47,7 @@ export default function RestaurantManager() {
         navigate(`/login?${new URLSearchParams({ redirect: redirectPath })}`);
     }, [location.pathname, location.search, navigate]);
 
+    // ── Restaurants ──────────────────────────────────────────────────────────
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -46,6 +67,16 @@ export default function RestaurantManager() {
     const [editMenuItemId, setEditMenuItemId] = useState(null);
     const [editMenuItemForm, setEditMenuItemForm] = useState(emptyMenuItemForm);
 
+    // ── Notifications ─────────────────────────────────────────────────────────
+    const [notifications, setNotifications] = useState([]);
+    const [notifLoading, setNotifLoading] = useState(true);
+    const [notifPage, setNotifPage] = useState(1);
+
+    // ── Reviews (per restaurant) ──────────────────────────────────────────────
+    // reviewsState[restaurantId] = { open, loading, items, page, totalPages, hasNext, hasPrev }
+    const [reviewsState, setReviewsState] = useState({});
+
+    // ── Data loaders ─────────────────────────────────────────────────────────
     const loadRestaurants = useCallback(async () => {
         if (!userId) return;
         try {
@@ -60,19 +91,34 @@ export default function RestaurantManager() {
         }
     }, [userId]);
 
+    const loadNotifications = useCallback(async () => {
+        if (!userId) return;
+        try {
+            setNotifLoading(true);
+            const data = await getNotifications(userId);
+            setNotifications(Array.isArray(data) ? data : []);
+        } catch {
+            setNotifications([]);
+        } finally {
+            setNotifLoading(false);
+        }
+    }, [userId]);
+
     useEffect(() => {
         if (!userId || userRole !== "restaurant owner") {
             redirectToLogin();
             return;
         }
         loadRestaurants();
-    }, [loadRestaurants, redirectToLogin, userId, userRole]);
+        loadNotifications();
+    }, [loadRestaurants, loadNotifications, redirectToLogin, userId, userRole]);
 
     const clearMessages = () => {
         setError("");
         setSuccessMessage("");
     };
 
+    // ── Restaurant CRUD ───────────────────────────────────────────────────────
     const handleAddRestaurant = async (e) => {
         e.preventDefault();
         clearMessages();
@@ -127,6 +173,7 @@ export default function RestaurantManager() {
         }
     };
 
+    // ── Menu CRUD ─────────────────────────────────────────────────────────────
     const handleAddMenuItem = async (e) => {
         e.preventDefault();
         if (!selectedRestaurantId) return;
@@ -191,7 +238,91 @@ export default function RestaurantManager() {
         }
     };
 
+    // ── Notifications handlers ────────────────────────────────────────────────
+    const handleMarkAsRead = async (notifId) => {
+        try {
+            await markAsRead(notifId, userId);
+            setNotifications((prev) =>
+                prev.map((n) => (n.id === notifId ? { ...n, is_read: true } : n))
+            );
+        } catch {
+            /* silent */
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            await markAllAsRead(userId);
+            setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+        } catch {
+            /* silent */
+        }
+    };
+
+    const handleDeleteNotif = async (notifId) => {
+        try {
+            await deleteNotification(notifId, userId);
+            setNotifications((prev) => {
+                const updated = prev.filter((n) => n.id !== notifId);
+                const maxPage = Math.max(1, Math.ceil(updated.length / NOTIF_PAGE_SIZE));
+                if (notifPage > maxPage) setNotifPage(maxPage);
+                return updated;
+            });
+        } catch {
+            /* silent */
+        }
+    };
+
+    const notifTotalPages = Math.max(1, Math.ceil(notifications.length / NOTIF_PAGE_SIZE));
+    const notifSlice = notifications.slice(
+        (notifPage - 1) * NOTIF_PAGE_SIZE,
+        notifPage * NOTIF_PAGE_SIZE
+    );
+    const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+    // ── Reviews handlers ──────────────────────────────────────────────────────
+    const patchReviews = (restaurantId, patch) =>
+        setReviewsState((prev) => ({
+            ...prev,
+            [restaurantId]: { ...prev[restaurantId], ...patch },
+        }));
+
+    const loadReviews = useCallback(
+        async (restaurantId, page = 1) => {
+            patchReviews(restaurantId, { loading: true });
+            try {
+                const skip = (page - 1) * REVIEWS_PAGE_SIZE;
+                const data = await getRestaurantReviews(restaurantId, {
+                    skip,
+                    limit: REVIEWS_PAGE_SIZE,
+                });
+                patchReviews(restaurantId, {
+                    items: data.items ?? [],
+                    page,
+                    totalPages: data.total_pages ?? 1,
+                    hasNext: data.has_next ?? false,
+                    hasPrev: data.has_prev ?? false,
+                    loading: false,
+                });
+            } catch {
+                patchReviews(restaurantId, { items: [], loading: false });
+            }
+        },
+        []
+    );
+
+    const toggleReviews = (restaurantId) => {
+        const current = reviewsState[restaurantId];
+        if (current?.open) {
+            patchReviews(restaurantId, { open: false });
+        } else {
+            patchReviews(restaurantId, { open: true, items: [], page: 1, totalPages: 1, loading: true });
+            loadReviews(restaurantId, 1);
+        }
+    };
+
     const selectedRestaurant = restaurants.find((r) => r.id === selectedRestaurantId);
+    void selectedRestaurant;
 
     return (
         <main className="home-page">
@@ -204,7 +335,98 @@ export default function RestaurantManager() {
             {error && <p className="status-error">{error}</p>}
             {successMessage && <p className="status-success">{successMessage}</p>}
 
-            {/* Add restaurant form */}
+            {/* ── Notifications section ─────────────────────────────────── */}
+            <section className="restaurant-section">
+                <div className="rm-section-header">
+                    <h2 className="section-title" style={{ marginBottom: 0 }}>
+                        Notifications
+                        {unreadCount > 0 && (
+                            <span className="rm-notif-badge">{unreadCount}</span>
+                        )}
+                    </h2>
+                    {notifications.length > 0 && (
+                        <button
+                            type="button"
+                            className="rm-btn secondary"
+                            onClick={handleMarkAllAsRead}
+                            style={{ flexShrink: 0 }}
+                        >
+                            Mark all as read
+                        </button>
+                    )}
+                </div>
+
+                {notifLoading ? (
+                    <div className="section-placeholder">Loading notifications…</div>
+                ) : notifications.length === 0 ? (
+                    <div className="section-placeholder">No notifications yet.</div>
+                ) : (
+                    <>
+                        <div className="rm-notif-list">
+                            {notifSlice.map((n) => (
+                                <div
+                                    key={n.id}
+                                    className={`rm-notif-row${n.is_read ? "" : " rm-notif-unread"}`}
+                                >
+                                    <div className="rm-notif-body">
+                                        {!n.is_read && <span className="rm-notif-dot" />}
+                                        <p className="rm-notif-message">{n.message ?? n.title ?? "Notification"}</p>
+                                        {n.created_at && (
+                                            <p className="rm-notif-time">
+                                                {new Date(n.created_at).toLocaleString()}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="rm-card-actions">
+                                        {!n.is_read && (
+                                            <button
+                                                type="button"
+                                                className="rm-btn secondary"
+                                                onClick={() => handleMarkAsRead(n.id)}
+                                            >
+                                                Mark read
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="rm-btn danger"
+                                            onClick={() => handleDeleteNotif(n.id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {notifTotalPages > 1 && (
+                            <div className="rm-pagination">
+                                <button
+                                    type="button"
+                                    className="rm-btn secondary"
+                                    disabled={notifPage === 1}
+                                    onClick={() => setNotifPage((p) => p - 1)}
+                                >
+                                    ← Prev
+                                </button>
+                                <span className="rm-pagination-info">
+                                    Page {notifPage} of {notifTotalPages}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="rm-btn secondary"
+                                    disabled={notifPage === notifTotalPages}
+                                    onClick={() => setNotifPage((p) => p + 1)}
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </section>
+
+            {/* ── Add restaurant form ───────────────────────────────────── */}
             <section className="restaurant-section">
                 <div className="rm-form-card">
                     <h2>Add a new restaurant</h2>
@@ -256,7 +478,7 @@ export default function RestaurantManager() {
                 </div>
             </section>
 
-            {/* Restaurant list */}
+            {/* ── Restaurant list ───────────────────────────────────────── */}
             <section className="restaurant-section">
                 <h2 className="section-title">Your restaurants</h2>
                 {loading ? (
@@ -351,6 +573,13 @@ export default function RestaurantManager() {
                                                 </button>
                                                 <button
                                                     type="button"
+                                                    className="rm-btn secondary"
+                                                    onClick={() => toggleReviews(r.id)}
+                                                >
+                                                    {reviewsState[r.id]?.open ? "Hide reviews" : "View reviews"}
+                                                </button>
+                                                <button
+                                                    type="button"
                                                     className="rm-btn danger"
                                                     onClick={() => handleDeleteRestaurant(r.id)}
                                                 >
@@ -359,6 +588,7 @@ export default function RestaurantManager() {
                                             </div>
                                         </div>
 
+                                        {/* ── Menu panel ─────────────────────── */}
                                         {selectedRestaurantId === r.id && (
                                             <div className="rm-menu-section">
                                                 <h4>Menu items</h4>
@@ -522,6 +752,69 @@ export default function RestaurantManager() {
                                                         {menuBusy ? "Adding…" : "Add item"}
                                                     </button>
                                                 </form>
+                                            </div>
+                                        )}
+
+                                        {/* ── Reviews panel ──────────────────── */}
+                                        {reviewsState[r.id]?.open && (
+                                            <div className="rm-reviews-section">
+                                                <h4>Customer reviews</h4>
+
+                                                {reviewsState[r.id]?.loading ? (
+                                                    <p className="rm-reviews-placeholder">Loading reviews…</p>
+                                                ) : (reviewsState[r.id]?.items ?? []).length === 0 ? (
+                                                    <p className="rm-reviews-placeholder">No reviews yet.</p>
+                                                ) : (
+                                                    <>
+                                                        <div className="rm-reviews-list">
+                                                            {(reviewsState[r.id].items).map((rev) => (
+                                                                <div key={rev.id} className="rm-review-card">
+                                                                    <div className="rm-review-header">
+                                                                        <StarsDisplay rating={rev.rating} />
+                                                                        <span className="rm-review-title">{rev.title}</span>
+                                                                        {rev.created_at && (
+                                                                            <span className="rm-review-date">
+                                                                                {new Date(rev.created_at).toLocaleDateString()}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    {rev.comment && (
+                                                                        <p className="rm-review-comment">{rev.comment}</p>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {reviewsState[r.id].totalPages > 1 && (
+                                                            <div className="rm-pagination">
+                                                                <button
+                                                                    type="button"
+                                                                    className="rm-btn secondary"
+                                                                    disabled={!reviewsState[r.id].hasPrev}
+                                                                    onClick={() =>
+                                                                        loadReviews(r.id, reviewsState[r.id].page - 1)
+                                                                    }
+                                                                >
+                                                                    ← Prev
+                                                                </button>
+                                                                <span className="rm-pagination-info">
+                                                                    Page {reviewsState[r.id].page} of{" "}
+                                                                    {reviewsState[r.id].totalPages}
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    className="rm-btn secondary"
+                                                                    disabled={!reviewsState[r.id].hasNext}
+                                                                    onClick={() =>
+                                                                        loadReviews(r.id, reviewsState[r.id].page + 1)
+                                                                    }
+                                                                >
+                                                                    Next →
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
                                         )}
                                     </>

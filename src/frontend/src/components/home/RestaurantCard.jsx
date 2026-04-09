@@ -1,8 +1,18 @@
 export default function RestaurantCard({ restaurant, onSelect, isHighlighted = false }) {
+    const avgRating = restaurant.avg_review_rating;
+    const hasRating = typeof avgRating === "number" && avgRating > 0;
+
     return (
         <article className={`restaurant-card ${isHighlighted ? "is-highlighted" : ""}`}>
             <div className="restaurant-card-top">
-                <h3>{restaurant.name}</h3>
+                <h3>
+                    {restaurant.name}
+                    {hasRating && (
+                        <span className="restaurant-rating-badge">
+                            ★ {avgRating.toFixed(1)}
+                        </span>
+                    )}
+                </h3>
                 <span
                     className={`availability-pill ${restaurant.is_available ? "is-open" : "is-closed"
                         }`}
