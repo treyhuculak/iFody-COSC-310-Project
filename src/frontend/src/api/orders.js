@@ -316,6 +316,50 @@ export async function setCartItemQuantity({
     return fetchOrderById(orderId, userId, { signal });
 }
 
+export async function updateOrderStatus(orderId, newStatus) {
+    const query = new URLSearchParams({ new_status: newStatus, role: "manager" }).toString();
+    const res = await fetch(`${API_URL}/orders/${orderId}/status?${query}`, {
+        method: "PUT",
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) {
+        const error = new Error(payload?.detail || `Failed to update order status to "${newStatus}"`);
+        error.status = res.status;
+        throw error;
+    }
+    return payload;
+}
+
+export async function createDelivery(orderId) {
+    const res = await fetch(`${API_URL}/deliveries/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: Number(orderId) }),
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) {
+        const error = new Error(payload?.detail || "Failed to create delivery record");
+        error.status = res.status;
+        throw error;
+    }
+    return payload;
+}
+
+export async function fetchDeliveryByOrder(orderId) {
+    const res = await fetch(`${API_URL}/deliveries/order/${orderId}`);
+    if (!res.ok) return null;
+    return res.json().catch(() => null);
+}
+
+export async function markDeliveryDelivered(deliveryId, deliveredAtIso) {
+    const encodedTime = encodeURIComponent(deliveredAtIso);
+    const res = await fetch(`${API_URL}/deliveries/${deliveryId}/${encodedTime}`, {
+        method: "PUT",
+    });
+    if (!res.ok) return null;
+    return res.json().catch(() => null);
+}
+
 async function resolveActiveOrderId({ restaurantId, userId, signal } = {}) {
     const storedOrderId = getStoredActiveOrderId(userId, restaurantId);
 

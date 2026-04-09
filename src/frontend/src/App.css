@@ -228,6 +228,74 @@
   color: #735641;
 }
 
+/* ── Live tracking nav link ────────────────────────────────────────────── */
+.tracking-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: #ff6b35 !important;
+}
+
+.tracking-nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff6b35;
+  animation: tracking-pulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes tracking-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── User dropdown (right-aligned) ────────────────────────────────────── */
+.app-username-btn {
+  font-weight: 700;
+}
+
+.nav-dropdown-menu-right {
+  left: auto;
+  right: 0;
+}
+
+.dropdown-logout-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  border-radius: 0;
+  font-size: 0.9rem;
+  color: #8e2518;
+}
+
+.dropdown-logout-btn:hover {
+  background: rgba(200, 30, 30, 0.08);
+}
+
+/* ── Notification badge in dropdown ────────────────────────────────────── */
+.notif-nav-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.notif-nav-badge {
+  min-width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: #ff6b35;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 @media (max-width: 960px) {
   .app-nav-main {
     grid-template-columns: 1fr;
