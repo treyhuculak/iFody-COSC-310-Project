@@ -31,6 +31,10 @@
   width: 100%;
 }
 
+.app-nav-search-placeholder {
+  min-height: 1px;
+}
+
 .app-links {
   display: flex;
   align-items: center;

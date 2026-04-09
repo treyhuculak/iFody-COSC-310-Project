@@ -26,6 +26,7 @@ import Settings from "./pages/Settings";
 import Payment from "./pages/Payment";
 import Transactions from "./pages/Transaction";
 import PayPalPage from "./pages/PayPal";
+import OwnerPortal from "./pages/OwnerPortal";
 
 export default function App() {
     return (
@@ -33,6 +34,12 @@ export default function App() {
             <AppShell />
         </BrowserRouter>
     );
+}
+
+function normalizeRole(role) {
+    return String(role || "")
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
 }
 
 function AppShell() {
@@ -62,6 +69,13 @@ function AppShell() {
             return null;
         }
     });
+    const [userRole, setUserRole] = useState(() => {
+        try {
+            return localStorage.getItem("userRole");
+        } catch {
+            return null;
+        }
+    });
 
     const restaurantPathMatch = /^\/restaurants\/(\d+)\/?$/.exec(location.pathname);
     const activeRestaurantId = restaurantPathMatch
@@ -69,6 +83,8 @@ function AppShell() {
         : null;
     const isRestaurantPage =
         activeRestaurantId !== null && Number.isInteger(activeRestaurantId);
+    const isOwnerPortalPage = location.pathname.startsWith("/owner");
+    const isOwnerUser = normalizeRole(userRole) === "restaurantowner";
 
     const refreshCartCount = useCallback(async () => {
         const userId = parseUserIdFromStorage();
@@ -111,7 +127,7 @@ function AppShell() {
     }, []);
 
     useEffect(() => {
-        if (isRestaurantPage || !restaurantSearchQuery.trim()) {
+        if (isOwnerPortalPage || isRestaurantPage || !restaurantSearchQuery.trim()) {
             return;
         }
 
@@ -141,10 +157,10 @@ function AppShell() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [restaurantSearchQuery, isRestaurantPage]);
+    }, [restaurantSearchQuery, isRestaurantPage, isOwnerPortalPage]);
 
     useEffect(() => {
-        if (!isRestaurantPage || !menuSearchQuery.trim()) {
+        if (isOwnerPortalPage || !isRestaurantPage || !menuSearchQuery.trim()) {
             return;
         }
 
@@ -176,7 +192,7 @@ function AppShell() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [activeRestaurantId, menuSearchQuery, isRestaurantPage]);
+    }, [activeRestaurantId, menuSearchQuery, isRestaurantPage, isOwnerPortalPage]);
 
     useEffect(() => {
         setMenuSearchQuery("");
@@ -263,9 +279,13 @@ function AppShell() {
                 if (uid) {
                     try {
                         localStorage.removeItem(`weekly_offers_user_${uid}`);
-                    } catch {}
+                    } catch {
+                        // Ignore localStorage cleanup errors.
+                    }
                 }
-            } catch {}
+            } catch {
+                // Ignore localStorage read errors.
+            }
 
             keysToRemove.forEach((k) => {
                 try {
@@ -275,6 +295,7 @@ function AppShell() {
                 }
             });
             setUsername(null);
+            setUserRole(null);
             setCartItemCount(0);
             // reload to ensure all components read cleared storage
             window.location.href = "/";
@@ -300,85 +321,115 @@ function AppShell() {
                 <div className="app-nav-main">
                     <div className="app-brand">iFody</div>
 
-                    <SearchDropdown
-                        className="app-nav-search"
-                        inputId={isRestaurantPage ? "app-menu-search" : "app-restaurant-search"}
-                        query={activeSearchQuery}
-                        onQueryChange={handleSearchQueryChange}
-                        results={activeSearchResults}
-                        isLoading={activeSearchLoading}
-                        onSelect={isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect}
-                        placeholder={isRestaurantPage ? "Find menu items" : "Search restaurants"}
-                        loadingText={
-                            isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."
-                        }
-                        emptyText={
-                            isRestaurantPage
-                                ? "No matching menu items found."
-                                : "No matching restaurants found."
-                        }
-                        getItemPrimaryText={(item) => item.name}
-                        getItemSecondaryText={(item) =>
-                            isRestaurantPage
-                                ? `$${Number(item.price ?? 0).toFixed(2)}`
-                                : `${item.cuisine} • ${item.location}`
-                        }
-                    />
+                    {isOwnerPortalPage ? (
+                        <div className="app-nav-search app-nav-search-placeholder" />
+                    ) : (
+                        <SearchDropdown
+                            className="app-nav-search"
+                            inputId={isRestaurantPage ? "app-menu-search" : "app-restaurant-search"}
+                            query={activeSearchQuery}
+                            onQueryChange={handleSearchQueryChange}
+                            results={activeSearchResults}
+                            isLoading={activeSearchLoading}
+                            onSelect={isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect}
+                            placeholder={isRestaurantPage ? "Find menu items" : "Search restaurants"}
+                            loadingText={
+                                isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."
+                            }
+                            emptyText={
+                                isRestaurantPage
+                                    ? "No matching menu items found."
+                                    : "No matching restaurants found."
+                            }
+                            getItemPrimaryText={(item) => item.name}
+                            getItemSecondaryText={(item) =>
+                                isRestaurantPage
+                                    ? `$${Number(item.price ?? 0).toFixed(2)}`
+                                    : `${item.cuisine} • ${item.location}`
+                            }
+                        />
+                    )}
 
                     <div className="app-links">
-                        <NavLink to="/" end>
-                            Home
-                        </NavLink>
-                        {username ? (
-                            <NavLink to="/offers">Offers</NavLink>
-                        ) : null}
-                        <div className="nav-dropdown" ref={paymentDropdownRef}>
-                            <button
-                                className="nav-dropdown-trigger link-button"
-                                onClick={() => setPaymentDropdownOpen((prev) => !prev)}
-                                aria-expanded={paymentDropdownOpen}
-                            >
-                                Payments <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
-                            </button>
-                            {paymentDropdownOpen && (
-                                <div className="nav-dropdown-menu">
-                                    <NavLink to="/payment" onClick={() => setPaymentDropdownOpen(false)}>
-                                        Payment Methods
-                                    </NavLink>
-                                    <NavLink to="/transactions" onClick={() => setPaymentDropdownOpen(false)}>
-                                        Transactions
-                                    </NavLink>
-                                    <NavLink to="/paypal" onClick={() => setPaymentDropdownOpen(false)}>
-                                        PayPal
-                                    </NavLink>
-                                </div>
-                            )}
-                        </div>
-                        <NavLink to="/cart" className="cart-link" aria-label="View cart">
-                            Cart
-                            <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
-                                {cartItemCount}
-                            </span>
-                        </NavLink>
-                        {username ? (
+                        {isOwnerPortalPage ? (
                             <>
-                                <NavLink to="/orders">Order History</NavLink>
-                                <NavLink to="/settings">Settings</NavLink>
-                                <span className="app-username">Hi, {username}</span>
-                                <button className="link-button" onClick={handleLogout}>
-                                    Logout
-                                </button>
+                                <NavLink to="/owner" end>
+                                    Owner Home
+                                </NavLink>
+                                {username ? (
+                                    <>
+                                        <span className="app-username">Hi, {username}</span>
+                                        <button className="link-button" onClick={handleLogout}>
+                                            Logout
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <NavLink to="/login?redirect=/owner">Login</NavLink>
+                                        <NavLink to="/register">Register</NavLink>
+                                    </>
+                                )}
                             </>
                         ) : (
                             <>
-                                <NavLink to="/login">Login</NavLink>
-                                <NavLink to="/register">Register</NavLink>
+                                <NavLink to="/" end>
+                                    Home
+                                </NavLink>
+                                {username ? (
+                                    <NavLink to="/offers">Offers</NavLink>
+                                ) : null}
+                                <div className="nav-dropdown" ref={paymentDropdownRef}>
+                                    <button
+                                        className="nav-dropdown-trigger link-button"
+                                        onClick={() => setPaymentDropdownOpen((prev) => !prev)}
+                                        aria-expanded={paymentDropdownOpen}
+                                    >
+                                        Payments <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
+                                    </button>
+                                    {paymentDropdownOpen && (
+                                        <div className="nav-dropdown-menu">
+                                            <NavLink to="/payment" onClick={() => setPaymentDropdownOpen(false)}>
+                                                Payment Methods
+                                            </NavLink>
+                                            <NavLink to="/transactions" onClick={() => setPaymentDropdownOpen(false)}>
+                                                Transactions
+                                            </NavLink>
+                                            <NavLink to="/paypal" onClick={() => setPaymentDropdownOpen(false)}>
+                                                PayPal
+                                            </NavLink>
+                                        </div>
+                                    )}
+                                </div>
+                                <NavLink to="/cart" className="cart-link" aria-label="View cart">
+                                    Cart
+                                    <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
+                                        {cartItemCount}
+                                    </span>
+                                </NavLink>
+                                {username ? (
+                                    <>
+                                        <NavLink to="/orders">Order History</NavLink>
+                                        <NavLink to="/settings">Settings</NavLink>
+                                        {isOwnerUser ? <NavLink to="/owner">Owner Portal</NavLink> : null}
+                                        <span className="app-username">Hi, {username}</span>
+                                        <button className="link-button" onClick={handleLogout}>
+                                            Logout
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <NavLink to="/login">Login</NavLink>
+                                        <NavLink to="/register">Register</NavLink>
+                                    </>
+                                )}
                             </>
                         )}
                     </div>
                 </div>
 
-                {activeSearchError ? <p className="app-nav-error">{activeSearchError}</p> : null}
+                {!isOwnerPortalPage && activeSearchError ? (
+                    <p className="app-nav-error">{activeSearchError}</p>
+                ) : null}
             </nav>
 
             <div className="app-page-shell">
@@ -410,6 +461,7 @@ function AppShell() {
                     <Route path="/offers" element={<Offers />} />
                     <Route path="/orders" element={<OrderHistory />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/owner" element={<OwnerPortal />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                 </Routes>
