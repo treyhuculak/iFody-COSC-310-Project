@@ -8,6 +8,7 @@ import {
     fetchOwnerRestaurants,
     fetchRestaurantMenuItems,
     parseUserIdFromStorage,
+    searchOwnerRestaurantsByName,
     updateRestaurant,
     updateRestaurantMenuItem,
 } from "../api/restaurants";
@@ -68,6 +69,7 @@ export default function OwnerPortal() {
 
     const [restaurantsPage, setRestaurantsPage] = useState(1);
     const [menuPage, setMenuPage] = useState(1);
+    const [restaurantSearchQuery, setRestaurantSearchQuery] = useState("");
 
     const [restaurantsRefreshKey, setRestaurantsRefreshKey] = useState(0);
     const [menuRefreshKey, setMenuRefreshKey] = useState(0);
@@ -135,11 +137,20 @@ export default function OwnerPortal() {
             error: "",
         }));
 
-        fetchOwnerRestaurants({
-            ownerId,
-            skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
-            limit: OWNER_RESTAURANTS_PAGE_SIZE,
-        })
+        const loadOwnerRestaurants = restaurantSearchQuery.trim()
+            ? searchOwnerRestaurantsByName({
+                  ownerId,
+                  name: restaurantSearchQuery,
+                  skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
+                  limit: OWNER_RESTAURANTS_PAGE_SIZE,
+              })
+            : fetchOwnerRestaurants({
+                  ownerId,
+                  skip: (restaurantsPage - 1) * OWNER_RESTAURANTS_PAGE_SIZE,
+                  limit: OWNER_RESTAURANTS_PAGE_SIZE,
+              });
+
+        loadOwnerRestaurants
             .then((response) => {
                 if (cancelled) {
                     return;
@@ -184,7 +195,13 @@ export default function OwnerPortal() {
         return () => {
             cancelled = true;
         };
-    }, [canManageRestaurants, ownerId, restaurantsPage, restaurantsRefreshKey]);
+    }, [
+        canManageRestaurants,
+        ownerId,
+        restaurantsPage,
+        restaurantsRefreshKey,
+        restaurantSearchQuery,
+    ]);
 
     useEffect(() => {
         if (!canManageRestaurants || !activeRestaurantId) {
@@ -648,7 +665,12 @@ export default function OwnerPortal() {
                 <div className="owner-section-header">
                     <div>
                         <h2>Your restaurants</h2>
-                        <p>Page {restaurantsPage} of {Math.max(restaurantsState.totalPages, 1)} • {restaurantsState.total} total</p>
+                        <p>
+                            Page {restaurantsPage} of {Math.max(restaurantsState.totalPages, 1)} • {restaurantsState.total} total
+                            {restaurantSearchQuery.trim()
+                                ? ` matching "${restaurantSearchQuery.trim()}"`
+                                : ""}
+                        </p>
                     </div>
                     <button
                         type="button"
@@ -661,6 +683,20 @@ export default function OwnerPortal() {
                     >
                         {showCreateRestaurantForm ? "Close create form" : "Create restaurant"}
                     </button>
+                </div>
+
+                <div className="owner-search-row">
+                    <label htmlFor="owner-restaurant-search">Search your restaurants by name</label>
+                    <input
+                        id="owner-restaurant-search"
+                        type="text"
+                        value={restaurantSearchQuery}
+                        onChange={(event) => {
+                            setRestaurantSearchQuery(event.target.value);
+                            setRestaurantsPage(1);
+                        }}
+                        placeholder="e.g. sushi, burger, downtown"
+                    />
                 </div>
 
                 {showCreateRestaurantForm ? (

@@ -185,6 +185,56 @@ export async function fetchOwnerRestaurants({
     return normalizePaginatedResponse(payload);
 }
 
+export async function searchOwnerRestaurantsByName({
+    ownerId,
+    name = "",
+    skip = 0,
+    limit = 10,
+    signal,
+} = {}) {
+    const trimmedName = String(name || "").trim().toLowerCase();
+
+    if (!trimmedName) {
+        return fetchOwnerRestaurants({ ownerId, skip, limit, signal });
+    }
+
+    const pageSize = 100;
+    let currentSkip = 0;
+    let hasNext = true;
+    let allOwnerRestaurants = [];
+
+    while (hasNext) {
+        const response = await fetchOwnerRestaurants({
+            ownerId,
+            skip: currentSkip,
+            limit: pageSize,
+            signal,
+        });
+
+        allOwnerRestaurants = allOwnerRestaurants.concat(response.items);
+        hasNext = response.has_next;
+        currentSkip += pageSize;
+    }
+
+    const filteredItems = allOwnerRestaurants.filter((restaurant) =>
+        String(restaurant.name || "").toLowerCase().includes(trimmedName)
+    );
+
+    const total = filteredItems.length;
+    const items = filteredItems.slice(skip, skip + limit);
+    const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
+
+    return {
+        items,
+        total,
+        page: limit > 0 ? Math.floor(skip / limit) + 1 : 1,
+        page_size: limit,
+        total_pages: totalPages,
+        has_next: skip + limit < total,
+        has_prev: skip > 0,
+    };
+}
+
 export async function createRestaurant({ restaurant, userId, signal } = {}) {
     const payload = await request(`/restaurants`, {
         signal,

@@ -108,6 +108,34 @@
     font-size: 0.92rem;
 }
 
+.owner-search-row {
+    margin-top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.owner-search-row label {
+    color: #294534;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.owner-search-row input {
+    border: 1px solid var(--owner-border);
+    border-radius: 10px;
+    padding: 0.6rem 0.7rem;
+    color: var(--owner-ink);
+    background: #ffffff;
+    font-size: 0.95rem;
+    font-family: inherit;
+}
+
+.owner-search-row input:focus {
+    outline: 2px solid rgba(31, 122, 79, 0.28);
+    border-color: var(--owner-accent);
+}
+
 .owner-primary-button,
 .owner-inline-actions button,
 .owner-pagination-row button {
