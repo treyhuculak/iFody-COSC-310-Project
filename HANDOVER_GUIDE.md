@@ -1,5 +1,16 @@
 # iFody COSC 310 - Deployment and Handover Guide
 
+## GitHub Username - Student Number
+- udeluca - 75350892
+- jhlbolsonaro - 82056300
+- JoshL940508 - 55346662
+- treyhuculak - 44925055
+- LostInHustle - 14288765
+
+## Youtube link for our presentation
+
+- https://youtu.be/qb5XH1fy3Ug
+
 ## Contribution Statement (M4):
 - Trey: 20%
 - Aaron: 20%
