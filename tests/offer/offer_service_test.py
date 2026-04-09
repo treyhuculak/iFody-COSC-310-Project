@@ -66,13 +66,14 @@ def offer_service_init():
     Creates a draft database for the OfferService instance for testing purposes.
     The draft database is deleted after the test is done.
     '''
-    repo = OfferRepository("data/draft_offers.json")
+    repo = OfferRepository("data/draft_offers.json", "data/temp_weekly_offers.json")
     for offer in offers:
         repo.add_offer(offer)
     service = OfferService(repo, offers_each_week = 3)
     yield service
     import os
     os.remove(os.getcwd() + "/data/draft_offers.json")
+    os.remove(os.getcwd() + "/data/temp_weekly_offers.json")
 
 def test_get_offer_suggestions(offer_service_init):
     '''

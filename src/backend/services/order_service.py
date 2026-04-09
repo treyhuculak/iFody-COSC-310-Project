@@ -2,7 +2,7 @@ import json
 from src.backend.models.order import OrderCreate
 from src.backend.models.offer import OfferType
 from src.backend.repositories.restaurant_repo import RestaurantRepository
-from src.backend.services.offer_service import OfferService
+from src.backend.services.offer_service import OfferRepository, OfferService
 from typing import Optional
 
 class OrderService:
@@ -11,9 +11,9 @@ class OrderService:
     '''
     TAX_RATES = 'data/tax_rates.json'
 
-    def __init__(self):
+    def __init__(self, temp_weekly_offers: str = None):
         self.restaurant_repo = RestaurantRepository()
-        self.offer_service = OfferService()
+        self.offer_service = OfferService(OfferRepository(temp_weekly_offers))
 
     def calculate_order_subtotal(self, order: OrderCreate):
         total_price = 0

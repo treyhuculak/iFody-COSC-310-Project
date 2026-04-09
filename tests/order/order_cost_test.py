@@ -1,4 +1,5 @@
 import json
+import os
 from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
@@ -79,14 +80,15 @@ order = OrderCreate(customer_id=1, restaurant_id=1, location=OrderLocation.BRITI
 
 # Unit tests for OrderService
 def test_calculate_order_subtotal():
-    order_service = OrderService()
+    order_service = OrderService("data/temp_offers.json")
     
     total = order_service.calculate_order_subtotal(order)
     assert total == 25.0
+    os.remove(os.getcwd() + "/data/temp_offers.json")
 
 
 def test_calculate_order_subtotal_with_discount():
-    order_service = OrderService()
+    order_service = OrderService("data/temp_offers.json")
     # Apply a 10% discount for the restaurant
     with patch('src.backend.services.order_service.OfferService.get_active_offer', return_value={
         "offer_type": OfferType.DISCOUNT.value,
@@ -95,10 +97,11 @@ def test_calculate_order_subtotal_with_discount():
     }):
         total = order_service.calculate_order_subtotal(order)
         assert total == 22.5
+    os.remove(os.getcwd() + "/data/temp_offers.json")
 
 
 def test_calculate_order_subtotal_with_free_item():
-    order_service = OrderService()
+    order_service = OrderService("data/temp_offers.json")
     # Make item with id 1 free
     with patch('src.backend.services.order_service.OfferService.get_active_offer', return_value={
         "offer_type": OfferType.FREE_ITEM.value,
@@ -108,10 +111,11 @@ def test_calculate_order_subtotal_with_free_item():
         total = order_service.calculate_order_subtotal(order)
         # Original total 25.0 minus item 1 price 10.0 -> 15.0
         assert total == 15.0
+        os.remove(os.getcwd() + "/data/temp_offers.json")
 
 
 def test_calculate_order_subtotal_with_price_ceiling():
-    order_service = OrderService()
+    order_service = OrderService("data/temp_offers.json")
     # Apply a price ceiling of 8.0 for item 1 (reduces price by 2.0)
     with patch('src.backend.services.order_service.OfferService.get_active_offer', return_value={
         "offer_type": OfferType.PRICE_CEILING.value,
@@ -122,15 +126,17 @@ def test_calculate_order_subtotal_with_price_ceiling():
         total = order_service.calculate_order_subtotal(order)
         # 25.0 - (10.0 - 8.0) == 23.0
         assert total == 23.0
+        os.remove(os.getcwd() + "/data/temp_offers.json")
 
 def test_calculate_tax():
-    order_service = OrderService()
+    order_service = OrderService("data/temp_offers.json")
     
     subtotal = order_service.calculate_order_subtotal(order)
     assert subtotal == 25.0
 
     tax = order_service.calculate_tax(order, subtotal)
     assert tax == 3.0  # Assuming a tax rate of 12% for British Columbia
+    os.remove(os.getcwd() + "/data/temp_offers.json")
 
 
 # Integration test for OrderController
@@ -151,12 +157,12 @@ def test_add_order(test_client):
         assert data["total_price"] == 25.0 + 3.0 + 5.0
 
 def test_get_delivery_fee():
-    order_service = OrderService()
+    order_service = OrderService("data/temp_offers.json")
     # Mock the restaurant repository to return a specific delivery fee
     with patch.object(order_service.restaurant_repo, 'get_restaurant_by_id', return_value={"delivery_fee": 7.5}):
         fee = order_service.get_delivery_fee(order)
         assert fee == 7.5
-
+    os.remove(os.getcwd() + "/data/temp_offers.json")
 
 def test_subtotal_and_tax_updates(test_client):
     # This is to test the bug fix where subtotal and tax were not updating after adding an item to an existing order. This test will create an order with items, then later add another item to it, and then check if the subtotal and tax are updated correctly.

@@ -11,6 +11,7 @@ import {
     updatePaymentMethod,
 } from "../api/payments";
 import { fetchRestaurantById, parseUserIdFromStorage } from "../api/restaurants";
+import { fetchActiveOffer } from "../api/offers";
 import { createTransaction } from "../api/transactions";
 import "../styles/cart.css";
 
@@ -30,6 +31,7 @@ export default function Cart() {
         error: "",
         orders: [],
         restaurantsById: {},
+        activeOffer: null,
     });
 
     const [paymentMethods, setPaymentMethods] = useState([]);
@@ -79,7 +81,20 @@ export default function Cart() {
                 error: "",
                 orders,
                 restaurantsById,
+                activeOffer: null,
             });
+
+            // Try to fetch currently active offer (if any)
+            try {
+                const active = await fetchActiveOffer();
+                setCartState((prev) => ({ ...prev, activeOffer: active }));
+            } catch (err) {
+                if (err?.status === 401) {
+                    redirectToLogin();
+                    return;
+                }
+                // 404 or other errors -> treat as no active offer
+            }
 
             setQuantityDrafts((prev) => {
                 const nextDrafts = {};
@@ -187,7 +202,7 @@ export default function Cart() {
                     ? Number(order.tax) / Number(order.subtotal_price)
                     : 0;
 
-            const draftSubtotal = (order.order_items || []).reduce((orderSum, orderItem) => {
+            let draftSubtotal = (order.order_items || []).reduce((orderSum, orderItem) => {
                 const itemKey = buildItemDraftKey(order.id, orderItem.item_id);
                 const menuItem = cartState.restaurantsById[order.restaurant_id]?.menu_items?.find(
                     (item) => item.id === orderItem.item_id
@@ -197,14 +212,50 @@ export default function Cart() {
                 return orderSum + price * qty;
             }, 0);
 
-            return (
-                sum +
-                draftSubtotal +
-                draftSubtotal * taxRate +
-                Number(order.delivery_fee || 0)
-            );
+            // Apply active offer adjustments (mirror backend logic)
+            const activeOffer = cartState.activeOffer;
+            if (activeOffer && activeOffer.restaurant_id === order.restaurant_id) {
+                // Offer types: 1=DISCOUNT,2=FREE_ITEM,3=PRICE_CEILING
+                if (Number(activeOffer.offer_type) === 1) {
+                    if (typeof activeOffer.discount_value === "number") {
+                        draftSubtotal = draftSubtotal * (1 - activeOffer.discount_value / 100);
+                    }
+                } else if (Number(activeOffer.offer_type) === 2) {
+                    for (const freeItemId of activeOffer.applied_items || []) {
+                        for (const item of order.order_items || []) {
+                            if (item.item_id === freeItemId) {
+                                const menuItem = cartState.restaurantsById[order.restaurant_id]?.menu_items?.find(
+                                    (m) => m.id === item.item_id
+                                );
+                                const price = Number(menuItem?.price ?? item.price_at_purchase);
+                                if (draftSubtotal - price > 0) {
+                                    draftSubtotal -= price;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } else if (Number(activeOffer.offer_type) === 3) {
+                    for (const appliedId of activeOffer.applied_items || []) {
+                        for (const item of order.order_items || []) {
+                            if (item.item_id === appliedId) {
+                                const menuItem = cartState.restaurantsById[order.restaurant_id]?.menu_items?.find(
+                                    (m) => m.id === item.item_id
+                                );
+                                const price = Number(menuItem?.price ?? item.price_at_purchase);
+                                if (typeof activeOffer.price_ceiling === "number") {
+                                    draftSubtotal -= (price - activeOffer.price_ceiling);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return sum + draftSubtotal + draftSubtotal * taxRate + Number(order.delivery_fee);
         }, 0);
-    }, [cartState.orders, cartState.restaurantsById, quantityDrafts]);
+    }, [cartState.orders, cartState.restaurantsById, quantityDrafts, cartState.activeOffer]);
 
     const selectedPaymentMethod = useMemo(() => {
         return (
@@ -604,7 +655,7 @@ export default function Cart() {
                                                         ? Number(order.tax) / Number(order.subtotal_price)
                                                         : 0;
 
-                                                const draftSubtotal = (order.order_items || []).reduce(
+                                                let draftSubtotal = (order.order_items || []).reduce(
                                                     (sum, orderItem) => {
                                                         const itemKey = buildItemDraftKey(
                                                             order.id,
@@ -623,6 +674,42 @@ export default function Cart() {
                                                     },
                                                     0
                                                 );
+
+                                                // Apply active offer adjustments
+                                                const activeOffer = cartState.activeOffer;
+                                                if (activeOffer && activeOffer.restaurant_id === order.restaurant_id) {
+                                                    if (Number(activeOffer.offer_type) === 1) {
+                                                        if (typeof activeOffer.discount_value === "number") {
+                                                            draftSubtotal = draftSubtotal * (1 - activeOffer.discount_value / 100);
+                                                        }
+                                                    } else if (Number(activeOffer.offer_type) === 2) {
+                                                        for (const freeItemId of activeOffer.applied_items || []) {
+                                                            for (const item of order.order_items || []) {
+                                                                if (item.item_id === freeItemId) {
+                                                                    const menuItem = resolveMenuItem(order, item);
+                                                                    const price = Number(menuItem?.price ?? item.price_at_purchase);
+                                                                    if (draftSubtotal - price > 0) {
+                                                                        draftSubtotal -= price;
+                                                                    }
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    } else if (Number(activeOffer.offer_type) === 3) {
+                                                        for (const appliedId of activeOffer.applied_items || []) {
+                                                            for (const item of order.order_items || []) {
+                                                                if (item.item_id === appliedId) {
+                                                                    const menuItem = resolveMenuItem(order, item);
+                                                                    const price = Number(menuItem?.price ?? item.price_at_purchase);
+                                                                    if (typeof activeOffer.price_ceiling === "number") {
+                                                                        draftSubtotal -= (price - activeOffer.price_ceiling);
+                                                                    }
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
 
                                                 const draftTax = draftSubtotal * taxRate;
 
@@ -694,7 +781,7 @@ export default function Cart() {
                                     ) : (
                                         <div className="cart-no-payment-box">
                                             <p className="cart-payment-helper">
-                                                No payment methods found yet. Click “Manage payments” to add one.
+                                                No payment methods found yet. Click "Manage payments" to add one.
                                             </p>
                                         </div>
                                     )}

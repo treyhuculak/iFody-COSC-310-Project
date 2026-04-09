@@ -13,13 +13,11 @@ from src.backend.repositories.user_repo import UserRepository
 from src.backend.controllers.restaurant_controller import RestaurantController
 import src.backend.utils.auth_dependencies as auth_dependencies
 
-
 @pytest.fixture
 def test_client(tmp_path):
     """
-    Provides a TestClient backed by a temporary JSON file instead of the real
-    data/order.json.  The temp file is deleted automatically after each
-    test, so the production database is never touched.
+    Provides a TestClient backed by a temporary JSON file instead of the real data/order.json.
+    The temporary file is automatically removed after each test, ensuring the production database is never touched.
     """
     temp_db = tmp_path / "test.json"
     temp_db.write_text(json.dumps([]))
@@ -105,3 +103,10 @@ def test_client(tmp_path):
 
     auth_dependencies.repo = original_repo
     app.dependency_overrides.clear()
+
+def pytest_sessionfinish():
+    '''
+    The file data/weekly_offers.json should be cleaned so that it contains no elements after all tests have finished.
+    '''
+    with open("data/weekly_offers.json", "w") as file:
+        file.write("[]")

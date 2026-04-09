@@ -208,6 +208,3 @@ def test_full_order_integration(test_client):
 
     data = get_delivery_response.json()
     assert ["delivered_at"] is not None
-
-
-

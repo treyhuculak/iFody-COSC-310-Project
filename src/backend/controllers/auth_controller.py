@@ -35,7 +35,6 @@ class AuthController:
         self.service = service or AdminService()
         self.notif_controller = notif_controller or NotificationController()
 
-
     def register(self, username: str, email: str, password: str, role: Role):
         '''
         Creates an account instance and saves it to the database when the email, password, and role are all valid.
@@ -60,6 +59,7 @@ class AuthController:
     def login(self, email: str, password: str):
         '''
         Logs in using the email and password given.
+        After an account logs in, there should initially be no associated Offer instances.
         '''
         user_info = self.repo.get_user_by_email(email)
         if user_info == None:
@@ -67,6 +67,8 @@ class AuthController:
         if password == user_info['password']:
             if user_info["is_blocked"]:
                 raise HTTPException(status_code = 403, detail = "The account has been blocked.")
+            with open("data/weekly_offers.json", "w") as file:
+                file.write("[]")
             user_info["is_logged_in"] = True
             self.cur_user = user_info
             return self.cur_user
@@ -76,8 +78,11 @@ class AuthController:
     def logout(self) -> None:
         '''
         Logs out the user and updates the is_logged_in field in the dictionary.
+        Upon logging out, all the associated Offer instances will be removed.
         '''
         if self.cur_user:
+            with open("data/weekly_offers.json", "w") as file:
+                file.write("[]")
             self.cur_user["is_logged_in"] = False
             self.cur_user = None
         else:
