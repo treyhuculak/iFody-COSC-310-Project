@@ -1,1 +1,432 @@
-[]
+[
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 24 has been received.",
+        "is_read": false,
+        "order_id": 24,
+        "id": 1,
+        "created_at": "2026-04-08T22:14:05.263897"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Smoked Brisket Plate to order #24",
+        "is_read": false,
+        "order_id": 24,
+        "id": 3,
+        "created_at": "2026-04-08T22:14:05.302678"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #24",
+        "is_read": false,
+        "order_id": 24,
+        "id": 4,
+        "created_at": "2026-04-08T22:14:06.454291"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 23 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 23,
+        "id": 5,
+        "created_at": "2026-04-08T22:14:26.508677"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 24 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 24,
+        "id": 7,
+        "created_at": "2026-04-08T22:14:31.386773"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 21 has been cancelled by the customer after confirmation, fees will be applied",
+        "is_read": false,
+        "order_id": 21,
+        "id": 9,
+        "created_at": "2026-04-08T22:14:35.026767"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 19 has been received.",
+        "is_read": false,
+        "order_id": 19,
+        "id": 11,
+        "created_at": "2026-04-08T22:14:41.577918"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Chicken Katsu Bowl to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 13,
+        "created_at": "2026-04-08T22:14:41.595457"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Miso Soup to order #19",
+        "is_read": false,
+        "order_id": 19,
+        "id": 14,
+        "created_at": "2026-04-08T22:14:42.961069"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #19 picked up by driver",
+        "is_read": false,
+        "order_id": 19,
+        "id": 18,
+        "created_at": "2026-04-08T22:22:25.019599"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #19 has been delivered",
+        "is_read": false,
+        "order_id": 19,
+        "id": 20,
+        "created_at": "2026-04-08T22:22:56.629785"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 20 has been received.",
+        "is_read": false,
+        "order_id": 20,
+        "id": 21,
+        "created_at": "2026-04-08T22:23:39.641260"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Margherita Pizza to order #20",
+        "is_read": false,
+        "order_id": 20,
+        "id": 23,
+        "created_at": "2026-04-08T22:23:39.663247"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #20 picked up by driver",
+        "is_read": false,
+        "order_id": 20,
+        "id": 26,
+        "created_at": "2026-04-08T22:24:31.071708"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #20 has been delivered",
+        "is_read": false,
+        "order_id": 20,
+        "id": 28,
+        "created_at": "2026-04-08T22:25:02.598904"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 21 has been received.",
+        "is_read": false,
+        "order_id": 21,
+        "id": 29,
+        "created_at": "2026-04-08T22:26:56.835682"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #21",
+        "is_read": false,
+        "order_id": 21,
+        "id": 31,
+        "created_at": "2026-04-08T22:26:56.900779"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 22 has been received.",
+        "is_read": false,
+        "order_id": 22,
+        "id": 32,
+        "created_at": "2026-04-08T22:29:07.407177"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Chicken Katsu Bowl to order #22",
+        "is_read": false,
+        "order_id": 22,
+        "id": 34,
+        "created_at": "2026-04-08T22:29:07.439723"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Miso Soup to order #22",
+        "is_read": false,
+        "order_id": 22,
+        "id": 35,
+        "created_at": "2026-04-08T22:29:10.388861"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 21 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 21,
+        "id": 36,
+        "created_at": "2026-04-08T22:29:17.828525"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #22 picked up by driver",
+        "is_read": false,
+        "order_id": 22,
+        "id": 40,
+        "created_at": "2026-04-08T22:29:44.941732"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #22 has been delivered",
+        "is_read": false,
+        "order_id": 22,
+        "id": 42,
+        "created_at": "2026-04-08T22:29:56.441071"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 23 has been received.",
+        "is_read": false,
+        "order_id": 23,
+        "id": 43,
+        "created_at": "2026-04-08T22:32:19.814462"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Salmon Poke Bowl to order #23",
+        "is_read": false,
+        "order_id": 23,
+        "id": 45,
+        "created_at": "2026-04-08T22:32:19.838736"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #23 picked up by driver",
+        "is_read": false,
+        "order_id": 23,
+        "id": 48,
+        "created_at": "2026-04-08T22:32:51.212116"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #23 has been delivered",
+        "is_read": false,
+        "order_id": 23,
+        "id": 50,
+        "created_at": "2026-04-08T22:33:02.585332"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 24 has been received.",
+        "is_read": false,
+        "order_id": 24,
+        "id": 51,
+        "created_at": "2026-04-09T02:34:15.472659"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #24",
+        "is_read": false,
+        "order_id": 24,
+        "id": 53,
+        "created_at": "2026-04-09T02:34:15.497307"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 25 has been received.",
+        "is_read": false,
+        "order_id": 25,
+        "id": 54,
+        "created_at": "2026-04-09T02:35:06.346767"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Penne Arrabbiata to order #25",
+        "is_read": false,
+        "order_id": 25,
+        "id": 56,
+        "created_at": "2026-04-09T02:35:06.370083"
+    },
+    {
+        "user_id": 2,
+        "type": "order cancelled",
+        "title": "Order Cancelled",
+        "message": "Order with ID 24 has been cancelled by the customer before confirmation",
+        "is_read": false,
+        "order_id": 24,
+        "id": 57,
+        "created_at": "2026-04-09T02:35:12.596544"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #25 picked up by driver",
+        "is_read": false,
+        "order_id": 25,
+        "id": 61,
+        "created_at": "2026-04-09T02:35:37.194797"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #25 has been delivered",
+        "is_read": false,
+        "order_id": 25,
+        "id": 63,
+        "created_at": "2026-04-09T02:35:52.058900"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 26 has been received.",
+        "is_read": false,
+        "order_id": 26,
+        "id": 64,
+        "created_at": "2026-04-09T02:44:09.264251"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Matcha Cheesecake to order #26",
+        "is_read": false,
+        "order_id": 26,
+        "id": 66,
+        "created_at": "2026-04-09T02:44:09.399713"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #26 picked up by driver",
+        "is_read": false,
+        "order_id": 26,
+        "id": 69,
+        "created_at": "2026-04-09T02:44:36.353680"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #26 has been delivered",
+        "is_read": false,
+        "order_id": 26,
+        "id": 71,
+        "created_at": "2026-04-09T02:44:51.878143"
+    },
+    {
+        "user_id": 2,
+        "type": "new order received",
+        "title": "New Order Received",
+        "message": "A new order with id 27 has been received.",
+        "is_read": false,
+        "order_id": 27,
+        "id": 72,
+        "created_at": "2026-04-09T02:50:25.672956"
+    },
+    {
+        "user_id": 2,
+        "type": "new item has been added to order",
+        "title": "New Item Added",
+        "message": "Customer has added Pulled Pork Sandwich to order #27",
+        "is_read": false,
+        "order_id": 27,
+        "id": 74,
+        "created_at": "2026-04-09T02:50:25.688020"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #27 picked up by driver",
+        "is_read": false,
+        "order_id": 27,
+        "id": 77,
+        "created_at": "2026-04-09T02:51:00.202003"
+    },
+    {
+        "user_id": 2,
+        "type": "order in transit",
+        "title": "Driver Picked Up",
+        "message": "Order #27 picked up by driver",
+        "is_read": false,
+        "order_id": 27,
+        "id": 79,
+        "created_at": "2026-04-09T02:51:13.465394"
+    },
+    {
+        "user_id": 2,
+        "type": "order delivered",
+        "title": "Order has been delivered",
+        "message": "Order #27 has been delivered",
+        "is_read": false,
+        "order_id": 27,
+        "id": 81,
+        "created_at": "2026-04-09T02:51:29.472253"
+    }
+]

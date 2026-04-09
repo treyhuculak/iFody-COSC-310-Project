@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import "./App.css";
 import { getCartItemCount } from "./api/orders";
+import { getUnreadCount } from "./api/notifications";
 import {
     parseUserIdFromStorage,
     searchRestaurantMenuItems,
@@ -16,13 +17,18 @@ import {
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
 import ChatbotWindow from "./components/home/ChatbotWindow";
+import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import OrderHistory from "./pages/OrderHistory";
-import RestaurantDetails from "./pages/RestaurantDetails";
-import Register from "./pages/Register";
+import Notifications from "./pages/Notifications";
 import Offers from "./pages/Offers";
+import OrderHistory from "./pages/OrderHistory";
+import OrderTracking from "./pages/OrderTracking";
+import RestaurantDetails from "./pages/RestaurantDetails";
+import RestaurantManager from "./pages/RestaurantManager";
+import Register from "./pages/Register";
+import Review from "./pages/Review";
 import Settings from "./pages/Settings";
 import Payment from "./pages/Payment";
 import Transactions from "./pages/Transaction";
@@ -53,14 +59,34 @@ function AppShell() {
     const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
     const [selectedMenuItemId, setSelectedMenuItemId] = useState(null);
     const [cartItemCount, setCartItemCount] = useState(0);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const [activeTrackingIds, setActiveTrackingIds] = useState(() => {
+        try {
+            const stored = localStorage.getItem("tracking_order_ids");
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+    });
+
     const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
     const paymentDropdownRef = useRef(null);
+
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const userDropdownRef = useRef(null);
 
     const [username, setUsername] = useState(() => {
         try {
             return localStorage.getItem("username");
         } catch {
             return null;
+        }
+    });
+
+    const [userRole, setUserRole] = useState(() => {
+        try {
+            return localStorage.getItem("userRole") || "";
+        } catch {
+            return "";
         }
     });
 
@@ -77,7 +103,6 @@ function AppShell() {
             setCartItemCount(0);
             return;
         }
-
         try {
             const count = await getCartItemCount(userId);
             setCartItemCount(count);
@@ -86,20 +111,41 @@ function AppShell() {
         }
     }, []);
 
+    const refreshUnreadCount = useCallback(async () => {
+        const userId = parseUserIdFromStorage();
+        if (!userId) {
+            setUnreadCount(0);
+            return;
+        }
+        try {
+            const count = await getUnreadCount(userId);
+            setUnreadCount(count);
+        } catch {
+            setUnreadCount(0);
+        }
+    }, []);
+
     useEffect(() => {
         refreshCartCount();
-    }, [location.pathname, refreshCartCount, username]);
+        refreshUnreadCount();
+    }, [location.pathname, refreshCartCount, refreshUnreadCount, username]);
 
     useEffect(() => {
-        const handleCartUpdate = () => {
-            refreshCartCount();
-        };
-
+        const handleCartUpdate = () => refreshCartCount();
         window.addEventListener("cart:updated", handleCartUpdate);
-        return () => {
-            window.removeEventListener("cart:updated", handleCartUpdate);
-        };
+        return () => window.removeEventListener("cart:updated", handleCartUpdate);
     }, [refreshCartCount]);
+
+    useEffect(() => {
+        const handleTrackingUpdate = () => {
+            try {
+                const stored = localStorage.getItem("tracking_order_ids");
+                setActiveTrackingIds(stored ? JSON.parse(stored) : []);
+            } catch { setActiveTrackingIds([]); }
+        };
+        window.addEventListener("tracking:updated", handleTrackingUpdate);
+        return () => window.removeEventListener("tracking:updated", handleTrackingUpdate);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -112,9 +158,17 @@ function AppShell() {
     }, []);
 
     useEffect(() => {
-        if (isRestaurantPage || !restaurantSearchQuery.trim()) {
-            return;
-        }
+        const handleClickOutside = (e) => {
+            if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+                setUserDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        if (isRestaurantPage || !restaurantSearchQuery.trim()) return;
 
         const abortController = new AbortController();
         const timer = setTimeout(() => {
@@ -128,10 +182,7 @@ function AppShell() {
                     setRestaurantSearchError("");
                 })
                 .catch((error) => {
-                    if (error.name === "AbortError") {
-                        return;
-                    }
-
+                    if (error.name === "AbortError") return;
                     setRestaurantSearchResults([]);
                     setRestaurantSearchLoading(false);
                     setRestaurantSearchError(error.message || "Search is unavailable.");
@@ -145,9 +196,7 @@ function AppShell() {
     }, [restaurantSearchQuery, isRestaurantPage]);
 
     useEffect(() => {
-        if (!isRestaurantPage || !menuSearchQuery.trim()) {
-            return;
-        }
+        if (!isRestaurantPage || !menuSearchQuery.trim()) return;
 
         const abortController = new AbortController();
         const timer = setTimeout(() => {
@@ -163,10 +212,7 @@ function AppShell() {
                     setMenuSearchError("");
                 })
                 .catch((error) => {
-                    if (error.name === "AbortError") {
-                        return;
-                    }
-
+                    if (error.name === "AbortError") return;
                     setMenuSearchResults([]);
                     setMenuSearchLoading(false);
                     setMenuSearchError(error.message || "Search is unavailable.");
@@ -190,7 +236,6 @@ function AppShell() {
     const handleSearchQueryChange = (value) => {
         if (isRestaurantPage) {
             setMenuSearchQuery(value);
-
             if (!value.trim()) {
                 setMenuSearchResults([]);
                 setMenuSearchLoading(false);
@@ -198,21 +243,18 @@ function AppShell() {
                 setSelectedMenuItemId(null);
                 return;
             }
-
             setMenuSearchLoading(true);
             setMenuSearchError("");
             return;
         }
 
         setRestaurantSearchQuery(value);
-
         if (!value.trim()) {
             setRestaurantSearchResults([]);
             setRestaurantSearchLoading(false);
             setRestaurantSearchError("");
             return;
         }
-
         setRestaurantSearchLoading(true);
         setRestaurantSearchError("");
     };
@@ -220,10 +262,7 @@ function AppShell() {
     const handleRestaurantSelect = (restaurant) => {
         setSelectedRestaurantId(restaurant?.id ?? null);
         setRestaurantSearchQuery(restaurant?.name || "");
-
-        if (restaurant?.id) {
-            navigate(`/restaurants/${restaurant.id}`);
-        }
+        if (restaurant?.id) navigate(`/restaurants/${restaurant.id}`);
     };
 
     const handleMenuItemSelect = (menuItem) => {
@@ -242,6 +281,7 @@ function AppShell() {
             "currentUserId",
             "userRole",
             "active_order_ids_by_restaurant",
+            "email",
         ];
         try {
             const token = localStorage.getItem("auth_token") || localStorage.getItem("token");
@@ -258,42 +298,29 @@ function AppShell() {
         } catch (err) {
             console.warn("Logout request error:", err);
         } finally {
-            // remove per-user cached offers if present
             try {
                 const uid = parseUserIdFromStorage();
                 if (uid) {
-                    try {
-                        localStorage.removeItem(`weekly_offers_user_${uid}`);
-                    } catch {}
+                    try { localStorage.removeItem(`weekly_offers_user_${uid}`); } catch {}
                 }
             } catch {}
 
             keysToRemove.forEach((k) => {
-                try {
-                    localStorage.removeItem(k);
-                } catch {
-                    // ignore
-                }
+                try { localStorage.removeItem(k); } catch { /* ignore */ }
             });
             setUsername(null);
+            setUserRole("");
             setCartItemCount(0);
-            // reload to ensure all components read cleared storage
+            setUnreadCount(0);
+            setUserDropdownOpen(false);
             window.location.href = "/";
         }
     };
 
-    const activeSearchQuery = isRestaurantPage
-        ? menuSearchQuery
-        : restaurantSearchQuery;
-    const activeSearchResults = isRestaurantPage
-        ? menuSearchResults
-        : restaurantSearchResults;
-    const activeSearchLoading = isRestaurantPage
-        ? menuSearchLoading
-        : restaurantSearchLoading;
-    const activeSearchError = isRestaurantPage
-        ? menuSearchError
-        : restaurantSearchError;
+    const activeSearchQuery = isRestaurantPage ? menuSearchQuery : restaurantSearchQuery;
+    const activeSearchResults = isRestaurantPage ? menuSearchResults : restaurantSearchResults;
+    const activeSearchLoading = isRestaurantPage ? menuSearchLoading : restaurantSearchLoading;
+    const activeSearchError = isRestaurantPage ? menuSearchError : restaurantSearchError;
 
     return (
         <>
@@ -310,9 +337,7 @@ function AppShell() {
                         isLoading={activeSearchLoading}
                         onSelect={isRestaurantPage ? handleMenuItemSelect : handleRestaurantSelect}
                         placeholder={isRestaurantPage ? "Find menu items" : "Search restaurants"}
-                        loadingText={
-                            isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."
-                        }
+                        loadingText={isRestaurantPage ? "Searching menu items..." : "Searching restaurants..."}
                         emptyText={
                             isRestaurantPage
                                 ? "No matching menu items found."
@@ -327,19 +352,21 @@ function AppShell() {
                     />
 
                     <div className="app-links">
-                        <NavLink to="/" end>
-                            Home
-                        </NavLink>
-                        {username ? (
+                        <NavLink to="/" end>Home</NavLink>
+
+                        {username && (
                             <NavLink to="/offers">Offers</NavLink>
-                        ) : null}
+                        )}
+
+                        {/* Payments dropdown */}
                         <div className="nav-dropdown" ref={paymentDropdownRef}>
                             <button
                                 className="nav-dropdown-trigger link-button"
                                 onClick={() => setPaymentDropdownOpen((prev) => !prev)}
                                 aria-expanded={paymentDropdownOpen}
                             >
-                                Payments <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
+                                Payments{" "}
+                                <span className="nav-dropdown-caret">{paymentDropdownOpen ? "▴" : "▾"}</span>
                             </button>
                             {paymentDropdownOpen && (
                                 <div className="nav-dropdown-menu">
@@ -355,21 +382,68 @@ function AppShell() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Live tracking indicator */}
+                        {activeTrackingIds.length > 0 && location.pathname !== "/order-tracking" && (
+                            <NavLink to="/order-tracking" className="tracking-nav-link">
+                                <span className="tracking-nav-dot" />
+                                Live Tracking
+                            </NavLink>
+                        )}
+
+                        {/* Cart */}
                         <NavLink to="/cart" className="cart-link" aria-label="View cart">
                             Cart
                             <span className={`cart-badge ${cartItemCount > 0 ? "has-items" : ""}`}>
                                 {cartItemCount}
                             </span>
                         </NavLink>
+
                         {username ? (
-                            <>
-                                <NavLink to="/orders">Order History</NavLink>
-                                <NavLink to="/settings">Settings</NavLink>
-                                <span className="app-username">Hi, {username}</span>
-                                <button className="link-button" onClick={handleLogout}>
-                                    Logout
+                            /* User dropdown */
+                            <div className="nav-dropdown" ref={userDropdownRef}>
+                                <button
+                                    className="nav-dropdown-trigger link-button app-username-btn"
+                                    onClick={() => setUserDropdownOpen((prev) => !prev)}
+                                    aria-expanded={userDropdownOpen}
+                                >
+                                    Hi, {username}{" "}
+                                    <span className="nav-dropdown-caret">{userDropdownOpen ? "▴" : "▾"}</span>
                                 </button>
-                            </>
+                                {userDropdownOpen && (
+                                    <div className="nav-dropdown-menu nav-dropdown-menu-right">
+                                        <NavLink to="/orders" onClick={() => setUserDropdownOpen(false)}>
+                                            Order History
+                                        </NavLink>
+                                        <NavLink
+                                            to="/notifications"
+                                            className="notif-nav-link"
+                                            onClick={() => setUserDropdownOpen(false)}
+                                        >
+                                            Notifications
+                                            {unreadCount > 0 && (
+                                                <span className="notif-nav-badge">{unreadCount}</span>
+                                            )}
+                                        </NavLink>
+                                        <NavLink to="/settings" onClick={() => setUserDropdownOpen(false)}>
+                                            Settings
+                                        </NavLink>
+                                        {userRole === "administrator" && (
+                                            <NavLink to="/admin" onClick={() => setUserDropdownOpen(false)}>
+                                                Admin Dashboard
+                                            </NavLink>
+                                        )}
+                                        {userRole === "restaurant owner" && (
+                                            <NavLink to="/my-restaurants" onClick={() => setUserDropdownOpen(false)}>
+                                                My Restaurants
+                                            </NavLink>
+                                        )}
+                                        <button className="link-button dropdown-logout-btn" onClick={handleLogout}>
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <>
                                 <NavLink to="/login">Login</NavLink>
@@ -405,12 +479,17 @@ function AppShell() {
                         }
                     />
                     <Route path="/cart" element={<Cart />} />
+                    <Route path="/order-tracking" element={<OrderTracking />} />
                     <Route path="/payment" element={<Payment />} />
                     <Route path="/transactions" element={<Transactions />} />
                     <Route path="/paypal" element={<PayPalPage />} />
                     <Route path="/offers" element={<Offers />} />
                     <Route path="/orders" element={<OrderHistory />} />
+                    <Route path="/notifications" element={<Notifications />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/my-restaurants" element={<RestaurantManager />} />
+                    <Route path="/review/:orderId" element={<Review />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                 </Routes>
