@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
     BrowserRouter,
+    Navigate,
     NavLink,
     Route,
     Routes,
@@ -85,6 +86,15 @@ function AppShell() {
         activeRestaurantId !== null && Number.isInteger(activeRestaurantId);
     const isOwnerPortalPage = location.pathname.startsWith("/owner");
     const isOwnerUser = normalizeRole(userRole) === "restaurantowner";
+    const isOwnerLockedView = isOwnerUser || isOwnerPortalPage;
+
+    useEffect(() => {
+        if (!isOwnerUser || isOwnerPortalPage) {
+            return;
+        }
+
+        navigate("/owner", { replace: true });
+    }, [isOwnerUser, isOwnerPortalPage, navigate]);
 
     const refreshCartCount = useCallback(async () => {
         const userId = parseUserIdFromStorage();
@@ -127,7 +137,7 @@ function AppShell() {
     }, []);
 
     useEffect(() => {
-        if (isOwnerPortalPage || isRestaurantPage || !restaurantSearchQuery.trim()) {
+        if (isOwnerLockedView || isRestaurantPage || !restaurantSearchQuery.trim()) {
             return;
         }
 
@@ -157,10 +167,10 @@ function AppShell() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [restaurantSearchQuery, isRestaurantPage, isOwnerPortalPage]);
+    }, [restaurantSearchQuery, isRestaurantPage, isOwnerLockedView]);
 
     useEffect(() => {
-        if (isOwnerPortalPage || !isRestaurantPage || !menuSearchQuery.trim()) {
+        if (isOwnerLockedView || !isRestaurantPage || !menuSearchQuery.trim()) {
             return;
         }
 
@@ -192,7 +202,7 @@ function AppShell() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [activeRestaurantId, menuSearchQuery, isRestaurantPage, isOwnerPortalPage]);
+    }, [activeRestaurantId, menuSearchQuery, isRestaurantPage, isOwnerLockedView]);
 
     useEffect(() => {
         setMenuSearchQuery("");
@@ -321,7 +331,7 @@ function AppShell() {
                 <div className="app-nav-main">
                     <div className="app-brand">iFody</div>
 
-                    {isOwnerPortalPage ? (
+                    {isOwnerLockedView ? (
                         <div className="app-nav-search app-nav-search-placeholder" />
                     ) : (
                         <SearchDropdown
@@ -351,7 +361,7 @@ function AppShell() {
                     )}
 
                     <div className="app-links">
-                        {isOwnerPortalPage ? (
+                        {isOwnerLockedView ? (
                             <>
                                 <NavLink to="/owner" end>
                                     Owner Home
@@ -427,7 +437,7 @@ function AppShell() {
                     </div>
                 </div>
 
-                {!isOwnerPortalPage && activeSearchError ? (
+                {!isOwnerLockedView && activeSearchError ? (
                     <p className="app-nav-error">{activeSearchError}</p>
                 ) : null}
             </nav>
@@ -437,33 +447,45 @@ function AppShell() {
                     <Route
                         path="/"
                         element={
-                            <Home
-                                navSearchResults={restaurantSearchResults}
-                                selectedRestaurantId={selectedRestaurantId}
-                                onRestaurantSelect={handleRestaurantSelect}
-                            />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Home
+                                    navSearchResults={restaurantSearchResults}
+                                    selectedRestaurantId={selectedRestaurantId}
+                                    onRestaurantSelect={handleRestaurantSelect}
+                                />
+                            )
                         }
                     />
                     <Route
                         path="/restaurants/:restaurantId"
                         element={
-                            <RestaurantDetails
-                                navMenuSearchResults={menuSearchResults}
-                                menuSearchQuery={menuSearchQuery}
-                                highlightedMenuItemId={selectedMenuItemId}
-                            />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <RestaurantDetails
+                                    navMenuSearchResults={menuSearchResults}
+                                    menuSearchQuery={menuSearchQuery}
+                                    highlightedMenuItemId={selectedMenuItemId}
+                                />
+                            )
                         }
                     />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/payment" element={<Payment />} />
-                    <Route path="/transactions" element={<Transactions />} />
-                    <Route path="/paypal" element={<PayPalPage />} />
-                    <Route path="/offers" element={<Offers />} />
-                    <Route path="/orders" element={<OrderHistory />} />
-                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/cart" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Cart />} />
+                    <Route path="/payment" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Payment />} />
+                    <Route
+                        path="/transactions"
+                        element={isOwnerUser ? <Navigate to="/owner" replace /> : <Transactions />}
+                    />
+                    <Route path="/paypal" element={isOwnerUser ? <Navigate to="/owner" replace /> : <PayPalPage />} />
+                    <Route path="/offers" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Offers />} />
+                    <Route path="/orders" element={isOwnerUser ? <Navigate to="/owner" replace /> : <OrderHistory />} />
+                    <Route path="/settings" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Settings />} />
                     <Route path="/owner" element={<OwnerPortal />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Login />} />
+                    <Route path="/register" element={isOwnerUser ? <Navigate to="/owner" replace /> : <Register />} />
+                    <Route path="*" element={<Navigate to={isOwnerUser ? "/owner" : "/"} replace />} />
                 </Routes>
             </div>
         </>

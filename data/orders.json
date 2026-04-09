@@ -3,7 +3,7 @@
         "id": 1,
         "customer_id": 1,
         "restaurant_id": 1,
-        "status": "delivered",
+        "status": "payment confirmed",
         "location": "BC",
         "order_items": [
             {
