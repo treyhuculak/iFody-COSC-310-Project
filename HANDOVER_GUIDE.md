@@ -239,7 +239,7 @@ Required .env keys:
 Recommended setup:
 - Use PayPal Sandbox credentials for TA evaluation.
 - Keep PAYPAL_BASE_URL as sandbox unless intentionally moving to production.
-- Use the following personal PayPal Developer Sandbox account:
+- Use the following personal PayPal Developer Sandbox account when paying with the PayPal option(login after clicking approve link within the app):
      - sb-r5mas50346263@personal.example.com
      - I&+tax1z
 
