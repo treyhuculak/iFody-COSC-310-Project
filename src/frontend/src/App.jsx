@@ -16,6 +16,7 @@ import {
     searchRestaurantsByName,
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
+import ChatbotWindow from "./components/home/ChatbotWindow";
 import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
@@ -493,6 +494,7 @@ function AppShell() {
                     <Route path="/register" element={<Register />} />
                 </Routes>
             </div>
+            <ChatbotWindow />
         </>
     );
 }
