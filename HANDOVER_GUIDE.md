@@ -239,6 +239,9 @@ Required .env keys:
 Recommended setup:
 - Use PayPal Sandbox credentials for TA evaluation.
 - Keep PAYPAL_BASE_URL as sandbox unless intentionally moving to production.
+- Use the following personal PayPal Developer Sandbox account:
+     - sb-r5mas50346263@personal.example.com
+     - I&+tax1z
 
 #### Email (Gmail SMTP)
 Used by EmailService for notifications.
