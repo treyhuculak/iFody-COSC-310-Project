@@ -6,6 +6,8 @@ from src.backend.models.notification import NotificationType, NotificationCreate
 from src.backend.controllers.notification_controller import NotificationController
 from src.backend.repositories.user_repo import UserRepository
 from src.backend.services.admin_service import AdminService
+from src.backend.repositories.session_repo import SessionRepository
+
 
 class AccountExistsException(Exception):
     """
@@ -24,7 +26,8 @@ class AuthController:
             self,
             repo: Optional[UserRepository] = None,
             service: Optional[AdminService] = None,
-            notif_controller: Optional[NotificationController] = None
+            notif_controller: Optional[NotificationController] = None,
+            session_repo: Optional[SessionRepository] = None
         ) -> None:
         '''
         Initializes the AuthController class with the necessary fields.
@@ -34,6 +37,8 @@ class AuthController:
         self.repo = repo or UserRepository()
         self.service = service or AdminService()
         self.notif_controller = notif_controller or NotificationController()
+        self.session_repo = session_repo or SessionRepository()  
+        self.cur_user = self.session_repo.get()       
 
     def register(self, username: str, email: str, password: str, role: Role):
         '''
@@ -55,7 +60,7 @@ class AuthController:
         if hasattr(user_dict['role'], 'value'):
             user_dict['role'] = user_dict['role'].value
         self.repo.add_user(user_dict)
-        
+
     def login(self, email: str, password: str):
         '''
         Logs in using the email and password given.
@@ -71,6 +76,7 @@ class AuthController:
                 file.write("[]")
             user_info["is_logged_in"] = True
             self.cur_user = user_info
+            self.session_repo.save(user_info)
             return self.cur_user
         else:
             raise HTTPException(status_code = 400, detail = "The password is incorrect.")
@@ -85,6 +91,7 @@ class AuthController:
                 file.write("[]")
             self.cur_user["is_logged_in"] = False
             self.cur_user = None
+            self.session_repo.clear()
         else:
             raise NotLoggedInException("Please sign in to the account first.")
         

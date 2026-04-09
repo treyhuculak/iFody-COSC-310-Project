@@ -10,11 +10,16 @@ from src.backend.services.admin_service import AdminService
 import src.backend.utils.auth_dependencies as auth_dependencies
 from src.backend.routers.auth import get_controller
 from src.backend.main import app
+from src.backend.repositories.session_repo import SessionRepository
+
 
 @pytest.fixture
 def test_client(tmp_path):
     temp_notif_db = tmp_path / "test_notif_db.json"
     temp_user_db = tmp_path / "test_user_db.json"
+
+    temp_session_db = tmp_path / "test_session_db.json"
+    temp_session_db.write_text(json.dumps(None))
 
     temp_notif_db.write_text(json.dumps([]))
     temp_user_db.write_text(json.dumps({
@@ -46,10 +51,13 @@ def test_client(tmp_path):
     test_notif_controller = NotificationController(repo=test_notif_repo)
     test_admin_service = AdminService()
 
+    test_session_repo = SessionRepository(str(temp_session_db))
+
     test_auth_controller = AuthController(
         repo=test_user_repo, 
         service=test_admin_service,
-        notif_controller=test_notif_controller
+        notif_controller=test_notif_controller,
+        session_repo=test_session_repo
     )
 
     app.dependency_overrides[get_controller] = lambda: test_auth_controller

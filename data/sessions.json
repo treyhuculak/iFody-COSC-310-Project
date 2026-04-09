@@ -1,0 +1,9 @@
+{
+    "id": 3,
+    "username": "TestAdmin",
+    "email": "testadmin@123.com",
+    "password": "Test@123",
+    "role": "administrator",
+    "is_logged_in": true,
+    "is_blocked": false
+}
