@@ -154,20 +154,26 @@ export default function PayPalPage() {
   };
 
   const handleCapture = async (transactionId) => {
-    clearMessages();
-    setBusyAction(`capture-${transactionId}`);
+  clearMessages();
+  setBusyAction(`capture-${transactionId}`);
 
-    try {
-      const captured = await capturePaypalTransaction(transactionId);
-      setSelectedTransaction(captured);
-      setPendingTransactions(getPendingPaypalTransactions());
-      setSuccessMessage(`PayPal transaction #${captured.id} captured successfully.`);
-    } catch (err) {
-      setError(err.message || "Failed to capture PayPal transaction.");
-    } finally {
-      setBusyAction("");
+  try {
+    const captured = await capturePaypalTransaction(transactionId);
+    setSelectedTransaction(captured);
+    setPendingTransactions(getPendingPaypalTransactions());
+
+    if (captured?.is_successful) {
+      navigate("/orders");
+      return;
     }
-  };
+
+    setSuccessMessage(`PayPal transaction #${captured.id} captured successfully.`);
+  } catch (err) {
+    setError(err.message || "Failed to capture PayPal transaction.");
+  } finally {
+    setBusyAction("");
+  }
+};
 
   const selectedTransactionId = Number(selectedTransaction?.id) || null;
 

@@ -138,5 +138,36 @@
         "user_id": 1,
         "is_successful": true,
         "id": 10
+    },
+    {
+        "payment_method_id": 2,
+        "order_id": 18,
+        "amount": 209.17,
+        "provider_order_id": "54N15737P16555308",
+        "provider_status": "COMPLETED",
+        "links": [
+            {
+                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/54N15737P16555308",
+                "rel": "self",
+                "method": "GET"
+            },
+            {
+                "href": "https://www.sandbox.paypal.com/checkoutnow?token=54N15737P16555308",
+                "rel": "payer-action",
+                "method": "GET"
+            }
+        ],
+        "approve_url": "https://www.sandbox.paypal.com/checkoutnow?token=54N15737P16555308",
+        "user_id": 1,
+        "is_successful": true,
+        "id": 11
+    },
+    {
+        "payment_method_id": 1,
+        "order_id": 18,
+        "amount": 209.174,
+        "is_successful": true,
+        "user_id": 1,
+        "id": 12
     }
 ]
