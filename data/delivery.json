@@ -69,5 +69,21 @@
         "driver_id": 1,
         "assigned_at": "2026-04-09T02:51:13.429630",
         "id": 9
+    },
+    {
+        "order_id": 18,
+        "estimated_delivery_time": "2026-04-09T03:50:56.592506",
+        "driver_id": 1,
+        "assigned_at": "2026-04-09T03:20:56.592558",
+        "id": 10,
+        "delivered_at": "2026-04-09T03:21:08.456Z"
+    },
+    {
+        "order_id": 28,
+        "estimated_delivery_time": "2026-04-09T03:51:50.313647",
+        "driver_id": 1,
+        "assigned_at": "2026-04-09T03:21:50.313710",
+        "id": 11,
+        "delivered_at": "2026-04-09T03:22:02.070Z"
     }
 ]

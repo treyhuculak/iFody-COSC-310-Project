@@ -81,7 +81,7 @@ def test_client(tmp_path):
     test_restaurant_repo = RestaurantRepository(file_path=str(temp_restaurant_db))
 
     test_notif_controller = NotificationController(repo=test_notif_repo)
-    test_deliv_controller = DeliveryController(repo=test_deliv_repo)
+    test_deliv_controller = DeliveryController(repo=test_deliv_repo, order_repo=test_repo)
 
     test_controller = OrderController(
         repo=test_repo, 

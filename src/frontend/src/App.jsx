@@ -17,6 +17,7 @@ import {
     searchRestaurantsByName,
 } from "./api/restaurants";
 import SearchDropdown from "./components/search/SearchDropdown";
+import ChatbotWindow from "./components/home/ChatbotWindow";
 import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
@@ -550,10 +551,13 @@ function AppShell() {
                                                         Admin Dashboard
                                                     </NavLink>
                                                 )}
-                                                {userRole === "restaurant owner" && (
+                                                {normalizeRole(userRole) ===
+                                                    "restaurantowner" && (
                                                     <NavLink
                                                         to="/my-restaurants"
-                                                        onClick={() => setUserDropdownOpen(false)}
+                                                        onClick={() =>
+                                                            setUserDropdownOpen(false)
+                                                        }
                                                     >
                                                         My Restaurants
                                                     </NavLink>
@@ -616,86 +620,142 @@ function AppShell() {
                     <Route
                         path="/cart"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Cart />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Cart />
+                            )
                         }
                     />
                     <Route
                         path="/order-tracking"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <OrderTracking />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <OrderTracking />
+                            )
                         }
                     />
                     <Route
                         path="/payment"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Payment />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Payment />
+                            )
                         }
                     />
                     <Route
                         path="/transactions"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Transactions />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Transactions />
+                            )
                         }
                     />
                     <Route
                         path="/paypal"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <PayPalPage />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <PayPalPage />
+                            )
                         }
                     />
                     <Route
                         path="/offers"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Offers />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Offers />
+                            )
                         }
                     />
                     <Route
                         path="/orders"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <OrderHistory />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <OrderHistory />
+                            )
                         }
                     />
                     <Route
                         path="/notifications"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Notifications />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Notifications />
+                            )
                         }
                     />
                     <Route
                         path="/settings"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Settings />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Settings />
+                            )
                         }
                     />
                     <Route
                         path="/admin"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Admin />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Admin />
+                            )
                         }
                     />
                     <Route
                         path="/my-restaurants"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <RestaurantManager />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <RestaurantManager />
+                            )
                         }
                     />
                     <Route
                         path="/review/:orderId"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Review />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Review />
+                            )
                         }
                     />
                     <Route path="/owner" element={<OwnerPortal />} />
                     <Route
                         path="/login"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Login />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Login />
+                            )
                         }
                     />
                     <Route
                         path="/register"
                         element={
-                            isOwnerUser ? <Navigate to="/owner" replace /> : <Register />
+                            isOwnerUser ? (
+                                <Navigate to="/owner" replace />
+                            ) : (
+                                <Register />
+                            )
                         }
                     />
                     <Route
@@ -706,6 +766,9 @@ function AppShell() {
                     />
                 </Routes>
             </div>
+
+            {/* Chatbot Window - rendered outside Routes so it persists across pages */}
+            <ChatbotWindow />
         </>
     );
 }

@@ -1,12 +1,1 @@
-[
-    {
-        "user_id": 2,
-        "type": "new order received",
-        "title": "New Order Received",
-        "message": "A new order with id 24 has been received.",
-        "is_read": true,
-        "order_id": 24,
-        "id": 1,
-        "created_at": "2026-04-08T22:14:05.263897"
-    }
-]
+[]

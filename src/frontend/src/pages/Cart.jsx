@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     deleteOrder,
+    fetchDeliveryByOrder,
     fetchPendingOrders,
     setCartItemQuantity,
 } from "../api/orders";
@@ -37,6 +38,7 @@ export default function Cart() {
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState("");
     const [checkoutBusy, setCheckoutBusy] = useState(false);
+    const [deliveriesByOrderId, setDeliveriesByOrderId] = useState({});
     const [checkoutCountdown, setCheckoutCountdown] = useState(null);
     const [checkoutMessage, setCheckoutMessage] = useState("");
     const [pendingCheckout, setPendingCheckout] = useState(null);
@@ -75,6 +77,21 @@ export default function Cart() {
             );
 
             const restaurantsById = Object.fromEntries(restaurants);
+            
+            const deliveryEntries = await Promise.all(
+                orders.map(async (order) => {
+                    try {
+                        const delivery = await fetchDeliveryByOrder(order.id);
+                        return [order.id, delivery];
+                    } catch {
+                        return [order.id, null];
+                    }
+                })
+            );
+
+            const deliveriesMap = Object.fromEntries(
+                deliveryEntries.filter(([, delivery]) => delivery)
+            );
 
             setCartState({
                 loading: false,
@@ -83,6 +100,8 @@ export default function Cart() {
                 restaurantsById,
                 activeOffer: null,
             });
+
+            setDeliveriesByOrderId(deliveriesMap);
 
             // Try to fetch currently active offer (if any)
             try {
@@ -118,6 +137,8 @@ export default function Cart() {
                 orders: [],
                 restaurantsById: {},
             });
+
+            setDeliveriesByOrderId({});
         }
     }, [redirectToLogin, userId]);
 
@@ -574,6 +595,18 @@ export default function Cart() {
                                                 <p className="cart-order-status">
                                                     Status: <strong>{order.status}</strong>
                                                 </p>
+
+                                                {deliveriesByOrderId[order.id] ? (
+                                                    <p style={{ marginTop: "0.5rem" }}>
+                                                        <Link
+                                                            to="/order-tracking"
+                                                            state={{ orderIds: [order.id] }}
+                                                            className="restaurant-back-link"
+                                                        >
+                                                            Go to delivery view
+                                                        </Link>
+                                                    </p>
+                                                ) : null}
                                             </div>
 
                                             {(order.order_items || []).length === 0 && (
