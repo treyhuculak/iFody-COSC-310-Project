@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     fetchDeliveryByOrder,
@@ -10,6 +10,7 @@ import "../styles/order-tracking.css";
 
 const PREPARING_SECONDS = 10;
 const DELIVERY_SECONDS = 10;
+const TRACKING_STATE_KEY = "tracking_order_states";
 
 function formatTime(ts) {
     if (!ts) return "—";
@@ -29,11 +30,80 @@ function ProgressBar({ elapsed, total }) {
     );
 }
 
+function readTrackingStateMap() {
+    try {
+        const raw = localStorage.getItem(TRACKING_STATE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function writeTrackingStateMap(map) {
+    try {
+        localStorage.setItem(TRACKING_STATE_KEY, JSON.stringify(map));
+    } catch {
+        // ignore storage failures
+    }
+}
+
+function getCountdownFromEnd(phaseEndsAt) {
+    if (!phaseEndsAt) return 0;
+    const diffMs = new Date(phaseEndsAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diffMs / 1000));
+}
+
+function createFreshPreparingState() {
+    return {
+        phase: "preparing",
+        countdown: PREPARING_SECONDS,
+        deliveryInfo: null,
+        deliveredAt: null,
+        error: null,
+        phaseStartedAt: new Date().toISOString(),
+        phaseEndsAt: new Date(Date.now() + PREPARING_SECONDS * 1000).toISOString(),
+    };
+}
+
+function buildInitialOrderState(orderId) {
+    const stored = readTrackingStateMap()[orderId];
+    if (!stored) {
+        return createFreshPreparingState();
+    }
+
+    return {
+        phase: stored.phase || "preparing",
+        countdown: getCountdownFromEnd(stored.phaseEndsAt),
+        deliveryInfo: stored.deliveryInfo || null,
+        deliveredAt: stored.deliveredAt || null,
+        error: stored.error || null,
+        phaseStartedAt: stored.phaseStartedAt || new Date().toISOString(),
+        phaseEndsAt: stored.phaseEndsAt || null,
+    };
+}
+
+function persistOrderState(orderId, nextState) {
+    const map = readTrackingStateMap();
+    map[orderId] = nextState;
+    writeTrackingStateMap(map);
+}
+
+function removePersistedOrderState(orderId) {
+    const map = readTrackingStateMap();
+    delete map[orderId];
+    writeTrackingStateMap(map);
+}
+
 function TrackingCard({ orderId, state }) {
     const { phase, countdown, deliveryInfo, deliveredAt, error } = state;
 
-    const preparingElapsed = PREPARING_SECONDS - (phase === "preparing" ? countdown : 0);
-    const deliveryElapsed = DELIVERY_SECONDS - (phase === "out_for_delivery" ? countdown : 0);
+    const preparingElapsed =
+        phase === "preparing" ? PREPARING_SECONDS - countdown : PREPARING_SECONDS;
+
+    const deliveryElapsed =
+        phase === "out_for_delivery" ? DELIVERY_SECONDS - countdown : DELIVERY_SECONDS;
 
     return (
         <article className="tracking-card">
@@ -115,126 +185,102 @@ export default function OrderTracking() {
     const navigate = useNavigate();
     const userId = parseUserIdFromStorage();
 
-    // Fall back to localStorage if state was lost (e.g. navigated away and came back)
-    const orderIds = (() => {
+    const orderIds = useMemo(() => {
         const fromState = location.state?.orderIds;
         if (Array.isArray(fromState) && fromState.length > 0) return fromState;
+
         try {
             const stored = localStorage.getItem("tracking_order_ids");
             return stored ? JSON.parse(stored) : [];
         } catch {
             return [];
         }
-    })();
+    }, [location.state]);
 
     const [orderStates, setOrderStates] = useState(() =>
-        Object.fromEntries(
-            orderIds.map((id) => [
-                id,
-                {
-                    phase: "preparing",
-                    countdown: PREPARING_SECONDS,
-                    deliveryInfo: null,
-                    deliveredAt: null,
-                    error: null,
-                },
-            ])
-        )
+        Object.fromEntries(orderIds.map((id) => [id, buildInitialOrderState(id)]))
     );
 
-    const timersRef = useRef({});
-    // Keep a ref to always have current orderIds without needing them as a dep
-    const orderIdsRef = useRef(orderIds);
+    const orderStatesRef = useRef(orderStates);
+    const intervalRef = useRef(null);
+    const inFlightTransitionsRef = useRef({});
 
-    function patchOrder(orderId, patch) {
-        setOrderStates((prev) => ({
-            ...prev,
-            [orderId]: { ...prev[orderId], ...patch },
-        }));
+    useEffect(() => {
+        orderStatesRef.current = orderStates;
+    }, [orderStates]);
+
+    function patchOrder(orderId, patchOrUpdater) {
+        setOrderStates((prev) => {
+            const current = prev[orderId] || buildInitialOrderState(orderId);
+            const patch =
+                typeof patchOrUpdater === "function" ? patchOrUpdater(current) : patchOrUpdater;
+            const next = { ...current, ...patch };
+
+            persistOrderState(orderId, next);
+
+            return {
+                ...prev,
+                [orderId]: next,
+            };
+        });
     }
 
     useEffect(() => {
-        if (orderIdsRef.current.length === 0) {
+        if (!userId) {
+            navigate("/login");
+            return;
+        }
+
+        if (orderIds.length === 0) {
             navigate("/");
             return;
         }
 
-        // Persist so the user can return to this page after navigating away
         try {
-            localStorage.setItem("tracking_order_ids", JSON.stringify(orderIdsRef.current));
+            localStorage.setItem("tracking_order_ids", JSON.stringify(orderIds));
             window.dispatchEvent(new CustomEvent("tracking:updated"));
-        } catch { /* ignore */ }
-
-        orderIdsRef.current.forEach((orderId) => {
-            runPreparingPhase(orderId);
-        });
-
-        return () => {
-            Object.values(timersRef.current).forEach(clearInterval);
-            timersRef.current = {};
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    function runPreparingPhase(orderId) {
-        let remaining = PREPARING_SECONDS;
-        const key = `prep-${orderId}`;
-
-        timersRef.current[key] = setInterval(() => {
-            remaining -= 1;
-            patchOrder(orderId, { countdown: remaining });
-
-            if (remaining <= 0) {
-                clearInterval(timersRef.current[key]);
-                delete timersRef.current[key];
-                runOutForDeliveryTransition(orderId);
-            }
-        }, 1000);
-    }
+        } catch {
+            // ignore
+        }
+    }, [navigate, orderIds, userId]);
 
     async function runOutForDeliveryTransition(orderId) {
+        if (inFlightTransitionsRef.current[`out-${orderId}`]) return;
+        inFlightTransitionsRef.current[`out-${orderId}`] = true;
+
         try {
             await updateOrderStatus(orderId, "out for delivery");
-
-            // The backend automatically creates the delivery record when status becomes
-            // "out for delivery", so we just fetch it
             const delivery = await fetchDeliveryByOrder(orderId);
 
             patchOrder(orderId, {
                 phase: "out_for_delivery",
                 countdown: DELIVERY_SECONDS,
                 deliveryInfo: delivery,
+                error: null,
+                phaseStartedAt: new Date().toISOString(),
+                phaseEndsAt: new Date(Date.now() + DELIVERY_SECONDS * 1000).toISOString(),
             });
-
-            runDeliveryPhase(orderId, delivery);
         } catch (err) {
-            patchOrder(orderId, { phase: "error", error: err.message });
+            patchOrder(orderId, {
+                phase: "error",
+                countdown: 0,
+                error: err.message || "Failed to update order status.",
+                phaseEndsAt: null,
+            });
+        } finally {
+            delete inFlightTransitionsRef.current[`out-${orderId}`];
         }
     }
 
-    function runDeliveryPhase(orderId, deliveryInfo) {
-        let remaining = DELIVERY_SECONDS;
-        const key = `del-${orderId}`;
-
-        timersRef.current[key] = setInterval(() => {
-            remaining -= 1;
-            patchOrder(orderId, { countdown: remaining });
-
-            if (remaining <= 0) {
-                clearInterval(timersRef.current[key]);
-                delete timersRef.current[key];
-                runDeliveredTransition(orderId, deliveryInfo);
-            }
-        }, 1000);
-    }
-
     async function runDeliveredTransition(orderId, deliveryInfo) {
+        if (inFlightTransitionsRef.current[`done-${orderId}`]) return;
+        inFlightTransitionsRef.current[`done-${orderId}`] = true;
+
         try {
             await updateOrderStatus(orderId, "delivered");
 
             const now = new Date().toISOString();
 
-            // Record the delivered_at time on the delivery record (non-fatal if it fails)
             if (deliveryInfo?.id) {
                 try {
                     await markDeliveryDelivered(deliveryInfo.id, now);
@@ -247,27 +293,81 @@ export default function OrderTracking() {
                 phase: "delivered",
                 countdown: 0,
                 deliveredAt: now,
+                error: null,
+                phaseEndsAt: null,
             });
         } catch (err) {
-            patchOrder(orderId, { phase: "error", error: err.message });
+            patchOrder(orderId, {
+                phase: "error",
+                countdown: 0,
+                error: err.message || "Failed to mark order as delivered.",
+                phaseEndsAt: null,
+            });
+        } finally {
+            delete inFlightTransitionsRef.current[`done-${orderId}`];
         }
     }
 
-    const allSettled = orderIds.length > 0 &&
+    useEffect(() => {
+        if (orderIds.length === 0) return;
+
+        const tick = async () => {
+            const currentStates = orderStatesRef.current;
+
+            for (const orderId of orderIds) {
+                const current = currentStates[orderId] || buildInitialOrderState(orderId);
+
+                if (current.phase === "delivered" || current.phase === "error") {
+                    continue;
+                }
+
+                const nextCountdown = getCountdownFromEnd(current.phaseEndsAt);
+
+                if (nextCountdown !== current.countdown) {
+                    patchOrder(orderId, { countdown: nextCountdown });
+                }
+
+                if (nextCountdown > 0) {
+                    continue;
+                }
+
+                if (current.phase === "preparing") {
+                    await runOutForDeliveryTransition(orderId);
+                } else if (current.phase === "out_for_delivery") {
+                    await runDeliveredTransition(orderId, current.deliveryInfo);
+                }
+            }
+        };
+
+        tick();
+        intervalRef.current = setInterval(tick, 1000);
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+        };
+    }, [orderIds]);
+
+    const allSettled =
+        orderIds.length > 0 &&
         orderIds.every((id) => {
             const phase = orderStates[id]?.phase;
             return phase === "delivered" || phase === "error";
         });
 
-    // Once all orders are done, remove the tracking record from localStorage
     useEffect(() => {
-        if (allSettled) {
-            try {
-                localStorage.removeItem("tracking_order_ids");
-                window.dispatchEvent(new CustomEvent("tracking:updated"));
-            } catch { /* ignore */ }
+        if (!allSettled) return;
+
+        try {
+            localStorage.removeItem("tracking_order_ids");
+            orderIds.forEach(removePersistedOrderState);
+            window.dispatchEvent(new CustomEvent("tracking:updated"));
+        } catch {
+            // ignore
         }
-    }, [allSettled]);
+    }, [allSettled, orderIds]);
 
     return (
         <main className="home-page order-tracking-page">
@@ -290,7 +390,11 @@ export default function OrderTracking() {
                 ) : (
                     <div className="tracking-list">
                         {orderIds.map((id) => (
-                            <TrackingCard key={id} orderId={id} state={orderStates[id] ?? {}} />
+                            <TrackingCard
+                                key={id}
+                                orderId={id}
+                                state={orderStates[id] ?? buildInitialOrderState(id)}
+                            />
                         ))}
                     </div>
                 )}

@@ -163,9 +163,14 @@ export default function PayPalPage() {
     setPendingTransactions(getPendingPaypalTransactions());
 
     if (captured?.is_successful) {
-      navigate("/orders");
-      return;
-    }
+  navigate("/order-tracking", {
+    state: {
+      orderIds: [captured.order_id],
+      transactionIds: [captured.id],
+    },
+  });
+  return;
+}
 
     setSuccessMessage(`PayPal transaction #${captured.id} captured successfully.`);
   } catch (err) {
