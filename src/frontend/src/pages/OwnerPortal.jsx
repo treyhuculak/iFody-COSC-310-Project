@@ -13,10 +13,19 @@ import {
     updateRestaurant,
     updateRestaurantMenuItem,
 } from "../api/restaurants";
+import {
+    deleteNotification,
+    getNotifications,
+    markAllAsRead,
+    markAsRead,
+} from "../api/notifications";
+import { getRestaurantReviews } from "../api/restaurantManager";
 import "../styles/owner.css";
 
 const OWNER_RESTAURANTS_PAGE_SIZE = 6;
 const OWNER_MENU_PAGE_SIZE = 8;
+const OWNER_NOTIF_PAGE_SIZE = 8;
+const OWNER_REVIEWS_PAGE_SIZE = 10;
 
 const PROVINCE_OPTIONS = [
     "BC",
@@ -67,6 +76,17 @@ function normalizeRole(role) {
 
 function isOwnerRole(role) {
     return normalizeRole(role) === "restaurantowner";
+}
+
+function StarsDisplay({ rating }) {
+    const filled = Math.round(Number(rating ?? 0));
+    return (
+        <span className="owner-stars" aria-label={`${filled} out of 5 stars`}>
+            {[1, 2, 3, 4, 5].map((n) => (
+                <span key={n} className={n <= filled ? "owner-star filled" : "owner-star"}>★</span>
+            ))}
+        </span>
+    );
 }
 
 export default function OwnerPortal() {
@@ -126,6 +146,21 @@ export default function OwnerPortal() {
 
     const [editingMenuItemId, setEditingMenuItemId] = useState(null);
     const [menuItemEditForm, setMenuItemEditForm] = useState(EMPTY_MENU_ITEM_FORM);
+
+    // ── Notifications ────────────────────────────────────────────────────────
+    const [notifItems, setNotifItems] = useState([]);
+    const [notifLoading, setNotifLoading] = useState(true);
+    const [notifError, setNotifError] = useState("");
+    const [notifPage, setNotifPage] = useState(1);
+
+    // ── Reviews (for active restaurant) ──────────────────────────────────────
+    const [reviewItems, setReviewItems] = useState([]);
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const [reviewError, setReviewError] = useState("");
+    const [reviewPage, setReviewPage] = useState(1);
+    const [reviewTotalPages, setReviewTotalPages] = useState(1);
+    const [reviewHasNext, setReviewHasNext] = useState(false);
+    const [reviewHasPrev, setReviewHasPrev] = useState(false);
 
     const canManageRestaurants = Number.isInteger(ownerId) && ownerId > 0 && isOwnerRole(userRole);
 
@@ -293,6 +328,61 @@ export default function OwnerPortal() {
         menuRefreshKey,
         menuSearchQuery,
     ]);
+
+    // Load notifications on mount / when owner changes
+    useEffect(() => {
+        if (!canManageRestaurants || !ownerId) return;
+        let cancelled = false;
+        setNotifLoading(true);
+        setNotifError("");
+        getNotifications(ownerId)
+            .then((data) => {
+                if (cancelled) return;
+                const sorted = [...(Array.isArray(data) ? data : [])].sort(
+                    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+                );
+                setNotifItems(sorted);
+                setNotifLoading(false);
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setNotifError(err.message || "Failed to load notifications.");
+                setNotifLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [canManageRestaurants, ownerId]);
+
+    // Load reviews when active restaurant changes
+    useEffect(() => {
+        if (!canManageRestaurants || !activeRestaurantId) {
+            setReviewItems([]);
+            setReviewTotalPages(1);
+            setReviewHasNext(false);
+            setReviewHasPrev(false);
+            setReviewPage(1);
+            return;
+        }
+        let cancelled = false;
+        setReviewLoading(true);
+        setReviewError("");
+        setReviewPage(1);
+        getRestaurantReviews(activeRestaurantId, { skip: 0, limit: OWNER_REVIEWS_PAGE_SIZE })
+            .then((data) => {
+                if (cancelled) return;
+                setReviewItems(data.items ?? []);
+                setReviewTotalPages(data.total_pages ?? 1);
+                setReviewHasNext(data.has_next ?? false);
+                setReviewHasPrev(data.has_prev ?? false);
+                setReviewLoading(false);
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setReviewError(err.message || "Failed to load reviews.");
+                setReviewItems([]);
+                setReviewLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [canManageRestaurants, activeRestaurantId]);
 
     const selectedRestaurant = useMemo(() => {
         return (
@@ -699,6 +789,62 @@ export default function OwnerPortal() {
         }
     };
 
+    // ── Notification handlers ─────────────────────────────────────────────────
+    const handleMarkNotifRead = async (notifId) => {
+        try {
+            await markAsRead(notifId, ownerId);
+            setNotifItems((prev) => prev.map((n) => n.id === notifId ? { ...n, is_read: true } : n));
+        } catch { /* silent */ }
+    };
+
+    const handleMarkAllNotifRead = async () => {
+        try {
+            await markAllAsRead(ownerId);
+            setNotifItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
+        } catch { /* silent */ }
+    };
+
+    const handleDeleteNotif = async (notifId) => {
+        try {
+            await deleteNotification(notifId, ownerId);
+            setNotifItems((prev) => {
+                const updated = prev.filter((n) => n.id !== notifId);
+                const maxPage = Math.max(1, Math.ceil(updated.length / OWNER_NOTIF_PAGE_SIZE));
+                if (notifPage > maxPage) setNotifPage(maxPage);
+                return updated;
+            });
+        } catch { /* silent */ }
+    };
+
+    // ── Reviews pagination handler ─────────────────────────────────────────
+    const loadReviewsPage = (page) => {
+        if (!activeRestaurantId) return;
+        setReviewLoading(true);
+        setReviewError("");
+        const skip = (page - 1) * OWNER_REVIEWS_PAGE_SIZE;
+        getRestaurantReviews(activeRestaurantId, { skip, limit: OWNER_REVIEWS_PAGE_SIZE })
+            .then((data) => {
+                setReviewPage(page);
+                setReviewItems(data.items ?? []);
+                setReviewTotalPages(data.total_pages ?? 1);
+                setReviewHasNext(data.has_next ?? false);
+                setReviewHasPrev(data.has_prev ?? false);
+                setReviewLoading(false);
+            })
+            .catch((err) => {
+                setReviewError(err.message || "Failed to load reviews.");
+                setReviewLoading(false);
+            });
+    };
+
+    // ── Derived notification values ────────────────────────────────────────
+    const notifTotalPages = Math.max(1, Math.ceil(notifItems.length / OWNER_NOTIF_PAGE_SIZE));
+    const notifSlice = notifItems.slice(
+        (notifPage - 1) * OWNER_NOTIF_PAGE_SIZE,
+        notifPage * OWNER_NOTIF_PAGE_SIZE
+    );
+    const unreadNotifCount = notifItems.filter((n) => !n.is_read).length;
+
     if (!ownerId) {
         return (
             <main className="owner-page">
@@ -1014,11 +1160,154 @@ export default function OwnerPortal() {
                                 </div>
                             </>
                         )}
+
+                        {/* ── Customer reviews subsection ────────────────── */}
+                        <div className="owner-subsection-header">
+                            <div>
+                                <h3>Customer reviews</h3>
+                                <p>
+                                    {reviewLoading
+                                        ? "Loading…"
+                                        : `Page ${reviewPage} of ${Math.max(reviewTotalPages, 1)}`}
+                                </p>
+                            </div>
+                        </div>
+
+                        {reviewError ? (
+                            <p className="owner-status-error">{reviewError}</p>
+                        ) : reviewLoading ? (
+                            <div className="owner-placeholder">Loading reviews...</div>
+                        ) : reviewItems.length === 0 ? (
+                            <div className="owner-placeholder">No reviews yet for this restaurant.</div>
+                        ) : (
+                            <>
+                                <div className="owner-review-list">
+                                    {reviewItems.map((rev) => (
+                                        <div key={rev.id} className="owner-review-card">
+                                            <div className="owner-review-header">
+                                                <StarsDisplay rating={rev.rating} />
+                                                <span className="owner-review-title">{rev.title}</span>
+                                                {rev.created_at && (
+                                                    <span className="owner-review-date">
+                                                        {new Date(rev.created_at).toLocaleDateString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {rev.comment && (
+                                                <p className="owner-review-comment">{rev.comment}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {reviewTotalPages > 1 && (
+                                    <div className="owner-pagination-row">
+                                        <button
+                                            type="button"
+                                            disabled={!reviewHasPrev || reviewLoading}
+                                            onClick={() => loadReviewsPage(reviewPage - 1)}
+                                        >
+                                            Previous
+                                        </button>
+                                        <span>Reviews page {reviewPage}</span>
+                                        <button
+                                            type="button"
+                                            disabled={!reviewHasNext || reviewLoading}
+                                            onClick={() => loadReviewsPage(reviewPage + 1)}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </>
                 ) : (
                     <div className="owner-placeholder">
                         Select one of your restaurants above to manage details and menu items.
                     </div>
+                )}
+            </section>
+
+            {/* ── Notifications section ──────────────────────────────────── */}
+            <section className="owner-section">
+                <div className="owner-section-header">
+                    <div>
+                        <h2>
+                            Notifications
+                            {unreadNotifCount > 0 && (
+                                <span className="owner-notif-badge">{unreadNotifCount}</span>
+                            )}
+                        </h2>
+                        <p>Your recent order alerts and activity updates</p>
+                    </div>
+                    {notifItems.length > 0 && (
+                        <button type="button" onClick={handleMarkAllNotifRead}>
+                            Mark all as read
+                        </button>
+                    )}
+                </div>
+
+                {notifLoading ? (
+                    <div className="owner-placeholder">Loading notifications...</div>
+                ) : notifError ? (
+                    <p className="owner-status-error">{notifError}</p>
+                ) : notifItems.length === 0 ? (
+                    <div className="owner-placeholder">No notifications yet.</div>
+                ) : (
+                    <>
+                        <div className="owner-notif-list">
+                            {notifSlice.map((n) => (
+                                <div key={n.id} className={`owner-notif-row${n.is_read ? "" : " is-unread"}`}>
+                                    <div className="owner-notif-body">
+                                        {!n.is_read && <span className="owner-notif-dot" />}
+                                        <p className="owner-notif-message">
+                                            {n.message ?? n.title ?? "Notification"}
+                                        </p>
+                                        {n.created_at && (
+                                            <p className="owner-notif-time">
+                                                {new Date(n.created_at).toLocaleString()}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="owner-inline-actions" style={{ marginTop: 0, flexShrink: 0 }}>
+                                        {!n.is_read && (
+                                            <button type="button" onClick={() => handleMarkNotifRead(n.id)}>
+                                                Mark read
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="danger"
+                                            onClick={() => handleDeleteNotif(n.id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {notifTotalPages > 1 && (
+                            <div className="owner-pagination-row">
+                                <button
+                                    type="button"
+                                    disabled={notifPage <= 1}
+                                    onClick={() => setNotifPage((p) => p - 1)}
+                                >
+                                    Previous
+                                </button>
+                                <span>Page {notifPage} of {notifTotalPages}</span>
+                                <button
+                                    type="button"
+                                    disabled={notifPage >= notifTotalPages}
+                                    onClick={() => setNotifPage((p) => p + 1)}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </section>
 

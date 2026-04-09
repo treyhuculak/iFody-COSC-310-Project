@@ -81,3 +81,11 @@ export async function deleteMenuItem(restaurantId, menuItemId, userId) {
     if (!res.ok) throw new Error(payload?.detail || "Failed to delete menu item");
     return payload;
 }
+
+export async function getRestaurantReviews(restaurantId, { skip = 0, limit = 10 } = {}) {
+    const query = new URLSearchParams({ skip: String(skip), limit: String(limit) }).toString();
+    const res = await fetch(`${API_URL}/restaurants/${restaurantId}/reviews?${query}`);
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(payload?.detail || "Failed to fetch reviews");
+    return payload; // { items, total, page, page_size, total_pages, has_next, has_prev }
+}

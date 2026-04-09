@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { addMenuItemToCart } from "../api/orders";
+import { getRestaurantReviews } from "../api/restaurantManager";
 import {
     fetchRestaurantById,
     fetchRestaurantMenuItems,
@@ -8,6 +9,19 @@ import {
 } from "../api/restaurants";
 import MenuItemCard from "../components/restaurant/MenuItemCard";
 import "../styles/restaurant.css";
+
+const REVIEWS_PAGE_SIZE = 8;
+
+function StarsDisplay({ rating }) {
+    const filled = Math.round(Number(rating ?? 0));
+    return (
+        <span className="rd-stars" aria-label={`${filled} out of 5 stars`}>
+            {[1, 2, 3, 4, 5].map((n) => (
+                <span key={n} className={n <= filled ? "rd-star filled" : "rd-star"}>★</span>
+            ))}
+        </span>
+    );
+}
 
 function toDefaultQuantityMap(menuItems) {
     return menuItems.reduce((quantityMap, item) => {
@@ -36,6 +50,16 @@ export default function RestaurantDetails({
     const [menuState, setMenuState] = useState({
         items: [],
         loading: true,
+        error: "",
+    });
+
+    const [reviewsState, setReviewsState] = useState({
+        items: [],
+        loading: true,
+        page: 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
         error: "",
     });
 
@@ -102,6 +126,50 @@ export default function RestaurantDetails({
             abortController.abort();
         };
     }, [restaurantId, hasValidRestaurantId]);
+
+    useEffect(() => {
+        if (!hasValidRestaurantId) return;
+        let cancelled = false;
+        setReviewsState((prev) => ({ ...prev, loading: true, error: "", page: 1 }));
+        getRestaurantReviews(restaurantId, { skip: 0, limit: REVIEWS_PAGE_SIZE })
+            .then((data) => {
+                if (cancelled) return;
+                setReviewsState({
+                    items: data.items ?? [],
+                    loading: false,
+                    page: 1,
+                    totalPages: data.total_pages ?? 1,
+                    hasNext: data.has_next ?? false,
+                    hasPrev: data.has_prev ?? false,
+                    error: "",
+                });
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setReviewsState({ items: [], loading: false, page: 1, totalPages: 1, hasNext: false, hasPrev: false, error: err.message || "Failed to load reviews." });
+            });
+        return () => { cancelled = true; };
+    }, [restaurantId, hasValidRestaurantId]);
+
+    const loadReviewsPage = (page) => {
+        const skip = (page - 1) * REVIEWS_PAGE_SIZE;
+        setReviewsState((prev) => ({ ...prev, loading: true, error: "" }));
+        getRestaurantReviews(restaurantId, { skip, limit: REVIEWS_PAGE_SIZE })
+            .then((data) => {
+                setReviewsState({
+                    items: data.items ?? [],
+                    loading: false,
+                    page,
+                    totalPages: data.total_pages ?? 1,
+                    hasNext: data.has_next ?? false,
+                    hasPrev: data.has_prev ?? false,
+                    error: "",
+                });
+            })
+            .catch((err) => {
+                setReviewsState((prev) => ({ ...prev, loading: false, error: err.message || "Failed to load reviews." }));
+            });
+    };
 
     const displayedMenuItems = useMemo(() => {
         const normalizedQuery = menuSearchQuery.trim().toLowerCase();
@@ -288,6 +356,66 @@ export default function RestaurantDetails({
             {cartState.success ? <p className="status-success">{cartState.success}</p> : null}
             {cartState.error ? <p className="status-error">{cartState.error}</p> : null}
             {menuState.error ? <p className="status-error">{menuState.error}</p> : null}
+
+            <section className="restaurant-section">
+                <div className="section-heading">
+                    <h2>Customer reviews</h2>
+                    <p>See what other customers are saying about this restaurant.</p>
+                </div>
+
+                {reviewsState.error ? (
+                    <p className="status-error">{reviewsState.error}</p>
+                ) : reviewsState.loading ? (
+                    <div className="section-placeholder">Loading reviews...</div>
+                ) : reviewsState.items.length === 0 ? (
+                    <div className="section-placeholder">No reviews yet for this restaurant.</div>
+                ) : (
+                    <>
+                        <div className="rd-review-list">
+                            {reviewsState.items.map((rev) => (
+                                <div key={rev.id} className="rd-review-card">
+                                    <div className="rd-review-header">
+                                        <StarsDisplay rating={rev.rating} />
+                                        <span className="rd-review-title">{rev.title}</span>
+                                        {rev.created_at && (
+                                            <span className="rd-review-date">
+                                                {new Date(rev.created_at).toLocaleDateString()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {rev.comment && (
+                                        <p className="rd-review-comment">{rev.comment}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {reviewsState.totalPages > 1 && (
+                            <div className="rd-reviews-pagination">
+                                <button
+                                    type="button"
+                                    className="rd-page-btn"
+                                    disabled={!reviewsState.hasPrev || reviewsState.loading}
+                                    onClick={() => loadReviewsPage(reviewsState.page - 1)}
+                                >
+                                    ← Previous
+                                </button>
+                                <span className="rd-page-info">
+                                    Page {reviewsState.page} of {reviewsState.totalPages}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="rd-page-btn"
+                                    disabled={!reviewsState.hasNext || reviewsState.loading}
+                                    onClick={() => loadReviewsPage(reviewsState.page + 1)}
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </section>
         </main>
     );
 }

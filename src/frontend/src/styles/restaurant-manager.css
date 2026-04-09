@@ -193,3 +193,180 @@
     color: #7a5540;
     margin: 0;
 }
+
+/* ── Section header row (title + action button side by side) ─────────── */
+.rm-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Notifications ───────────────────────────────────────────────────── */
+.rm-notif-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 999px;
+    background: #ff6b35;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.rm-notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 0.75rem;
+}
+
+.rm-notif-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.7rem 0.9rem;
+    background: #fffdf9;
+    border: 1px solid #e8d7c5;
+    border-radius: 10px;
+    transition: background-color 0.12s ease;
+}
+
+.rm-notif-row.rm-notif-unread {
+    background: rgba(255, 107, 53, 0.05);
+    border-color: rgba(255, 107, 53, 0.25);
+}
+
+.rm-notif-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    padding-left: 0;
+}
+
+.rm-notif-unread .rm-notif-body {
+    padding-left: 1.1rem;
+}
+
+.rm-notif-dot {
+    position: absolute;
+    left: 0;
+    top: 0.35rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff6b35;
+    flex-shrink: 0;
+}
+
+.rm-notif-message {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #2d1d14;
+    font-weight: 500;
+}
+
+.rm-notif-time {
+    margin: 0;
+    font-size: 0.76rem;
+    color: #9a7560;
+}
+
+/* ── Reviews section inside restaurant card ───────────────────────────── */
+.rm-reviews-section {
+    border-top: 1px solid #ede3d8;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.rm-reviews-section h4 {
+    margin: 0 0 0.8rem;
+    font-size: 0.9rem;
+    color: #5f4330;
+}
+
+.rm-reviews-placeholder {
+    font-size: 0.85rem;
+    color: #7a5540;
+    margin: 0;
+}
+
+.rm-reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+}
+
+.rm-review-card {
+    background: rgba(255, 107, 53, 0.04);
+    border: 1px solid rgba(255, 107, 53, 0.12);
+    border-radius: 9px;
+    padding: 0.6rem 0.8rem;
+}
+
+.rm-review-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.rm-stars {
+    display: inline-flex;
+    gap: 0.05rem;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.rm-star {
+    color: #d9c5b0;
+}
+
+.rm-star.filled {
+    color: #ff6b35;
+}
+
+.rm-review-title {
+    font-weight: 600;
+    font-size: 0.87rem;
+    color: #2d1d14;
+}
+
+.rm-review-date {
+    font-size: 0.76rem;
+    color: #9a7560;
+    margin-left: auto;
+}
+
+.rm-review-comment {
+    margin: 0;
+    font-size: 0.84rem;
+    color: #5f4330;
+    line-height: 1.45;
+}
+
+/* ── Pagination controls ─────────────────────────────────────────────── */
+.rm-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.rm-pagination-info {
+    font-size: 0.83rem;
+    color: #7a5540;
+    font-weight: 600;
+}
